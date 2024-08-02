@@ -1,0 +1,54 @@
+
+@media screen and (max-width: 2000px) {
+    nav.navbar.navbar-header.navbar-header-transparent.navbar-expand-lg.border-bottom {
+        padding: 0 30px;
+    }
+    .navbar .navbar-nav.top-menu {
+        overflow-x: unset;
+    }
+}
+
+@media screen and (max-width: 1400px) {
+    nav.navbar.navbar-header.navbar-header-transparent.navbar-expand-lg.border-bottom {
+        padding: 0 30px;
+    }
+    .navbar .navbar-nav.top-menu {
+        overflow-x: unset;
+    }
+}
+
+@media screen and (max-width: 990px) {
+    nav.navbar.navbar-header.navbar-header-transparent.navbar-expand-lg.border-bottom {
+        padding: 0 30px;
+    }
+    .navbar .navbar-nav.top-menu {
+        overflow-x: unset;
+    }
+}
+
+@media screen and (max-width: 720px) {
+    nav.navbar.navbar-header.navbar-header-transparent.navbar-expand-lg.border-bottom {
+        padding: 0 30px;
+    }
+    .navbar .navbar-nav.top-menu {
+        overflow-x: unset;
+    }
+}
+
+@media screen and (max-width: 540px) {
+    nav.navbar.navbar-header.navbar-header-transparent.navbar-expand-lg.border-bottom {
+        padding: 0 30px;
+    }
+    .navbar .navbar-nav.top-menu {
+        overflow-x: unset;
+    }
+}
+
+@media screen and (max-width: 400px) {
+    nav.navbar.navbar-header.navbar-header-transparent.navbar-expand-lg.border-bottom {
+        padding: 0 10px;
+    }
+    .navbar .navbar-nav.top-menu {
+        overflow-x: scroll;
+    }
+}
