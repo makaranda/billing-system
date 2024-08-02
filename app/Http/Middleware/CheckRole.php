@@ -21,8 +21,8 @@ class CheckRole
         }
 
         $user = Auth::user();
-
-        if ($user->privilege !== $role) {
+        //if ($user->privilege !== $role) {
+        if ($user->privilege !== 1) {
             return redirect()->route('admin.dashboard')->with('error', 'You are not authorized to access this page.');
         }
 

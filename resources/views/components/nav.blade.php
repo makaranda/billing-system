@@ -34,7 +34,7 @@
               </a>
             </li>
 
-            @if(Auth::user()->privilege === 'admin')
+            @if(Auth::user()->privilege === 1)
             {{-- {{ var_dump($subMenus) }} --}}
 
             @if ($mainMenus)
@@ -125,11 +125,11 @@
             <div class="container-fluid">
 
               <ul class="navbar-nav topbar-nav align-items-center mt-2 mb-2 top-menu">
-                @if(Auth::user()->privilege === 'admin')
+                @if(Auth::user()->privilege === 1)
                     {{-- {{ request()->route()->getName() }} --}}
                     @if ($mainMenus)
                         @php
-                            $menuCounts = 0;
+                           $menuCounts = 0;
                         @endphp
                         @foreach($mainMenus as $key => $mainMenu)
                             @php
