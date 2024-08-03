@@ -144,17 +144,17 @@ Route::group(['prefix' => '/'], function () {
         Route::get('/logout', [AdminDashboardController::class, 'logout'])->name('admin.logout');
         Route::group(['prefix' => 'dashboard'], function () {
             Route::get('/', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
-            Route::group(['prefix' => 'users', 'middleware' => 'role:admin'], function () {
-                Route::get('/', [UsersController::class, 'index'])->name('admin.users');
-                Route::get('/fetchusersAll', [UsersController::class, 'fetchuserAll'])->name('users.fetchusers');
-                Route::post('/usersActive', [UsersController::class, 'userActive'])->name('users.userActive');
-                Route::get('/create', [UsersController::class, 'create'])->name('users.create');
-                Route::post('/save', [UsersController::class, 'save'])->name('users.save');
-                Route::get('/{page_id}/delete', [UsersController::class, 'delete'])->name('users.delete');
-                Route::get('/{page_id}/edit', [UsersController::class, 'edit'])->name('users.edit');
-                Route::post('/{page_id}/update', [UsersController::class, 'update'])->name('users.update');
-                Route::post('/saveRecord', [UsersController::class, 'saveRecord'])->name('users.saveRecord');
-            });
+            // Route::group(['prefix' => 'users', 'middleware' => 'role:admin'], function () {
+            //     Route::get('/', [UsersController::class, 'index'])->name('admin.users');
+            //     Route::get('/fetchusersAll', [UsersController::class, 'fetchuserAll'])->name('users.fetchusers');
+            //     Route::post('/usersActive', [UsersController::class, 'userActive'])->name('users.userActive');
+            //     Route::get('/create', [UsersController::class, 'create'])->name('users.create');
+            //     Route::post('/save', [UsersController::class, 'save'])->name('users.save');
+            //     Route::get('/{page_id}/delete', [UsersController::class, 'delete'])->name('users.delete');
+            //     Route::get('/{page_id}/edit', [UsersController::class, 'edit'])->name('users.edit');
+            //     Route::post('/{page_id}/update', [UsersController::class, 'update'])->name('users.update');
+            //     Route::post('/saveRecord', [UsersController::class, 'saveRecord'])->name('users.saveRecord');
+            // });
 
         //Reminders Prepaid Services Documents Pay Online Task Reports Accounting Settings
         Route::group(['prefix' => 'reminders', 'middleware' => 'role:admin'], function () {
@@ -272,7 +272,20 @@ Route::group(['prefix' => '/'], function () {
             Route::get('/message-formats', [MessageFormatsController::class, 'index'])->name('index.messageformats');
             Route::get('/currencies', [CurrenciesController::class, 'index'])->name('index.currencies');
             Route::get('/price-types', [PriceTypesController::class, 'index'])->name('index.pricetypes');
-            Route::get('/users', [SettingUsersController::class, 'index'])->name('index.users');
+
+            Route::group(['prefix' => 'users', 'middleware' => 'role:admin'], function () {
+                Route::get('/', [SettingUsersController::class, 'index'])->name('index.users');
+                Route::get('/fetch-users', [SettingUsersController::class, 'fetchuserAll'])->name('users.fetchusers');
+                Route::post('/{user_id}/users-active', [SettingUsersController::class, 'userActive'])->name('users.userActive');
+                Route::get('/create', [SettingUsersController::class, 'userCreate'])->name('users.create');
+                Route::post('/save', [SettingUsersController::class, 'userSave'])->name('users.save');
+                Route::get('/user-open-form', [SettingUsersController::class, 'userOpenForm'])->name('users.form');
+                Route::get('/{user_id}/delete', [SettingUsersController::class, 'userDelete'])->name('users.delete');
+                Route::get('/{user_id}/edit', [SettingUsersController::class, 'userEdit'])->name('users.edit');
+                Route::post('/{user_id}/update', [SettingUsersController::class, 'userUpdate'])->name('users.update');
+                Route::post('/saveRecord', [SettingUsersController::class, 'saveRecord'])->name('users.saveRecord');
+            });
+
             Route::get('/collection-bureaus', [CollectionBureausController::class, 'index'])->name('index.collectionbureaus');
             Route::get('/territories', [TerritoriesController::class, 'index'])->name('index.territories');
             Route::get('/set-employee-ot-factor', [SetEmployeeOtFactorController::class, 'index'])->name('index.setemployeeotfactor');

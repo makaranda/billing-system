@@ -38,6 +38,7 @@
 <script src="{{ url('public/assets/js/demo.js')}}?v={{ date('is') }}"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script src="{{ url('public/assets/js/paginathing.js')}}"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
@@ -65,5 +66,5 @@
       },
     });
 
-
+    $('#overlay').hide();
   </script>

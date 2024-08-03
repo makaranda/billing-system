@@ -10,7 +10,9 @@
     </head>
   <body>
         @include('components.nav')
-
+        <div id="overlay" style="display: block;">
+            <div class="loader"></div>
+        </div>
         @yield('content')
 
         @include('components.footer')

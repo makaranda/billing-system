@@ -52,3 +52,10 @@
         overflow-x: scroll;
     }
 }
+
+@media (min-width: 576px) {
+    .page-inner {
+        padding-right: 15px;
+        padding-left: 15px;
+    }
+}
