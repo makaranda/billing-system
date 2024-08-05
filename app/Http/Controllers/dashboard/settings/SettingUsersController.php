@@ -9,6 +9,8 @@ use App\Models\RoutesPermissions;
 use App\Models\SystemUsers;
 use App\Models\UserPrivileges;
 use App\Models\Employees;
+use App\Models\CollectionBureaus;
+use App\Models\Branches;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
@@ -63,6 +65,8 @@ class SettingUsersController extends Controller
         $systemUsers = SystemUsers::find($request->user_id);
         $userPrivileges = UserPrivileges::all();
         $employees = Employees::all();
+        $collectionBureaus = CollectionBureaus::all();
+        $branches = Branches::all();
 
         $userProfile = '';
         if (!$systemUsers) {
@@ -71,7 +75,8 @@ class SettingUsersController extends Controller
         $responseData = [
             'systemUsers' => $systemUsers,
             'userPrivileges' => $userPrivileges,
-            'userEmployees' => $employees
+            'userEmployees' => $employees,
+            'branches' => $branches
         ];
 
         return response()->json($responseData);
@@ -80,10 +85,14 @@ class SettingUsersController extends Controller
     public function userOpenForm(Request $request){
         $userPrivileges = UserPrivileges::all();
         $employees = Employees::all();
+        $collectionBureaus = CollectionBureaus::all();
+        $branches = Branches::all();
 
         $responseData = [
             'userPrivileges' => $userPrivileges,
-            'userEmployees' => $employees
+            'collectionBureaus' => $collectionBureaus,
+            'userEmployees' => $employees,
+            'branches' => $branches
         ];
 
         return response()->json($responseData);

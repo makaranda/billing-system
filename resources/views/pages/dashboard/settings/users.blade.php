@@ -444,7 +444,7 @@
             dataType: 'json',
             data: {_token: '{{ csrf_token() }}','action':'formUser'},
             success: function(response){
-                //console.log(response);
+                console.log(response);
                 $('#overlay').hide();
 
                     var privilegeDropdown = $('#privilege');
@@ -454,12 +454,12 @@
                         privilegeDropdown.append('<option value="'+privilege.id+'">'+privilege.name+'</option>');
                     });
 
-                    var employeesDropdown = $('#employee_id');
-                    employeesDropdown.empty();
-                    employeesDropdown.append('<option value="">- SELECT EMPLOYEE -</option>');
-                    $.each(response.userEmployees, function(index, employee) {
-                        employeesDropdown.append('<option value="'+employee.emp_id+'">'+employee.emp_name+'</option>');
-                    });
+                    // var employeesDropdown = $('#employee_id');
+                    // employeesDropdown.empty();
+                    // employeesDropdown.append('<option value="">- SELECT EMPLOYEE -</option>');
+                    // $.each(response.userEmployees, function(index, employee) {
+                    //     employeesDropdown.append('<option value="'+employee.emp_id+'">'+employee.emp_name+'</option>');
+                    // });
 
             },
             error: function (errors) {

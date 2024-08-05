@@ -8,4 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 class CollectionBureaus extends Model
 {
     use HasFactory;
+    protected $fillable = [
+    'name',
+    'address',
+    'telephone',
+    'mobile',
+    'email',
+    'user_id',
+    'created_by',
+    'status',
+    ];
 }
