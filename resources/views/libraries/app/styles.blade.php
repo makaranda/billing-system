@@ -12,5 +12,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tempusdominus-bootstrap-5/build/css/tempusdominus-bootstrap-5.min.css">
 
 <link href="https://cdn.datatables.net/2.0.8/css/dataTables.dataTables.css" rel="stylesheet">
+<link rel="stylesheet" href="{{ url('public/assets/css/parsley.css') }}?v={{ date('is') }}"/>
+<link rel="stylesheet" href="{{ url('public/assets/css/padding.css') }}?v={{ date('is') }}"/>
 <link rel="stylesheet" href="{{ url('public/assets/css/mystyle.css') }}?v={{ date('is') }}"/>
 <link rel="stylesheet" href="{{ url('public/assets/css/mystyle.responsive.css') }}?v={{ date('is') }}"/>

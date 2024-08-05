@@ -176,6 +176,8 @@
 			    <div role="tabpanel" class="tab-pane show active" id="user_info">
 			    	<br/>
 			    	<form name="frm_add_user" id="frm_add_user" method="post">
+                    <input type="hidden" name="form_type" id="form_type" value="users.save">
+                    <input type="hidden" name="form_user_id" id="form_user_id" value="">
 					<div class="row">
 						<div class="col-md-6">
 							<div class="form-group">
@@ -203,7 +205,7 @@
 								<select class="form-control" id="privilege" name="privilege" required="required">
 									<option value="">- SELECT PRIVILEGE -</option>
 								</select>
-							</div>userEditBtn full_name email
+							</div>
 						</div>
 					</div>
 					<div class="row">
@@ -265,8 +267,8 @@
 								</select>
 							</div>
 						</div>
-						<div class="col-md-6">
-							<div class="form-group form-control custom-checkbox">
+						<div class="col-md-6 pl-4 pr-4">
+							<div class="form-group form-control custom-checkbox ml-1 mr-4">
 								<label for="debt_collector">Debt Collector</label>
 								<input type="checkbox" id="debt_collector" value="1" name="debt_collector" class="">
 							</div>
@@ -275,13 +277,13 @@
 					<div class="row">
 						<div class="col-md-6">
 						<div class="form-group">
-							<button type="button" class="btn btn-default form-control" data-dismiss="modal">Cancel</button>
+							<button type="button" class="btn btn-default form-control" data-bs-dismiss="modal">Cancel</button>
 							<input type="hidden" id="edit_id" name="edit_id" />
 						</div>
 						</div>
 						<div class="col-md-6">
 						<div class="form-group">
-							<button type="submit" name="submit" class="btn btn-primary form-control">Save</button>
+							<button type="submit" name="submit" class="btn btn-primary form-control form_submit_btn">Save</button>
 						</div>
 						</div>
 					</div>
@@ -436,7 +438,10 @@
 
     $(document).on('click','.addNewUser',function(){
         $('#overlay').show();
-
+        $('#form_type').val('users.save');
+        $('#form_user_id').val('');
+        $('.form_submit_btn').text('Save');
+        //alert();
         $.ajax({
             url: '{{ route('users.form') }}',
             cache: false,
@@ -444,6 +449,7 @@
             dataType: 'json',
             data: {_token: '{{ csrf_token() }}','action':'formUser'},
             success: function(response){
+                //alert(response);
                 console.log(response);
                 $('#overlay').hide();
 
@@ -454,12 +460,33 @@
                         privilegeDropdown.append('<option value="'+privilege.id+'">'+privilege.name+'</option>');
                     });
 
-                    // var employeesDropdown = $('#employee_id');
-                    // employeesDropdown.empty();
-                    // employeesDropdown.append('<option value="">- SELECT EMPLOYEE -</option>');
-                    // $.each(response.userEmployees, function(index, employee) {
-                    //     employeesDropdown.append('<option value="'+employee.emp_id+'">'+employee.emp_name+'</option>');
-                    // });
+                    var employeesDropdown = $('#employee_id');
+                    employeesDropdown.empty();
+                    employeesDropdown.append('<option value="">- SELECT EMPLOYEE -</option>');
+                    $.each(response.userEmployees, function(index, employee) {
+                        employeesDropdown.append('<option value="'+employee.emp_id+'">'+employee.emp_name+'</option>');
+                    });
+
+                    var branchesDropdown = $('#branch_id');
+                    branchesDropdown.empty();
+                    branchesDropdown.append('<option value="">- SELECT BRANCH -</option>');
+                    $.each(response.branches, function(index, branche) {
+                        branchesDropdown.append('<option value="'+branche.id+'">'+branche.name+'</option>');
+                    });
+
+                    var collectionBureauDropdown = $('#collection_bureau');
+                    collectionBureauDropdown.empty();
+                    collectionBureauDropdown.append('<option value="">- SELECT COLLECTION BUREAU -</option>');
+                    $.each(response.collectionBureaus, function(index, collectionBureau) {
+                        collectionBureauDropdown.append('<option value="'+collectionBureau.id+'">'+collectionBureau.name+'</option>');
+                    });
+
+                    var groupsDropdown = $('#group_id');
+                    groupsDropdown.empty();
+                    groupsDropdown.append('<option value="">- SELECT GROUP -</option>');
+                    $.each(response.groups, function(index, group) {
+                        groupsDropdown.append('<option value="'+group.id+'">'+group.group_id+'</option>');
+                    });
 
             },
             error: function (errors) {
@@ -473,6 +500,9 @@
         var user_id = $(this).attr('data-id');
         //alert(user_id);
         $('#overlay').show();
+        $('#form_type').val('users.update');
+        $('#form_user_id').val(user_id);
+        $('.form_submit_btn').text('Update');
 
         $.ajax({
             url: '{{ route('users.edit','+user_id+') }}',
@@ -499,8 +529,52 @@
                         privilegeDropdown.append('<option value="'+privilege.id+'">'+privilege.name+'</option>');
                     });
 
+                    var employeesDropdown = $('#employee_id');
+                    employeesDropdown.empty();
+                    employeesDropdown.append('<option value="">- SELECT EMPLOYEE -</option>');
+                    $.each(response.userEmployees, function(index, employee) {
+                        employeesDropdown.append('<option value="'+employee.emp_id+'">'+employee.emp_name+'</option>');
+                    });
+
+                    var branchesDropdown = $('#branch_id');
+                    branchesDropdown.empty();
+                    branchesDropdown.append('<option value="">- SELECT BRANCH -</option>');
+                    $.each(response.branches, function(index, branche) {
+                        branchesDropdown.append('<option value="'+branche.id+'">'+branche.name+'</option>');
+                    });
+
+                    var collectionBureauDropdown = $('#collection_bureau');
+                    collectionBureauDropdown.empty();
+                    collectionBureauDropdown.append('<option value="">- SELECT COLLECTION BUREAU -</option>');
+                    $.each(response.collectionBureaus, function(index, collectionBureau) {
+                        collectionBureauDropdown.append('<option value="'+collectionBureau.id+'">'+collectionBureau.name+'</option>');
+                    });
+
+                    var groupsDropdown = $('#group_id');
+                    groupsDropdown.empty();
+                    groupsDropdown.append('<option value="">- SELECT GROUP -</option>');
+                    $.each(response.groups, function(index, group) {
+                        groupsDropdown.append('<option value="'+group.id+'">'+group.group_id+'</option>');
+                    });
+
                     if (response.systemUsers.privilege) {
                         privilegeDropdown.val(response.systemUsers.privilege);
+                    }
+
+                    if (response.systemUsers.employee_id) {
+                        employeesDropdown.val(response.systemUsers.employee_id);
+                    }
+
+                    if (response.systemUsers.branch_id) {
+                        branchesDropdown.val(response.systemUsers.branch_id);
+                    }
+
+                    if (response.systemUsers.collection_bureau_id) {
+                        collectionBureauDropdown.val(response.systemUsers.collection_bureau_id);
+                    }
+
+                    if (response.systemUsers.group_id) {
+                        groupsDropdown.val(response.systemUsers.group_id);
                     }
 
                 }
@@ -510,10 +584,58 @@
             }
         });
     });
+    $('#frm_add_user').parsley();
+    $('#frm_add_user').on('submit', function(event){
+        event.preventDefault();
+
+        var user_id = $('#form_user_id').val();
+        var form_type = ($('#form_type').val() == 'users.save')?'{{ route("users.save") }}':'{{ route("users.update",'+user_id+') }}';
+
+        var form_name = (form_type == 'users.save')? 'Added': 'Updated';
+
+        $('#overlay').show();
+        $('#overlay').hide();
+
+        $.ajax({
+            url: ""+form_type+"",
+            cache: false,
+            method: 'POST',
+            data: $(this).serialize() + '&_token={{ csrf_token() }}&action=addUpdateUser',
+            success: function(response){
+                console.log(response.message);
+                listUsers();
+                if(response.message == 'success'){
+                    $('#addUserModal').modal('hide');
+                    $('#frm_add_user').parsley().reset();
+                    $('#frm_add_user')[0].reset();
+                    if(response.messageType == 'success'){
+                        Swal.fire({
+                            position: "bottom-end",
+                            icon: "success",
+                            title: "User has been "+form_name+" Successfully..!!",
+                            showConfirmButton: false,
+                            timer: 2500
+                        });
+                    }else if(response.messageType == 'wrong'){
+                        Swal.fire({
+                            position: "bottom-end",
+                            icon: "success",
+                            title: "User has been "+form_name+" Successfully..!!",
+                            showConfirmButton: false,
+                            timer: 2500
+                        });
+                    }
+                }
+            },
+            error: function (errors) {
+                console.log('Error:', errors);
+            }
+        });
+    });
 
     $(document).on('click','.userActivete',function(){
-        var user_id = $(this).attr('data-id');
-        var user_status = $(this).attr('data-status');
+        var user_id = ($(this).attr('data-id'))?$(this).attr('data-id'):'';
+        var user_status = ($(this).attr('data-status'))?$(this).attr('data-status'):'';
         var activation = (user_status == 1)? 'Inactivate':'Activate';
         $.ajax({
             url: '{{ route('users.userActive','+user_id+') }}',

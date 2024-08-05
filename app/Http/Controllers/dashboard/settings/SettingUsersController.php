@@ -14,6 +14,7 @@ use App\Models\Branches;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
+//use Illuminate\Support\Facades\MD5;
 
 class SettingUsersController extends Controller
 {
@@ -45,6 +46,7 @@ class SettingUsersController extends Controller
         $parentid = 9;
         $mainRouteName = 'index.settings';
         //dd($mainMenus);
+        //echo 'test';
         return view('pages.dashboard.settings.users', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions'));
     }
 
@@ -67,6 +69,10 @@ class SettingUsersController extends Controller
         $employees = Employees::all();
         $collectionBureaus = CollectionBureaus::all();
         $branches = Branches::all();
+        $groups = SystemUsers::select('group_id')
+                    ->distinct()
+                    ->orderBy('id')
+                    ->get();
 
         $userProfile = '';
         if (!$systemUsers) {
@@ -76,7 +82,8 @@ class SettingUsersController extends Controller
             'systemUsers' => $systemUsers,
             'userPrivileges' => $userPrivileges,
             'userEmployees' => $employees,
-            'branches' => $branches
+            'branches' => $branches,
+            'groups' => $groups
         ];
 
         return response()->json($responseData);
@@ -87,16 +94,82 @@ class SettingUsersController extends Controller
         $employees = Employees::all();
         $collectionBureaus = CollectionBureaus::all();
         $branches = Branches::all();
+        $groups = SystemUsers::select('group_id')
+                    ->distinct()
+                    ->orderBy('id')
+                    ->get();
 
         $responseData = [
             'userPrivileges' => $userPrivileges,
             'collectionBureaus' => $collectionBureaus,
             'userEmployees' => $employees,
-            'branches' => $branches
+            'branches' => $branches,
+            'groups' => $groups
+        ];
+        //echo 'test';
+        return response()->json($responseData);
+    }
+
+    public function userSave(Request $request){
+        $message = '';
+
+        $validator = Validator::make($request->all(), [
+            'full_name' => 'required',
+            'privilege' => 'required',
+            'login' => 'required',
+            'password' => 'required',
+            'repassword' => 'required|same:password',
+            'group_id' => 'required',
+            'branch_id' => 'required',
+            'employee_id' => 'required',
+            'collection_bureau' => 'required',
+            'email' => 'required|email|unique:system_users,email'
+        ]);
+
+        if ($validator->fails()) {
+            $messageType = 'wrong';
+            $message = $validator->errors()->all()[0];
+        } else {
+            $userData = [
+                'branch_id' => $request->branch_id,
+                'username' => $request->login,
+                'password' => md5($request->password), // Hashing password with MD5
+                'privilege' => $request->privilege,
+                'full_name' => $request->full_name,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'receipt_printer_id' => 1,
+                'employee_id' => $request->employee_id,
+                'group_id' => $request->group_id,
+                'is_debt_collect' => 0,
+                'collection_bureau_id' => $request->collection_bureau, // Fix field name to match database
+                'last_login_time' => now(),
+                'session_timeout' => $request->session_timeout,
+                'tfa_phone' => 0,
+                'tfa_email' => 0,
+                'status' => 1,
+                'created_by' => 1,
+            ];
+
+            SystemUsers::create($userData);
+            $messageType = 'success';
+            $message = 'User have been Added to Database Successfully..';
+        }
+
+        $responseData = [
+            'messageType' => $messageType,
+            'message' => $message
         ];
 
         return response()->json($responseData);
+        //echo 'test';
     }
+
+    public function userUpdate(Request $request){
+        echo 'Updated';
+        dd($request->user_id);
+    }
+
 
     public function fetchuserAll(Request $request) {
         //$systemUsers = SystemUsers::all();
