@@ -51,6 +51,7 @@
 <script src="{{ url('public/assets/js/myscript.js')}}"></script>
 
 <script>
+    $('#overlay').hide();
     WebFont.load({
       google: { families: ["Public Sans:300,400,500,600,700"] },
       custom: {
@@ -67,5 +68,5 @@
       },
     });
 
-    $('#overlay').hide();
+
   </script>

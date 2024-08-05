@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\dashboard\settings;
 
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\SystemMenus;
@@ -63,13 +64,45 @@ class SettingUsersController extends Controller
         echo 'success';
     }
 
+    public function userPrivilege(Request $request, $user_id){
+        $route = $route ?? 'index.settings';
+        $route = $route ?? 'home';
+        $data = session('data');
+
+        $mainMenus = SystemMenus::whereNull('parent_id')
+                                ->orderBy('order')
+                                ->get();
+        $subsMenus = SystemMenus::where('route',$route)
+                                ->orderBy('order')
+                                ->get();
+        foreach ($subsMenus as $submenu) {
+            $submenu->subMenus = $submenu->orderBy('order')->get();
+        }
+        foreach ($mainMenus as $menu) {
+            $menu->subMenus = $menu->children()->orderBy('order')->get();
+        }
+
+        $getRoutename = request()->route()->getName();
+        $routesPermissions = RoutesPermissions::where('route',$getRoutename)->orderBy('id')->get();
+        foreach ($routesPermissions as $routesPermission) {
+            $routesPermission = $routesPermission->orderBy('id')->get();
+        }
+
+        $remindersRoute = request()->route()->getName();
+        $parentid = 9;
+        $mainRouteName = 'index.settings';
+        //dd($mainMenus);
+        //echo 'test';
+        return view('pages.dashboard.settings.privilege', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions'));
+    }
+
     public function userEdit(Request $request, $user_id){
         $systemUsers = SystemUsers::find($request->user_id);
         $userPrivileges = UserPrivileges::all();
         $employees = Employees::all();
         $collectionBureaus = CollectionBureaus::all();
         $branches = Branches::all();
-        $groups = SystemUsers::select('group_id')
+        $usersGroups = SystemUsers::select('group_id')
                     ->distinct()
                     ->orderBy('id')
                     ->get();
@@ -81,9 +114,10 @@ class SettingUsersController extends Controller
         $responseData = [
             'systemUsers' => $systemUsers,
             'userPrivileges' => $userPrivileges,
+            'collectionBureaus' => $collectionBureaus,
             'userEmployees' => $employees,
             'branches' => $branches,
-            'groups' => $groups
+            'usersGroups' => $usersGroups
         ];
 
         return response()->json($responseData);
@@ -116,7 +150,7 @@ class SettingUsersController extends Controller
         $validator = Validator::make($request->all(), [
             'full_name' => 'required',
             'privilege' => 'required',
-            'login' => 'required',
+            'login' => 'required|unique:system_users,username',
             'password' => 'required',
             'repassword' => 'required|same:password',
             'group_id' => 'required',
@@ -148,12 +182,12 @@ class SettingUsersController extends Controller
                 'tfa_phone' => 0,
                 'tfa_email' => 0,
                 'status' => 1,
-                'created_by' => 1,
+                'created_by' => Auth::user()->id,
             ];
 
             SystemUsers::create($userData);
             $messageType = 'success';
-            $message = 'User have been Added to Database Successfully..';
+            $message = 'You have successfully Added the user data to the database..';
         }
 
         $responseData = [
@@ -165,9 +199,101 @@ class SettingUsersController extends Controller
         //echo 'test';
     }
 
-    public function userUpdate(Request $request){
-        echo 'Updated';
-        dd($request->user_id);
+    public function userUpdate(Request $request, $user_id){
+        $UserDatas = SystemUsers::find($request->form_user_id);
+        $oldpassword = $UserDatas['password'];
+        $message = '';
+        $messageType = '';
+
+        if(!empty($request->password) && !empty($request->repassword)){
+            $validator = Validator::make($request->all(), [
+                'full_name' => 'required',
+                'privilege' => 'required',
+                'login' => 'required',
+                'password' => 'required',
+                'repassword' => 'required|same:password',
+                'group_id' => 'required',
+                'branch_id' => 'required',
+                'employee_id' => 'required',
+                'collection_bureau' => 'required',
+                'email' => 'required'
+            ]);
+        }else{
+            $validator = Validator::make($request->all(), [
+                'full_name' => 'required',
+                'privilege' => 'required',
+                'login' => 'required',
+                'group_id' => 'required',
+                'branch_id' => 'required',
+                'employee_id' => 'required',
+                'collection_bureau' => 'required',
+                'email' => 'required'
+            ]);
+        }
+
+
+        if ($validator->fails()) {
+            $messageType = 'wrong';
+            $message = $validator->errors()->all()[0];
+        } else {
+            if(!empty($request->password) && !empty($request->repassword)){
+                $userData = [
+                    'branch_id' => $request->branch_id,
+                    'username' => $request->login,
+                    'password' => md5($request->password), // Hashing password with MD5
+                    'privilege' => $request->privilege,
+                    'full_name' => $request->full_name,
+                    'email' => $request->email,
+                    'phone' => $request->phone,
+                    'receipt_printer_id' => 1,
+                    'employee_id' => $request->employee_id,
+                    'group_id' => $request->group_id,
+                    'is_debt_collect' => 0,
+                    'collection_bureau_id' => $request->collection_bureau, // Fix field name to match database
+                    'last_login_time' => now(),
+                    'session_timeout' => $request->session_timeout,
+                    'tfa_phone' => 0,
+                    'tfa_email' => 0,
+                    'status' => 1,
+                    'created_by' => Auth::user()->id,
+                ];
+            }else{
+                $userData = [
+                    'branch_id' => $request->branch_id,
+                    'username' => $request->login,
+                    'password' => $oldpassword,
+                    'privilege' => $request->privilege,
+                    'full_name' => $request->full_name,
+                    'email' => $request->email,
+                    'phone' => $request->phone,
+                    'receipt_printer_id' => 1,
+                    'employee_id' => $request->employee_id,
+                    'group_id' => $request->group_id,
+                    'is_debt_collect' => 0,
+                    'collection_bureau_id' => $request->collection_bureau,
+                    'last_login_time' => now(),
+                    'session_timeout' => $request->session_timeout,
+                    'tfa_phone' => 0,
+                    'tfa_email' => 0,
+                    'status' => 1,
+                    'created_by' => Auth::user()->id,
+                ];
+            }
+
+            $UserDatas->update($userData);
+            $messageType = 'success';
+            $message = 'You have successfully updated the user data to the database..';
+        }
+
+        // $messageType = 'success';
+        // $message = 'You have successfully updated the user data to the database..';
+
+        $responseData = [
+            'messageType' => $messageType,
+            'message' => $message
+        ];
+
+        return response()->json($responseData);
     }
 
 
