@@ -4,7 +4,7 @@
 <div class="container">
     <div class="page-inner">
       <div class="page-header">
-        <h3 class="fw-bold mb-3 text-capitalize">Users</h3>
+        <h3 class="fw-bold mb-3 text-capitalize">Permissions</h3>
         <ul class="breadcrumbs mb-3">
           <li class="nav-home">
             <a href="{{ route('index.prepaid') }}">
@@ -15,7 +15,13 @@
             <i class="icon-arrow-right"></i>
           </li>
           <li class="nav-item text-capitalize">
-            <a href="#">Users</a>
+            <a href="{{ route('index.users') }}">Users</a>
+          </li>
+          <li class="separator">
+            <i class="icon-arrow-right"></i>
+          </li>
+          <li class="nav-item text-capitalize">
+            <a href="#">Permissions</a>
           </li>
         </ul>
       </div>
@@ -54,8 +60,63 @@
                             <div class="row">
                                 <div class="col-sm-12 col-lg-12">
                                     <br/>
+                                        <div class="panel text-right" style="padding-right:8px;">
+                                            <input type="checkbox" onclick="checkAllMenuPrivileges(this);"> Select All
+                                        </div>
+                                        {{-- {{ var_dump($mainMenus) }} --}}
 
 
+                                        <div class="accordion accordion-flush" id="accordionFlushExample">
+                                            @foreach ($mainMenus as $key => $mainMenu)
+                                              <div class="accordion-item mb-2">
+                                                <h2 class="accordion-header rounded">
+                                                  <div class="row justify-content-center">
+                                                     <div class="col-9 col-md-10">
+                                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse{{ $key }}" aria-expanded="false" aria-controls="flush-collapse{{ $key }}">{{ $mainMenu->name }}</button>
+                                                     </div>
+                                                     <div class="col-3 col-md-2">
+                                                        <div class="panel text-right" style="padding-right:8px;">
+                                                            <label class="text-capitalize">
+                                                               <input type="checkbox" id="{{ $mainMenu->id }}" onclick="checkAll(this);"/> Select All
+                                                            </label>
+                                                         </div>
+                                                     </div>
+                                                  </div>
+                                                </h2>
+                                                <div id="flush-collapse{{ $key }}" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+                                                  <div class="accordion-body">
+
+                                                    <div class="row">
+                                                        @if($mainMenu->subMenus->isNotEmpty())
+                                                            @foreach($mainMenu->subMenus as $key1 => $subMenu)
+                                                                <div class="col-6 col-md-3">
+                                                                    <a class="sub-item text-uppercase" href="#"><span class="sub-item">{{ $subMenu->name }}</span></a>
+                                                                    <ul class="permissions_types_list">
+                                                                        @php
+                                                                            $menuCountor = 1;
+                                                                        @endphp
+                                                                        @foreach ($permissionsTypes as $key2 => $permissionsType)
+                                                                            <li>
+                                                                                <a><div class="checkbox">
+                                                                                        <label class="text-uppercase">
+                                                                                            <input type="checkbox" name="{{ $permissionsType->permission_type }}[]" value="{{ $subMenu->id }}" id="{{ $subMenu->id }}_{{ $permissionsType->permission_type }}" class="sub_of_{{ $mainMenu->id }}"> {{ $permissionsType->permission_type }}
+                                                                                        </label>
+                                                                                    </div>
+                                                                                </a>
+                                                                            </li>
+                                                                        @endforeach
+                                                                    </ul>
+                                                                </div>
+                                                            @endforeach
+                                                        @endif
+                                                    </div>
+
+
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            @endforeach
+                                        </div>
                                 </div>
                             </div>
                         </div>
@@ -385,6 +446,12 @@
             }
         });
     });
+    function checkAllMenuPrivileges(element){
+        $('input:checkbox').prop('checked',element.checked);
+    }
+    function checkAll(element){
+        $('.sub_of_' + element.id).prop('checked',element.checked);
+    }
 
     // Swal.fire({
     //     title: "Do you want to delete this user",

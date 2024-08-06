@@ -162,3 +162,16 @@ small *, .small * {
 .card-body h1.text-uppercase {
     font-size: 18px;
 }
+.permissions_types_list{
+    list-style: none;
+}
+.accordion-header {
+    margin-bottom: 0;
+    background-color: #cfe2ff;
+    button{
+        background-color: transparent;
+        &::after{
+            display:none;
+        }
+    }
+}

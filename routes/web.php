@@ -284,7 +284,12 @@ Route::group(['prefix' => '/'], function () {
                 Route::get('/{user_id}/edit', [SettingUsersController::class, 'userEdit'])->name('users.edit');
                 Route::post('/{user_id}/update', [SettingUsersController::class, 'userUpdate'])->name('users.update');
                 Route::post('/saveRecord', [SettingUsersController::class, 'saveRecord'])->name('users.saveRecord');
-                Route::get('/{user_id}/privilege', [SettingUsersController::class, 'userPrivilege'])->name('users.privilege');
+
+                Route::group(['prefix' => 'privilege', 'middleware' => 'role:admin'], function () {
+                    Route::get('/', [SettingUsersController::class, 'indexPrivilege'])->name('index.privilege');
+                    Route::get('/{user_id}/user-privilege', [SettingUsersController::class, 'userPrivilege'])->name('users.privilege');
+                });
+
             });
 
             Route::get('/collection-bureaus', [CollectionBureausController::class, 'index'])->name('index.collectionbureaus');

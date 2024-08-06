@@ -11,6 +11,7 @@ use App\Models\SystemUsers;
 use App\Models\UserPrivileges;
 use App\Models\Employees;
 use App\Models\CollectionBureaus;
+use App\Models\PermissionsTypes;
 use App\Models\Branches;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
@@ -64,7 +65,7 @@ class SettingUsersController extends Controller
         echo 'success';
     }
 
-    public function userPrivilege(Request $request, $user_id){
+    public function indexPrivilege(Request $request){
         $route = $route ?? 'index.settings';
         $route = $route ?? 'home';
         $data = session('data');
@@ -75,6 +76,12 @@ class SettingUsersController extends Controller
         $subsMenus = SystemMenus::where('route',$route)
                                 ->orderBy('order')
                                 ->get();
+
+        $permissionsTypes = PermissionsTypes::all();
+        $currentUser = SystemUsers::find(Auth::user()->id);
+        $systemUsers = SystemUsers::all();
+        $routesPermissions = RoutesPermissions::all();
+
         foreach ($subsMenus as $submenu) {
             $submenu->subMenus = $submenu->orderBy('order')->get();
         }
@@ -93,7 +100,45 @@ class SettingUsersController extends Controller
         $mainRouteName = 'index.settings';
         //dd($mainMenus);
         //echo 'test';
-        return view('pages.dashboard.settings.privilege', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions'));
+        return view('pages.dashboard.settings.privilege', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','permissionsTypes','currentUser','systemUsers','routesPermissions'));
+    }
+
+    public function userPrivilege(Request $request, $user_id){
+        $route = $route ?? 'index.settings';
+        $route = $route ?? 'home';
+        $data = session('data');
+
+        $mainMenus = SystemMenus::whereNull('parent_id')
+                                ->orderBy('order')
+                                ->get();
+        $subsMenus = SystemMenus::where('route',$route)
+                                ->orderBy('order')
+                                ->get();
+
+        $permissionsTypes = PermissionsTypes::all();
+        $currentUser = SystemUsers::find(Auth::user()->id);
+        $systemUsers = SystemUsers::all();
+        $routesPermissions = RoutesPermissions::all();
+
+        foreach ($subsMenus as $submenu) {
+            $submenu->subMenus = $submenu->orderBy('order')->get();
+        }
+        foreach ($mainMenus as $menu) {
+            $menu->subMenus = $menu->children()->orderBy('order')->get();
+        }
+
+        $getRoutename = request()->route()->getName();
+        $routesPermissions = RoutesPermissions::where('route',$getRoutename)->orderBy('id')->get();
+        foreach ($routesPermissions as $routesPermission) {
+            $routesPermission = $routesPermission->orderBy('id')->get();
+        }
+
+        $remindersRoute = request()->route()->getName();
+        $parentid = 9;
+        $mainRouteName = 'index.settings';
+        //dd($mainMenus);
+        //echo 'test';
+        return view('pages.dashboard.settings.privilege', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','permissionsTypes','currentUser','systemUsers','routesPermissions'));
     }
 
     public function userEdit(Request $request, $user_id){
@@ -383,7 +428,7 @@ class SettingUsersController extends Controller
                                     <td style="vertical-align: middle;">'.$btnActivate.'</td>
 
                                     <td style="vertical-align: middle;">
-                                        <a href="#" title="Privileges">
+                                        <a href="'.route("users.privilege","$systemUser->id").'" title="Privileges">
                                             <button type="button" class="btn btn-xs btn-warning"><i class="fa fa-lock"></i></button>
                                         </a>
 
