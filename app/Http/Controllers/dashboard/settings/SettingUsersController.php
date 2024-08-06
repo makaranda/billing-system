@@ -66,41 +66,7 @@ class SettingUsersController extends Controller
     }
 
     public function indexPrivilege(Request $request){
-        $route = $route ?? 'index.settings';
-        $route = $route ?? 'home';
-        $data = session('data');
-
-        $mainMenus = SystemMenus::whereNull('parent_id')
-                                ->orderBy('order')
-                                ->get();
-        $subsMenus = SystemMenus::where('route',$route)
-                                ->orderBy('order')
-                                ->get();
-
-        $permissionsTypes = PermissionsTypes::all();
-        $currentUser = SystemUsers::find(Auth::user()->id);
-        $systemUsers = SystemUsers::all();
-        $routesPermissions = RoutesPermissions::all();
-
-        foreach ($subsMenus as $submenu) {
-            $submenu->subMenus = $submenu->orderBy('order')->get();
-        }
-        foreach ($mainMenus as $menu) {
-            $menu->subMenus = $menu->children()->orderBy('order')->get();
-        }
-
-        $getRoutename = request()->route()->getName();
-        $routesPermissions = RoutesPermissions::where('route',$getRoutename)->orderBy('id')->get();
-        foreach ($routesPermissions as $routesPermission) {
-            $routesPermission = $routesPermission->orderBy('id')->get();
-        }
-
-        $remindersRoute = request()->route()->getName();
-        $parentid = 9;
-        $mainRouteName = 'index.settings';
-        //dd($mainMenus);
-        //echo 'test';
-        return view('pages.dashboard.settings.privilege', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','permissionsTypes','currentUser','systemUsers','routesPermissions'));
+        return redirect()->route('index.users');
     }
 
     public function userPrivilege(Request $request, $user_id){
@@ -139,6 +105,45 @@ class SettingUsersController extends Controller
         //dd($mainMenus);
         //echo 'test';
         return view('pages.dashboard.settings.privilege', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','permissionsTypes','currentUser','systemUsers','routesPermissions'));
+    }
+
+    public function userBulkPrivilege(Request $request){
+        $route = $route ?? 'index.settings';
+        $route = $route ?? 'home';
+        $data = session('data');
+
+        $mainMenus = SystemMenus::whereNull('parent_id')
+                                ->orderBy('order')
+                                ->get();
+        $subsMenus = SystemMenus::where('route',$route)
+                                ->orderBy('order')
+                                ->get();
+
+        $permissionsTypes = PermissionsTypes::all();
+        $currentUser = SystemUsers::find(Auth::user()->id);
+        $systemUsers = SystemUsers::all();
+        $routesPermissions = RoutesPermissions::all();
+
+        foreach ($subsMenus as $submenu) {
+            $submenu->subMenus = $submenu->orderBy('order')->get();
+        }
+        foreach ($mainMenus as $menu) {
+            $menu->subMenus = $menu->children()->orderBy('order')->get();
+        }
+
+        $getRoutename = request()->route()->getName();
+        $routesPermissions = RoutesPermissions::where('route',$getRoutename)->orderBy('id')->get();
+        foreach ($routesPermissions as $routesPermission) {
+            $routesPermission = $routesPermission->orderBy('id')->get();
+        }
+
+        $remindersRoute = request()->route()->getName();
+        $parentid = 9;
+        $mainRouteName = 'index.settings';
+        $bulkUsers = $request->bulk_users;
+        //dd($mainMenus);
+        //echo 'test';
+        return view('pages.dashboard.settings.privilege', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','permissionsTypes','currentUser','systemUsers','routesPermissions','bulkUsers'));
     }
 
     public function userEdit(Request $request, $user_id){
@@ -366,15 +371,6 @@ class SettingUsersController extends Controller
         //}
 
         $systemUsers = $query->get();
-
-        $print_btn = '<a href="ajax/users/excel.php" target="_blank"><button style="margin:2px;" class="btn btn-success btn-xs pull-right">
-                                <span class="glyphicon glyphicon-save-file"></span> Excel
-                        </button> </a>
-                        <a href="ajax/users/pdf.php" target="_blank"><button style="margin:2px;" class="btn btn-danger btn-xs pull-right">
-                                <span class="glyphicon glyphicon-save-file"></span> Pdf
-                        </button> </a>
-                        <br/>';
-
 
         $responses = '';
 

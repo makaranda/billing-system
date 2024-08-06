@@ -74,15 +74,15 @@
                                         <div class="col-md-12">
                                             <div class="card">
                                                 <div class="card-header">
-
-                                                    <a class="btn btn-default btn-xs pull-right addNewUser" data-bs-toggle="modal" data-bs-target="#addUserModal" role="button">
+                                                    <input type="hidden" name="permissions_users_List" id="permissions_users_List"/>
+                                                    <a class="btn btn-default btn-xs pull-right addNewUser ml-1" data-bs-toggle="modal" data-bs-target="#addUserModal" role="button">
                                                     <span class="fa fa-plus"></span> ADD NEW USER
                                                     </a>
-                                                    <button type="button" id="remove_selected" class="btn btn-xs btn-danger pull-right" style="display:none; margin:0px 1px;">
+                                                    <button type="button" id="remove_selected" class="btn btn-xs btn-danger pull-right d-block ml-1">
                                                         <span class="glyphicon glyphicon-plus"></span>
                                                         Remove Rights (Bulk)
                                                     </button>
-                                                    <button type="button" id="apply_selected" class="btn btn-xs btn-info pull-right" style="display:none; margin:0px 1px;">
+                                                    <button type="button" id="apply_selected" class="btn btn-xs btn-info pull-right b-block ml-1">
                                                         <span class="glyphicon glyphicon-plus"></span>
                                                         Assign Rights (Bulk)
                                                     </button>
@@ -368,6 +368,8 @@
 
 @push('scripts')
     <script>
+
+    $('#overlay').hide();
     $(function () {
         $("#datepicker").datepicker({
             autoclose: true
@@ -386,7 +388,32 @@
         titleFormat: "MM yyyy" /* Leverages same syntax as 'format' */,
         weekStart: 0,
     };
-    //$('.searchable').select2();
+
+    $(document).on('click','.chk_user',function(){
+        updateHiddenInput();
+    });
+
+    function updateHiddenInput() {
+        const checkboxes = document.querySelectorAll('.chk_user');
+        const checkedValues = [];
+        checkboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                checkedValues.push(checkbox.value);
+            }
+        });
+        document.getElementById('permissions_users_List').value = checkedValues.join(',');
+    }
+    document.querySelectorAll('.chk_user').forEach(checkbox => {
+        checkbox.addEventListener('change', updateHiddenInput);
+    });
+
+    //remove_selected  apply_selected
+    $(document).on('click','#apply_selected',function(){
+        $('#overlay').show();
+        const permissionsUsersList = $('#permissions_users_List').val();
+        //alert();
+        $.redirect("{{ route('users.bulkprivilege') }}", {bulk_users: permissionsUsersList, _token: '{{ csrf_token() }}'}, "POST", "_self");
+    });
 
     listUsers();
 

@@ -288,6 +288,7 @@ Route::group(['prefix' => '/'], function () {
                 Route::group(['prefix' => 'privilege', 'middleware' => 'role:admin'], function () {
                     Route::get('/', [SettingUsersController::class, 'indexPrivilege'])->name('index.privilege');
                     Route::get('/{user_id}/user-privilege', [SettingUsersController::class, 'userPrivilege'])->name('users.privilege');
+                    Route::post('/user-privilege', [SettingUsersController::class, 'userBulkPrivilege'])->name('users.bulkprivilege');
                 });
 
             });
