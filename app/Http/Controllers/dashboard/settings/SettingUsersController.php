@@ -16,6 +16,7 @@ use App\Models\Branches;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 //use Illuminate\Support\Facades\MD5;
 
 class SettingUsersController extends Controller
@@ -94,7 +95,7 @@ class SettingUsersController extends Controller
         }
 
         $getRoutename = request()->route()->getName();
-        $routesPermissions = RoutesPermissions::where('route',$getRoutename)->orderBy('id')->get();
+        $routesPermissions = RoutesPermissions::where('user_id',Auth::user()->id)->orderBy('id')->get();
         foreach ($routesPermissions as $routesPermission) {
             $routesPermission = $routesPermission->orderBy('id')->get();
         }
@@ -102,12 +103,19 @@ class SettingUsersController extends Controller
         $remindersRoute = request()->route()->getName();
         $parentid = 9;
         $mainRouteName = 'index.settings';
+        $permissionType = '';
+        $bulkUsers = '';
         //dd($mainMenus);
         //echo 'test';
-        return view('pages.dashboard.settings.privilege', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','permissionsTypes','currentUser','systemUsers','routesPermissions'));
+        return view('pages.dashboard.settings.privilege', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','permissionsTypes','currentUser','systemUsers','routesPermissions','bulkUsers','permissionType'));
     }
 
     public function userBulkPrivilege(Request $request){
+        // Check if 'bulk_users' input is present in the request
+        if (!$request->isMethod('post') || !$request->has('bulk_users')) {
+            return redirect()->route('index.users');
+        }
+
         $route = $route ?? 'index.settings';
         $route = $route ?? 'home';
         $data = session('data');
@@ -132,7 +140,7 @@ class SettingUsersController extends Controller
         }
 
         $getRoutename = request()->route()->getName();
-        $routesPermissions = RoutesPermissions::where('route',$getRoutename)->orderBy('id')->get();
+        $routesPermissions = RoutesPermissions::where('user_id',Auth::user()->id)->orderBy('id')->get();
         foreach ($routesPermissions as $routesPermission) {
             $routesPermission = $routesPermission->orderBy('id')->get();
         }
@@ -141,9 +149,64 @@ class SettingUsersController extends Controller
         $parentid = 9;
         $mainRouteName = 'index.settings';
         $bulkUsers = $request->bulk_users;
-        //dd($mainMenus);
-        //echo 'test';
-        return view('pages.dashboard.settings.privilege', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','permissionsTypes','currentUser','systemUsers','routesPermissions','bulkUsers'));
+        $permissionType = $request->permission_type;
+
+        return view('pages.dashboard.settings.privilege', compact('mainMenus', 'subsMenus', 'data', 'mainRouteName', 'remindersRoute', 'parentid', 'routesPermissions', 'permissionsTypes', 'currentUser', 'systemUsers', 'routesPermissions', 'bulkUsers','permissionType'));
+    }
+
+    public function userPrivilegeSave(Request $request){
+        // permissionsUsersList
+        // permissionType
+        // permissions
+        //print_r($request->permissions);
+        // Example dataset string
+        //$dataset = "9/78/read,9/78/create";
+        $dataset = $request->permissions;
+        $datasetUsers = $request->permissionsUsersList;
+        $records = explode(',', $dataset);
+        $recordsUsers = explode(',', $datasetUsers);
+
+        $routesData = [];
+
+        foreach ($records as $record) {
+            //list($main_menu_id, $sub_menu_id, $permission_type) = explode('/', $record);
+            $main_menu_id = explode('/', $record)[0];
+            $sub_menu_id = explode('/', $record)[1];
+            $permission_type = explode('/', $record)[2];
+
+            $mainMenu = SystemMenus::find($main_menu_id);
+            $subMenu = SystemMenus::find($sub_menu_id);
+
+            foreach($recordsUsers as $recordsUser){
+                $systemUsers = SystemUsers::find($recordsUser);
+
+                if ($mainMenu && $subMenu) {
+                    $routesData[] = [
+                        'user_id' => $systemUsers->id,
+                        'main_route' => $mainMenu->route,
+                        'route' => $subMenu->route,
+                        'userType' => $systemUsers->privilege,
+                        'permission_type' => $permission_type
+                    ];
+                }
+            }
+
+        }
+        RoutesPermissions::insert($routesData);
+
+        // Perform bulk insert
+        //try {
+            //RoutesPermissions::insert($routesData);
+        //} catch (\Exception $e) {
+            //Log::error('Error inserting routes permissions', ['error' => $e->getMessage()]);
+            //return response()->json(['message' => 'Error saving routes'], 500);
+        //}
+
+        // Return a response or redirect as needed
+        //return response()->json(['message' => 'Routes saved successfully']);
+
+        //return response()->json(['message' => 'Routes saved successfully']);
+
     }
 
     public function userEdit(Request $request, $user_id){

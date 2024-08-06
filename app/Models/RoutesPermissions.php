@@ -9,18 +9,13 @@ class RoutesPermissions extends Model
 {
     use HasFactory;
 
+    protected $table = 'routes_permissions';
     protected $fillable = [
+        'user_id',
         'main_route',
-        'admin',
-        'user',
-        'show',
-        'add',
-        'edit',
-        'delete',
-        'report',
-        'print',
-        'send',
-        'other',
+        'route',
+        'userType',
+        'permission_type',
     ];
 }
 

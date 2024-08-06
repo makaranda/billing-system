@@ -59,20 +59,21 @@
                             </div>
                             <div class="row">
                                 <div class="col-sm-12 col-lg-12">
-                                    <br/>
                                         <div class="panel text-right" style="padding-right:8px;">
                                             <input type="checkbox" onclick="checkAllMenuPrivileges(this);"> Select All
                                         </div>
                                         {{-- {{ var_dump($mainMenus) }} --}}
 
-
+                                        <input type="hidden" name="permissionsUsersList" id="permissionsUsersList" value="{{ ($bulkUsers != '')?$bulkUsers:$bulkUsers }}"/>
+                                        <input type="hidden" name="permissionType" id="permissionType" value="{{ ($permissionType != '')?$permissionType:'' }}"/>
+                                        <input type="hidden" name="permissions" id="permissions" value=""/>
                                         <div class="accordion accordion-flush" id="accordionFlushExample">
                                             @foreach ($mainMenus as $key => $mainMenu)
                                               <div class="accordion-item mb-2 border">
                                                 <h2 class="accordion-header rounded">
                                                   <div class="row justify-content-center">
-                                                     <div class="col-9 col-md-10">
-                                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse{{ $key }}" aria-expanded="false" aria-controls="flush-collapse{{ $key }}">{{ $mainMenu->name }}</button>
+                                                     <div class="col-9 col-md-10 align-content-center">
+                                                        <button class="accordion-button collapsed pl-4" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse{{ $key }}" aria-expanded="false" aria-controls="flush-collapse{{ $key }}">{{ $mainMenu->name }}</button>
                                                      </div>
                                                      <div class="col-3 col-md-2">
                                                         <div class="panel text-right" style="padding-right:8px;">
@@ -95,15 +96,35 @@
                                                                         @php
                                                                             $menuCountor = 1;
                                                                         @endphp
+
                                                                         @foreach ($permissionsTypes as $key2 => $permissionsType)
-                                                                            <li>
-                                                                                <a><div class="checkbox">
-                                                                                        <label class="text-uppercase">
-                                                                                            <input type="checkbox" name="{{ $permissionsType->permission_type }}[]" value="{{ $subMenu->id }}" id="{{ $subMenu->id }}_{{ $permissionsType->permission_type }}" class="sub_of_{{ $mainMenu->id }}"> {{ $permissionsType->permission_type }}
-                                                                                        </label>
-                                                                                    </div>
-                                                                                </a>
-                                                                            </li>
+                                                                            @foreach ($routesPermissions as $routesPermission)
+                                                                                @php
+                                                                                    $checkedNot = ($routesPermission->route == $subMenu->route)?'checked':'';
+                                                                                @endphp
+                                                                                @if ($checkedNot == 'checked')
+
+                                                                                <li>
+                                                                                    <a><div class="checkbox">
+                                                                                            <label class="text-uppercase">
+                                                                                                <input type="checkbox" name="{{ $permissionsType->permission_type }}[]" value="{{ $mainMenu->id.'/'.$subMenu->id.'/'.$permissionsType->permission_type }}" id="{{ $subMenu->id }}_{{ $permissionsType->permission_type }}" class="chk_user sub_of_{{ $mainMenu->id }}" {{ $checkedNot }}/>
+                                                                                                 {{ $permissionsType->permission_type }}
+                                                                                            </label>
+                                                                                        </div>
+                                                                                    </a>
+                                                                                </li>
+                                                                                @endif
+                                                                                @endforeach
+
+                                                                                <li>
+                                                                                    <a><div class="checkbox">
+                                                                                            <label class="text-uppercase">
+                                                                                                <input type="checkbox" name="{{ $permissionsType->permission_type }}[]" value="{{ $mainMenu->id.'/'.$subMenu->id.'/'.$permissionsType->permission_type }}" id="{{ $subMenu->id }}_{{ $permissionsType->permission_type }}" class="chk_user sub_of_{{ $mainMenu->id }}"/>
+                                                                                                 {{ $permissionsType->permission_type }}
+                                                                                            </label>
+                                                                                        </div>
+                                                                                    </a>
+                                                                                </li>
                                                                         @endforeach
                                                                     </ul>
                                                                 </div>
@@ -117,6 +138,9 @@
                                               </div>
                                             @endforeach
                                         </div>
+                                        <div class="col-md-12 text-center mt-4">
+											<button type="button" class="btn btn-primary" id="save_permission">	SAVE USER MENU PERMISSIONS</button>
+										</div>
                                 </div>
                             </div>
                         </div>
@@ -166,55 +190,43 @@
     };
     //$('.searchable').select2();
 
-    $(document).on('click','#apply_selected',function(){
+    $(document).on('click','.chk_user',function(){
+        updateHiddenInput();
+    });
+
+    function updateHiddenInput() {
+        const checkboxes = document.querySelectorAll('.chk_user');
+        const checkedValues = [];
+        checkboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                checkedValues.push(checkbox.value);
+            }
+        });
+        document.getElementById('permissions').value = checkedValues.join(',');
+    }
+    document.querySelectorAll('.chk_user').forEach(checkbox => {
+        checkbox.addEventListener('change', updateHiddenInput);
+    });
+
+    $(document).on('click','#save_permission',function(){
         $('#overlay').show();
-        $('#form_type').val('users.save');
+        const permissionsUsersList = $('#permissionsUsersList').val();
+        const permissionType = $('#permissionType').val();
+        const permissions = $('#permissions').val();
         //alert();
         $.ajax({
-            url: '{{ route('users.form') }}',
+            url: '{{ route('privileges.save') }}',
             cache: false,
-            method: 'GET',
-            dataType: 'json',
-            data: {_token: '{{ csrf_token() }}','action':'formUser'},
+            method: 'POST',
+            //dataType: 'json',
+            data: {_token: '{{ csrf_token() }}','action':'formUser','permissionsUsersList':permissionsUsersList,'permissionType':permissionType,'permissions':permissions},
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') // Ensure you include the CSRF token
+            },
             success: function(response){
                 //alert(response);
-                console.log(response);
                 $('#overlay').hide();
-
-                    var privilegeDropdown = $('#privilege');
-                    privilegeDropdown.empty();
-                    privilegeDropdown.append('<option value="">- SELECT PRIVILEGE -</option>');
-                    $.each(response.userPrivileges, function(index, privilege) {
-                        privilegeDropdown.append('<option value="'+privilege.id+'">'+privilege.name+'</option>');
-                    });
-
-                    var employeesDropdown = $('#employee_id');
-                    employeesDropdown.empty();
-                    employeesDropdown.append('<option value="">- SELECT EMPLOYEE -</option>');
-                    $.each(response.userEmployees, function(index, employee) {
-                        employeesDropdown.append('<option value="'+employee.emp_id+'">'+employee.emp_name+'</option>');
-                    });
-
-                    var branchesDropdown = $('#branch_id');
-                    branchesDropdown.empty();
-                    branchesDropdown.append('<option value="">- SELECT BRANCH -</option>');
-                    $.each(response.branches, function(index, branche) {
-                        branchesDropdown.append('<option value="'+branche.id+'">'+branche.name+'</option>');
-                    });
-
-                    var collectionBureauDropdown = $('#collection_bureau');
-                    collectionBureauDropdown.empty();
-                    collectionBureauDropdown.append('<option value="">- SELECT COLLECTION BUREAU -</option>');
-                    $.each(response.collectionBureaus, function(index, collectionBureau) {
-                        collectionBureauDropdown.append('<option value="'+collectionBureau.id+'">'+collectionBureau.name+'</option>');
-                    });
-
-                    var groupsDropdown = $('#group_id');
-                    groupsDropdown.empty();
-                    groupsDropdown.append('<option value="">- SELECT GROUP -</option>');
-                    $.each(response.groups, function(index, group) {
-                        groupsDropdown.append('<option value="'+group.id+'">'+group.group_id+'</option>');
-                    });
+                console.log(response);
 
             },
             error: function (errors) {
@@ -225,9 +237,11 @@
 
     function checkAllMenuPrivileges(element){
         $('input:checkbox').prop('checked',element.checked);
+        updateHiddenInput();
     }
     function checkAll(element){
         $('.sub_of_' + element.id).prop('checked',element.checked);
+        updateHiddenInput();
     }
 
     // Swal.fire({

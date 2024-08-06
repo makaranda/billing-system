@@ -78,11 +78,11 @@
                                                     <a class="btn btn-default btn-xs pull-right addNewUser ml-1" data-bs-toggle="modal" data-bs-target="#addUserModal" role="button">
                                                     <span class="fa fa-plus"></span> ADD NEW USER
                                                     </a>
-                                                    <button type="button" id="remove_selected" class="btn btn-xs btn-danger pull-right d-block ml-1">
+                                                    <button type="button" id="remove_selected" class="btn btn-xs btn-danger pull-right ml-1" style="display: none;">
                                                         <span class="glyphicon glyphicon-plus"></span>
                                                         Remove Rights (Bulk)
                                                     </button>
-                                                    <button type="button" id="apply_selected" class="btn btn-xs btn-info pull-right b-block ml-1">
+                                                    <button type="button" id="apply_selected" class="btn btn-xs btn-info pull-right ml-1" style="display: none;">
                                                         <span class="glyphicon glyphicon-plus"></span>
                                                         Assign Rights (Bulk)
                                                     </button>
@@ -412,7 +412,18 @@
         $('#overlay').show();
         const permissionsUsersList = $('#permissions_users_List').val();
         //alert();
-        $.redirect("{{ route('users.bulkprivilege') }}", {bulk_users: permissionsUsersList, _token: '{{ csrf_token() }}'}, "POST", "_self");
+        if(permissionsUsersList == ''){
+            Swal.fire({
+                position: "bottom-end",
+                icon: "error",
+                title: "First You must select one or more users from this table..!!",
+                showConfirmButton: false,
+                timer: 3500
+            });
+        }else{
+            $.redirect("{{ route('users.bulkprivilege') }}", {bulk_users: permissionsUsersList,'permission_type': 'apply', _token: '{{ csrf_token() }}'}, "POST", "_self");
+        }
+        $('#overlay').hide();
     });
 
     listUsers();
