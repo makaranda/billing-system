@@ -44,6 +44,7 @@
                             $hasPermission = $getAllRoutePermisssions->contains(function ($permission) use ($mainMenu) {
                                 return $permission->user_id == Auth::user()->id && $permission->main_route == $mainMenu->route;
                             });
+                            //var_dump($hasPermission);
                         @endphp
                         <li class="nav-item {{ request()->routeIs($mainMenu->route) ? 'active' : '' }}">
                         @if($hasPermission)
@@ -123,6 +124,52 @@
                        </ul>
                    </div>
                </li>
+               {{-- {{ var_dump($subsMenus) }} --}}
+               @foreach($mainMenus as $key => $mainMenu)
+                    @php
+                        // Check if the user has permission for this main menu
+                        $hasPermission = $getAllRoutePermisssions->contains(function ($permission) use ($mainMenu) {
+                                return $permission->user_id == Auth::user()->id && $permission->main_route == $mainMenu->route;
+                            });
+
+                    @endphp
+                    @if($hasPermission)
+                        <li class="nav-item {{ request()->routeIs($mainMenu->route) ? 'active' : '' }}">
+                            @if($mainMenu->subMenus->isNotEmpty())
+                                @php
+                                    // Check if the current route matches any of the submenus
+                                    $currentMainRouteActive = $mainMenu->subMenus->contains(function ($subMenu) {
+                                        return request()->routeIs($subMenu->route);
+                                    });
+                                @endphp
+
+                                @if($currentMainRouteActive)
+                                    <div class="">
+                                        <ul class="nav nav-lists mt-0">
+                                            @foreach($mainMenu->subMenus as $subMenu)
+                                                @php
+                                                    $subMenuRoute = $subMenu->route;
+                                                    // Check if the user's routesPermissions contains the submenu route
+                                                    $hasPermission2 = $getAllRoutePermisssions->contains(function ($permission) use ($subMenuRoute) {
+                                                        return $permission->user_id == Auth::user()->id && $permission->route == $subMenuRoute;
+                                                    });
+                                                @endphp
+
+                                                @if ($hasPermission2)
+                                                    <li class="nav-list">
+                                                        <a class="sub-item text-uppercase" href="{{ route($subMenu->route) }}">
+                                                            <span class="sub-item">{{ $subMenu->name }}</span>
+                                                        </a>
+                                                    </li>
+                                                @endif
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                @endif
+                            @endif
+                        </li>
+                    @endif
+                @endforeach
             @endif
             @endif
           </ul>

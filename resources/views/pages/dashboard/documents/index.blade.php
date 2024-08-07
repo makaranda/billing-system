@@ -47,20 +47,34 @@
                                 </div>
                                 {{-- {{ var_dump($routesPermissions) }} --}}
                                 @if ($mainMenus)
+                                @foreach($mainMenus as $key => $mainMenu)
+                                    @php
+                                        // Check if the user has permission for this main menu
+                                        $hasPermission = $getAllRoutePermisssions->contains(function ($permission) use ($mainMenu) {
+                                            return $permission->user_id == Auth::user()->id && $permission->main_route == $mainMenu->route;
+                                        });
+                                    @endphp
 
-                                    @foreach($mainMenus as $key => $mainMenu)
-
-                                        @if(request()->routeIs($mainMenu->route))
-                                            @if($mainMenu->subMenus->isNotEmpty())
-                                                @foreach($mainMenu->subMenus as $subMenu)
+                                    @if($hasPermission)
+                                        @if(request()->routeIs($mainMenu->route) && $mainMenu->subMenus->isNotEmpty())
+                                            @foreach($mainMenu->subMenus as $subMenu)
+                                                @php
+                                                    $subMenuRoute = $subMenu->route;
+                                                    // Check if the user's routesPermissions contains the main route
+                                                    $hasPermission2 = $getAllRoutePermisssions->contains('route', $subMenuRoute);
+                                                @endphp
+                                                @if ($hasPermission2)
                                                     <div class="col-12 col-md-6 mt-3">
-                                                        <a href="{{ route($subMenu->route) }}" class="btn btn-outline-primary w-100 text-left text-uppercase"><i class="bi bi-chevron-right"></i> {{ $subMenu->name }}</a>
+                                                        <a href="{{ route($subMenu->route) }}" class="btn btn-outline-primary w-100 text-left text-uppercase">
+                                                            <i class="bi bi-chevron-right"></i> {{ $subMenu->name }}
+                                                        </a>
                                                     </div>
-                                                @endforeach
-                                            @endif
+                                                @endif
+                                            @endforeach
                                         @endif
-                                    @endforeach
-                                @endif
+                                    @endif
+                                @endforeach
+                            @endif
 
                             </div>
                         </div>

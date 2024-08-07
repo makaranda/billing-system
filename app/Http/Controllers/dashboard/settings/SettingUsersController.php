@@ -530,6 +530,7 @@ class SettingUsersController extends Controller
     public function fetchuserAll(Request $request) {
         //$systemUsers = SystemUsers::all();
         $query = SystemUsers::query();
+        $getAllRoutePermisssions = RoutesPermissions::all();
 
         if ($request->has('name') && $request->name != '') {
             $query->where('full_name', 'LIKE', '%' . $request->name . '%');
@@ -581,16 +582,54 @@ class SettingUsersController extends Controller
             $i=1;
             foreach ($systemUsers as $systemUser) {
                 //$userPrivileges = UserPrivileges::find($systemUser->privilege);
-                $btnActivate = ($systemUser->status == 1)? 'Active':'Inactive';
+                $btnActivateType = ($systemUser->status == 1)? 'Active':'Inactive';
 
-                if($systemUser->status == 1){
-                    $activeInactivebtn = '<a><button type="button" class="btn btn-xs btn-danger userActivete" data-id="'.$systemUser->id.'" data-status="'.$systemUser->status.'" title="Disable">
-                                            <i class="bi bi-x"></i>
-                                        </button><a>';
-                }else{
-                    $activeInactivebtn = '<a><button type="button" class="btn btn-xs btn-success userActivete" data-id="'.$systemUser->id.'" data-status="'.$systemUser->status.'" title="Enable">
-                                        <i class="bi bi-arrow-repeat"></i>
-                                        </button></a>';
+                $getAllRoutePermisssions = RoutesPermissions::where('user_id', Auth::user()->id)->get();
+
+                $currentRoute = request()->route()->getName();
+
+                $canDelete = $getAllRoutePermisssions->contains(function ($permission) use ($currentRoute) {
+                    return $permission->permission_type == 'delete';
+                });
+
+                $canPrivilege = $getAllRoutePermisssions->contains(function ($permission) use ($currentRoute) {
+                    return $permission->permission_type == 'privilege';
+                });
+
+                $canEdit = $getAllRoutePermisssions->contains(function ($permission) use ($currentRoute) {
+                    return $permission->permission_type == 'update';
+                });
+
+                if ($canDelete) {
+                    if($systemUser->status == 1){
+                        $activeInactivebtn = '<a><button type="button" class="btn btn-xs btn-danger userActivete" data-id="'.$systemUser->id.'" data-status="'.$systemUser->status.'" title="Disable">
+                                                <i class="bi bi-x"></i>
+                                            </button><a>';
+                    }else{
+                        $activeInactivebtn = '<a><button type="button" class="btn btn-xs btn-success userActivete" data-id="'.$systemUser->id.'" data-status="'.$systemUser->status.'" title="Enable">
+                                            <i class="bi bi-arrow-repeat"></i>
+                                            </button></a>';
+                    }
+                }
+                //$btnActivate = '';
+                if ($canDelete) {
+                    $btnActivate = '<a><button type="button" class="btn btn-xs btn-success userActivete" data-id="'.$systemUser->id.'" data-status="'.$systemUser->status.'" title="Enable"><i class="bi bi-arrow-repeat"></i></button></a>';
+                }
+
+                $editButton = '';
+                if ($canEdit) {
+                    $editButton = '<a>
+                                    <button type="button" class="btn btn-xs btn-info userEditBtn" data-id="'.$systemUser->id.'" data-bs-toggle="modal" data-bs-target="#addUserModal" role="button" title="Edit">
+                                                <i class="bi bi-pen"></i>
+                                            </button>
+                                        </a>';
+                }
+
+                $privilegeButton = '';
+                if ($canPrivilege) {
+                    $privilegeButton = '<a href="'.route("users.privilege","$systemUser->id").'" title="Privileges">
+                                            <button type="button" class="btn btn-xs btn-warning"><i class="fa fa-lock"></i></button>
+                                        </a>';
                 }
 
                 $responses .= '<tr>
@@ -599,21 +638,15 @@ class SettingUsersController extends Controller
                                     <td style="vertical-align: middle;">'.$systemUser->group_id.'</td>
                                     <td style="vertical-align: middle;"></td>
                                     <td style="vertical-align: middle;">'.$systemUser->full_name.'</td>
-                                    <td style="vertical-align: middle;">'.$systemUser->email.'</td>
+                                    <td style="vertical-align: middle;">'.$systemUser->email.'|'.$currentRoute.'</td>
                                     <td style="vertical-align: middle;">'.$systemUser->phone.'</td>
-                                    <td style="vertical-align: middle;">'.$btnActivate.'</td>
+                                    <td style="vertical-align: middle;">'.$btnActivateType.'</td>
 
                                     <td style="vertical-align: middle;">
-                                        <a href="'.route("users.privilege","$systemUser->id").'" title="Privileges">
-                                            <button type="button" class="btn btn-xs btn-warning"><i class="fa fa-lock"></i></button>
-                                        </a>
-
-                                        <a>
-                                            <button type="button" class="btn btn-xs btn-info userEditBtn" data-id="'.$systemUser->id.'" data-bs-toggle="modal" data-bs-target="#addUserModal" role="button" title="Edit">
-                                                <i class="bi bi-pen"></i>
-                                            </button>
-                                        </a>
+                                        '.$privilegeButton.'
+                                        '.$editButton.'
                                         '.$activeInactivebtn.'
+
                                     </td>
                                 </tr>';
             }
