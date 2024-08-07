@@ -38,6 +38,39 @@
                     {{-- {{ var_dump($subMenus) }} --}}
 
                 @if ($mainMenus)
+                    @foreach($mainMenus as $key => $mainMenu)
+                        @php
+                            // Check if the user has permission for this main menu
+                            $hasPermission = $getAllRoutePermisssions->contains(function ($permission) use ($mainMenu) {
+                                return $permission->user_id == Auth::user()->id && $permission->main_route == $mainMenu->route;
+                            });
+                        @endphp
+                        <li class="nav-item {{ request()->routeIs($mainMenu->route) ? 'active' : '' }}">
+                        @if($hasPermission)
+                            @if(request()->routeIs($mainMenu->route) && $mainMenu->subMenus->isNotEmpty())
+                            <div class="">
+                                <ul class="nav nav-lists mt-0">
+                                @foreach($mainMenu->subMenus as $subMenu)
+                                    @php
+                                        $subMenuRoute = $subMenu->route;
+                                        // Check if the user's routesPermissions contains the main route
+                                        $hasPermission2 = $getAllRoutePermisssions->contains('route', $subMenuRoute);
+                                    @endphp
+
+                                    @if ($hasPermission2)
+                                        <li class="nav-list">
+                                            <a class="sub-item text-uppercase" href="{{ route($subMenu->route) }}"><span class="sub-item">{{ $subMenu->name }}</span></a>
+                                        </li>
+                                    @endif
+                                @endforeach
+                                </ul>
+                            </div>
+                            @endif
+                        @endif
+                        </li>
+                    @endforeach
+                @endif
+                {{-- @if ($mainMenus)
 
                     @foreach($mainMenus as $key => $mainMenu)
 
@@ -59,7 +92,7 @@
                         @endif
                     @endforeach
 
-                @endif
+                @endif --}}
                {{-- {{ var_dump($subsMenus) }} --}}
 
                @if(isset($subsMenus))
@@ -80,7 +113,7 @@
                                        @if ($hasPermission)
                                            <li class="nav-list {{ $subsMenu->name }} {{ request()->routeIs($subsRoutes) ? 'active' : '' }}">
                                                <a class="sub-item text-uppercase" href="{{ route($subM->route) }}">
-                                                   <span class="sub-item">{{ $subM->name }}</span>
+                                                   <span class="sub-item">aa {{ $subM->name }}</span>
                                                </a>
                                            </li>
                                        @endif
@@ -132,6 +165,7 @@
                     {{-- {{ print_r($routesPermissions) }} --}}
                     @if(Auth::user()->privilege === 1)
                         {{-- {{ request()->route()->getName() }} --}}
+
                         @if ($mainMenus)
                             @php
                                 $menuCounts = 0;

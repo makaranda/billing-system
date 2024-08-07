@@ -27,11 +27,12 @@ class AdminDashboardController extends Controller
 
         $getRoutename = request()->route()->getName();
         $routesPermissions = RoutesPermissions::where('route',$getRoutename)->orderBy('id')->get();
+        $getAllRoutePermisssions = RoutesPermissions::all();
         foreach ($routesPermissions as $routesPermission) {
             $routesPermission = $routesPermission->orderBy('id')->get();
         }
         $mainRouteName = 'index.dashboard';
-        return view('pages.dashboard.dashboard', compact('mainMenus', 'data','routesPermissions','mainRouteName'));
+        return view('pages.dashboard.dashboard', compact('mainMenus', 'data','routesPermissions','mainRouteName','getAllRoutePermisssions'));
     }
 
 
