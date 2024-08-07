@@ -587,19 +587,20 @@ class SettingUsersController extends Controller
                 $getAllRoutePermisssions = RoutesPermissions::where('user_id', Auth::user()->id)->get();
 
                 $currentRoute = request()->route()->getName();
+                $parentRoute = 'index.'.explode('.', $currentRoute)[0].'';
 
-                $canDelete = $getAllRoutePermisssions->contains(function ($permission) use ($currentRoute) {
-                    return $permission->permission_type == 'delete';
+                $canDelete = $getAllRoutePermisssions->contains(function ($permission) use ($currentRoute, $parentRoute) {
+                    return $permission->permission_type == 'delete' && ($permission->route == $currentRoute || $permission->route == $parentRoute);
                 });
 
-                $canPrivilege = $getAllRoutePermisssions->contains(function ($permission) use ($currentRoute) {
-                    return $permission->permission_type == 'privilege';
+                $canPrivilege = $getAllRoutePermisssions->contains(function ($permission) use ($currentRoute, $parentRoute) {
+                    return $permission->permission_type == 'privilege' && ($permission->route == $currentRoute || $permission->route == $parentRoute);
                 });
 
-                $canEdit = $getAllRoutePermisssions->contains(function ($permission) use ($currentRoute) {
-                    return $permission->permission_type == 'update';
+                $canEdit = $getAllRoutePermisssions->contains(function ($permission) use ($currentRoute, $parentRoute) {
+                    return $permission->permission_type == 'update' && ($permission->route == $currentRoute || $permission->route == $parentRoute);
                 });
-
+                $activeInactivebtn = '';
                 if ($canDelete) {
                     if($systemUser->status == 1){
                         $activeInactivebtn = '<a><button type="button" class="btn btn-xs btn-danger userActivete" data-id="'.$systemUser->id.'" data-status="'.$systemUser->status.'" title="Disable">
@@ -611,10 +612,10 @@ class SettingUsersController extends Controller
                                             </button></a>';
                     }
                 }
-                //$btnActivate = '';
-                if ($canDelete) {
-                    $btnActivate = '<a><button type="button" class="btn btn-xs btn-success userActivete" data-id="'.$systemUser->id.'" data-status="'.$systemUser->status.'" title="Enable"><i class="bi bi-arrow-repeat"></i></button></a>';
-                }
+                // $btnActivate = '';
+                // if ($canDelete) {
+                //     $btnActivate = '<a><button type="button" class="btn btn-xs btn-success userActivete" data-id="'.$systemUser->id.'" data-status="'.$systemUser->status.'" title="Enable"><i class="bi bi-arrow-repeat"></i></button></a>';
+                // }
 
                 $editButton = '';
                 if ($canEdit) {
@@ -638,7 +639,7 @@ class SettingUsersController extends Controller
                                     <td style="vertical-align: middle;">'.$systemUser->group_id.'</td>
                                     <td style="vertical-align: middle;"></td>
                                     <td style="vertical-align: middle;">'.$systemUser->full_name.'</td>
-                                    <td style="vertical-align: middle;">'.$systemUser->email.'|'.$currentRoute.'</td>
+                                    <td style="vertical-align: middle;">'.$systemUser->email.'</td>
                                     <td style="vertical-align: middle;">'.$systemUser->phone.'</td>
                                     <td style="vertical-align: middle;">'.$btnActivateType.'</td>
 
