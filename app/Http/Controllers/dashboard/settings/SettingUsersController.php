@@ -75,6 +75,16 @@ class SettingUsersController extends Controller
         $route = $route ?? 'home';
         $data = session('data');
 
+        $realUser = SystemUsers::find($user_id);
+        $permissionsTypes = PermissionsTypes::all();
+        $currentUser = SystemUsers::find(Auth::user()->id);
+        $systemUsers = SystemUsers::all();
+        $routesPermissions = RoutesPermissions::all();
+
+        if (empty($realUser->id)) {
+            return redirect()->route('index.users');
+        }
+
         $mainMenus = SystemMenus::whereNull('parent_id')
                                 ->orderBy('order')
                                 ->get();
@@ -82,10 +92,7 @@ class SettingUsersController extends Controller
                                 ->orderBy('order')
                                 ->get();
 
-        $permissionsTypes = PermissionsTypes::all();
-        $currentUser = SystemUsers::find(Auth::user()->id);
-        $systemUsers = SystemUsers::all();
-        $routesPermissions = RoutesPermissions::all();
+
 
         foreach ($subsMenus as $submenu) {
             $submenu->subMenus = $submenu->orderBy('order')->get();
@@ -95,7 +102,7 @@ class SettingUsersController extends Controller
         }
 
         $getRoutename = request()->route()->getName();
-        $routesPermissions = RoutesPermissions::where('user_id',Auth::user()->id)->orderBy('id')->get();
+        $routesPermissions = RoutesPermissions::where('user_id',$user_id)->orderBy('id')->get();
         foreach ($routesPermissions as $routesPermission) {
             $routesPermission = $routesPermission->orderBy('id')->get();
         }
@@ -104,14 +111,57 @@ class SettingUsersController extends Controller
         $parentid = 9;
         $mainRouteName = 'index.settings';
         $permissionType = '';
-        $bulkUsers = '';
+        $bulkUsers = $user_id;
+
+        $bulkUsersList = (count(explode(',',$bulkUsers)) > 1)?explode(',',$bulkUsers):$bulkUsers;
+        $userPermissionLists = '';
+
+        foreach ($routesPermissions as $routesPermission) {
+            if (is_array($bulkUsersList) && count($bulkUsersList) > 1) {
+                foreach ($bulkUsersList as $bulkUser) {
+                    if ($routesPermission->user_id == $bulkUser) {
+                        foreach ($mainMenus as $menu2) {
+                            $perMainMenuId = ($menu2->route == $routesPermission->main_route) ? $menu2->id : null;
+                            $perMainSubId = null;
+                            foreach ($menu2->subMenus as $subMenu) {
+                                if ($subMenu->route == $routesPermission->route) {
+                                    $perMainSubId = $subMenu->id;
+                                    break;
+                                }
+                            }
+                            if ($perMainMenuId && $perMainSubId) {
+                                $userPermissionLists .= $perMainMenuId . '/' . $perMainSubId . '/' . $routesPermission->permission_type . ',';
+                            }
+                        }
+                    }
+                }
+            } else {
+                if ($routesPermission->user_id == $bulkUsersList) {
+                    foreach ($mainMenus as $menu2) {
+                        $perMainMenuId = ($menu2->route == $routesPermission->main_route) ? $menu2->id : null;
+                        $perMainSubId = null;
+                        foreach ($menu2->subMenus as $subMenu) {
+                            if ($subMenu->route == $routesPermission->route) {
+                                $perMainSubId = $subMenu->id;
+                                break;
+                            }
+                        }
+                        if ($perMainMenuId && $perMainSubId) {
+                            $userPermissionLists .= $perMainMenuId . '/' . $perMainSubId . '/' . $routesPermission->permission_type . ',';
+                        }
+                    }
+                }
+            }
+        }
         //dd($mainMenus);
         //echo 'test';
-        return view('pages.dashboard.settings.privilege', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','permissionsTypes','currentUser','systemUsers','routesPermissions','bulkUsers','permissionType'));
+        //$userPermissionLists = $bulkUsers;
+        return view('pages.dashboard.settings.privilege', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','permissionsTypes','currentUser','systemUsers','routesPermissions','bulkUsers','permissionType','userPermissionLists'));
     }
 
     public function userBulkPrivilege(Request $request){
         // Check if 'bulk_users' input is present in the request
+        ///permissions_users_List
         if (!$request->isMethod('post') || !$request->has('bulk_users')) {
             return redirect()->route('index.users');
         }
@@ -140,7 +190,8 @@ class SettingUsersController extends Controller
         }
 
         $getRoutename = request()->route()->getName();
-        $routesPermissions = RoutesPermissions::where('user_id',Auth::user()->id)->orderBy('id')->get();
+        //$routesPermissions = RoutesPermissions::where('user_id',Auth::user()->id)->orderBy('id')->get();
+        $routesPermissions = RoutesPermissions::all();
         foreach ($routesPermissions as $routesPermission) {
             $routesPermission = $routesPermission->orderBy('id')->get();
         }
@@ -151,7 +202,48 @@ class SettingUsersController extends Controller
         $bulkUsers = $request->bulk_users;
         $permissionType = $request->permission_type;
 
-        return view('pages.dashboard.settings.privilege', compact('mainMenus', 'subsMenus', 'data', 'mainRouteName', 'remindersRoute', 'parentid', 'routesPermissions', 'permissionsTypes', 'currentUser', 'systemUsers', 'routesPermissions', 'bulkUsers','permissionType'));
+        $bulkUsersList = (count(explode(',',$bulkUsers)) > 1)?explode(',',$bulkUsers):$bulkUsers;
+        $userPermissionLists = '';
+        //$permissionsLists .= $mainMenu->id.'/'.$subMenu->id.'/'.$permissionsType->permission_type;
+        foreach ($routesPermissions as $routesPermission) {
+            if (is_array($bulkUsersList) && count($bulkUsersList) > 1) {
+                foreach ($bulkUsersList as $bulkUser) {
+                    if ($routesPermission->user_id == $bulkUser) {
+                        foreach ($mainMenus as $menu2) {
+                            $perMainMenuId = ($menu2->route == $routesPermission->main_route) ? $menu2->id : null;
+                            $perMainSubId = null;
+                            foreach ($menu2->subMenus as $subMenu) {
+                                if ($subMenu->route == $routesPermission->route) {
+                                    $perMainSubId = $subMenu->id;
+                                    break;
+                                }
+                            }
+                            if ($perMainMenuId && $perMainSubId) {
+                                $userPermissionLists .= $perMainMenuId . '/' . $perMainSubId . '/' . $routesPermission->permission_type . ',';
+                            }
+                        }
+                    }
+                }
+            } else {
+                if ($routesPermission->user_id == $bulkUsersList) {
+                    foreach ($mainMenus as $menu2) {
+                        $perMainMenuId = ($menu2->route == $routesPermission->main_route) ? $menu2->id : null;
+                        $perMainSubId = null;
+                        foreach ($menu2->subMenus as $subMenu) {
+                            if ($subMenu->route == $routesPermission->route) {
+                                $perMainSubId = $subMenu->id;
+                                break;
+                            }
+                        }
+                        if ($perMainMenuId && $perMainSubId) {
+                            $userPermissionLists .= $perMainMenuId . '/' . $perMainSubId . '/' . $routesPermission->permission_type . ',';
+                        }
+                    }
+                }
+            }
+        }
+
+        return view('pages.dashboard.settings.privilege', compact('mainMenus', 'subsMenus', 'data', 'mainRouteName', 'remindersRoute', 'parentid', 'routesPermissions', 'permissionsTypes', 'currentUser', 'systemUsers', 'routesPermissions', 'bulkUsers','permissionType','userPermissionLists'));
     }
 
     public function userPrivilegeSave(Request $request){
@@ -193,6 +285,7 @@ class SettingUsersController extends Controller
 
         }
         RoutesPermissions::insert($routesData);
+        //return redirect()->back();
 
         // Perform bulk insert
         //try {
@@ -205,7 +298,7 @@ class SettingUsersController extends Controller
         // Return a response or redirect as needed
         //return response()->json(['message' => 'Routes saved successfully']);
 
-        //return response()->json(['message' => 'Routes saved successfully']);
+        return response()->json(['message' => 'success']);
 
     }
 

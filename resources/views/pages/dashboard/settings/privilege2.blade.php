@@ -66,10 +66,8 @@
 
                                         <input type="hidden" name="permissionsUsersList" id="permissionsUsersList" value="{{ ($bulkUsers != '')?$bulkUsers:$bulkUsers }}"/>
                                         <input type="hidden" name="permissionType" id="permissionType" value="{{ ($permissionType != '')?$permissionType:'' }}"/>
-                                        <input type="hidden" name="permissions" id="permissions" value="{{ ($userPermissionLists != '')?$userPermissionLists:'' }}"/>
+                                        <input type="hidden" name="permissions" id="permissions" value=""/>
                                         <div class="accordion accordion-flush" id="accordionFlushExample">
-
-                                            {{-- {{ 'user Permission Lists : '.$userPermissionLists }} --}}
                                             @foreach ($mainMenus as $key => $mainMenu)
                                               <div class="accordion-item mb-2 border">
                                                 <h2 class="accordion-header rounded">
@@ -90,34 +88,19 @@
                                                   <div class="accordion-body">
 
                                                     <div class="row">
-                                                        <div class="col-12 col-md-12">
-                                                        </div>
                                                         @if($mainMenu->subMenus->isNotEmpty())
                                                             @foreach($mainMenu->subMenus as $key1 => $subMenu)
                                                                 <div class="col-6 col-md-3">
                                                                     <a class="sub-item text-uppercase" href="#"><span class="sub-item">{{ $subMenu->name }}</span></a>
                                                                     <ul class="permissions_types_list">
+                                                                        @php
+                                                                            $menuCountor = 1;
+                                                                        @endphp
                                                                         @foreach ($permissionsTypes as $key2 => $permissionsType)
-                                                                            @php
-                                                                                $checked = '';
-                                                                            @endphp
-                                                                            {{-- @foreach ( as )
-
-                                                                            @endforeach --}}
-                                                                            @foreach ($routesPermissions as $routesPermission)
-                                                                                @if ($routesPermission->route == $subMenu->route && $routesPermission->permission_type == $permissionsType->permission_type)
-                                                                                    @php
-                                                                                        $checked = 'checked';
-                                                                                        break;
-                                                                                    @endphp
-                                                                                @endif
-                                                                            @endforeach
                                                                             <li>
-                                                                                <a>
-                                                                                    <div class="checkbox">
+                                                                                <a><div class="checkbox">
                                                                                         <label class="text-uppercase">
-                                                                                            <input type="checkbox" name="{{ $permissionsType->permission_type }}[]" value="{{ $mainMenu->id.'/'.$subMenu->id.'/'.$permissionsType->permission_type }}" id="{{ $subMenu->id }}_{{ $permissionsType->permission_type }}" class="chk_user sub_of_{{ $mainMenu->id }}" {{ $checked }}/>
-                                                                                            {{ $permissionsType->permission_type }}
+                                                                                            <input type="checkbox" name="{{ $permissionsType->permission_type }}[]" value="{{ $mainMenu->id.'/'.$subMenu->id.'/'.$permissionsType->permission_type }}" id="{{ $subMenu->id }}_{{ $permissionsType->permission_type }}" class="chk_user sub_of_{{ $mainMenu->id }}"> {{ $permissionsType->permission_type }}
                                                                                         </label>
                                                                                     </div>
                                                                                 </a>
@@ -127,7 +110,6 @@
                                                                 </div>
                                                             @endforeach
                                                         @endif
-
                                                     </div>
 
 
@@ -216,7 +198,7 @@
             url: '{{ route('privileges.save') }}',
             cache: false,
             method: 'POST',
-            dataType: 'json',
+            //dataType: 'json',
             data: {_token: '{{ csrf_token() }}','action':'formUser','permissionsUsersList':permissionsUsersList,'permissionType':permissionType,'permissions':permissions},
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') // Ensure you include the CSRF token
@@ -224,16 +206,7 @@
             success: function(response){
                 //alert(response);
                 $('#overlay').hide();
-                console.log(response.message);
-                if(response.message == 'success'){
-                    Swal.fire({
-                        position: "bottom-end",
-                        icon: "success",
-                        title: "You Have Updated User Permissions Successfully ",
-                        showConfirmButton: false,
-                        timer: 4000
-                    });
-                };
+                console.log(response);
 
             },
             error: function (errors) {
