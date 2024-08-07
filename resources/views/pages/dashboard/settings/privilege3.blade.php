@@ -100,16 +100,16 @@
                                                                         @foreach ($permissionsTypes as $key2 => $permissionsType)
                                                                             @php
                                                                                 $checked = '';
-                                                                                $bulkUsersArray = explode(',', $bulkUsers);
                                                                             @endphp
+                                                                            {{-- @foreach ( as )
+
+                                                                            @endforeach --}}
                                                                             @foreach ($routesPermissions as $routesPermission)
                                                                                 @if ($routesPermission->route == $subMenu->route && $routesPermission->permission_type == $permissionsType->permission_type)
-                                                                                    @if(in_array($routesPermission->user_id, $bulkUsersArray))
-                                                                                        @php
-                                                                                            $checked = 'checked';
-                                                                                            break;
-                                                                                        @endphp
-                                                                                    @endif
+                                                                                    @php
+                                                                                        $checked = 'checked';
+                                                                                        break;
+                                                                                    @endphp
                                                                                 @endif
                                                                             @endforeach
                                                                             <li>

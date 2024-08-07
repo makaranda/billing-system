@@ -260,6 +260,10 @@ class SettingUsersController extends Controller
 
         $routesData = [];
 
+        foreach ($recordsUsers as $recordsUser) {
+            RoutesPermissions::where('user_id', $recordsUser)->delete();
+        }
+
         foreach ($records as $record) {
             //list($main_menu_id, $sub_menu_id, $permission_type) = explode('/', $record);
             $main_menu_id = explode('/', $record)[0];
@@ -297,6 +301,23 @@ class SettingUsersController extends Controller
 
         // Return a response or redirect as needed
         //return response()->json(['message' => 'Routes saved successfully']);
+
+        return response()->json(['message' => 'success']);
+
+    }
+
+
+    public function userPrivilegeDelete(Request $request){
+        $dataset = $request->permissions;
+        $datasetUsers = $request->permissionsUsersList;
+        $records = explode(',', $dataset);
+        $recordsUsers = explode(',', $datasetUsers);
+
+        $routesData = [];
+
+        foreach ($recordsUsers as $recordsUser) {
+            RoutesPermissions::where('user_id', $recordsUser)->delete();
+        }
 
         return response()->json(['message' => 'success']);
 

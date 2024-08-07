@@ -290,6 +290,7 @@ Route::group(['prefix' => '/'], function () {
                     Route::get('/{user_id}/user-privilege', [SettingUsersController::class, 'userPrivilege'])->name('users.privilege');
                     Route::post('/user-privilege', [SettingUsersController::class, 'userBulkPrivilege'])->name('users.bulkprivilege');
                     Route::post('/user-privilege-save', [SettingUsersController::class, 'userPrivilegeSave'])->name('privileges.save');
+                    Route::post('/user-privilege-delete', [SettingUsersController::class, 'userPrivilegeDelete'])->name('privileges.delete');
                 });
 
             });
