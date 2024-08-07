@@ -32,6 +32,7 @@ class TasksController extends Controller
         }
         $getRoutename = request()->route()->getName();
         $routesPermissions = RoutesPermissions::where('route',$getRoutename)->orderBy('id')->get();
+        $getAllRoutePermisssions = RoutesPermissions::all();
         foreach ($routesPermissions as $routesPermission) {
             $routesPermission = $routesPermission->orderBy('id')->get();
         }
@@ -40,7 +41,7 @@ class TasksController extends Controller
         $parentid = 6;
         $mainRouteName = 'index.tasks';
         //dd($mainMenus);
-        return view('pages.dashboard.tasks.index', compact('mainMenus', 'data','mainRouteName', 'remindersRoute','routesPermissions'));
+        return view('pages.dashboard.tasks.index', compact('mainMenus', 'data','mainRouteName', 'remindersRoute','routesPermissions','getAllRoutePermisssions'));
 
     }
 }

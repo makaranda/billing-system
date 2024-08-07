@@ -31,6 +31,7 @@ class CustomersController extends Controller
         }
         $getRoutename = request()->route()->getName();
         $routesPermissions = RoutesPermissions::where('route',$getRoutename)->orderBy('id')->get();
+        $getAllRoutePermisssions = RoutesPermissions::all();
         foreach ($routesPermissions as $routesPermission) {
             $routesPermission = $routesPermission->orderBy('id')->get();
         }
@@ -39,7 +40,7 @@ class CustomersController extends Controller
         $parentid = 3;
         $mainRouteName = 'index.customers';
         //dd($mainMenus);
-        return view('pages.dashboard.customers.index', compact('mainMenus', 'data','mainRouteName', 'remindersRoute','routesPermissions'));
+        return view('pages.dashboard.customers.index', compact('mainMenus', 'data','mainRouteName', 'remindersRoute','routesPermissions','getAllRoutePermisssions'));
 
     }
 }

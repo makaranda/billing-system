@@ -22,12 +22,13 @@ class PrepaidController extends Controller
 
         $getRoutename = request()->route()->getName();
         $routesPermissions = RoutesPermissions::where('route',$getRoutename)->orderBy('id')->get();
+        $getAllRoutePermisssions = RoutesPermissions::all();
         foreach ($routesPermissions as $routesPermission) {
             $routesPermission = $routesPermission->orderBy('id')->get();
         }
 
         $mainRouteName = 'index.prepaid';
-        return view('pages.dashboard.prepaid.index', compact('mainMenus', 'data','mainRouteName','routesPermissions'));
+        return view('pages.dashboard.prepaid.index', compact('mainMenus', 'data','mainRouteName','routesPermissions','getAllRoutePermisssions'));
     }
 
 }

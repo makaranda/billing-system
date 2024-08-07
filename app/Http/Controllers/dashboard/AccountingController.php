@@ -32,6 +32,7 @@ class AccountingController extends Controller
         }
         $getRoutename = request()->route()->getName();
         $routesPermissions = RoutesPermissions::where('route',$getRoutename)->orderBy('id')->get();
+        $getAllRoutePermisssions = RoutesPermissions::all();
         foreach ($routesPermissions as $routesPermission) {
             $routesPermission = $routesPermission->orderBy('id')->get();
         }
@@ -40,7 +41,7 @@ class AccountingController extends Controller
         $parentid = 8;
         $mainRouteName = 'index.accounting';
         //dd($mainMenus);
-        return view('pages.dashboard.accounting.index', compact('mainMenus', 'data','mainRouteName', 'remindersRoute','routesPermissions'));
+        return view('pages.dashboard.accounting.index', compact('mainMenus', 'data','mainRouteName', 'remindersRoute','routesPermissions','getAllRoutePermisssions'));
 
     }
 

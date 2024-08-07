@@ -41,6 +41,7 @@ class SettingUsersController extends Controller
 
         $getRoutename = request()->route()->getName();
         $routesPermissions = RoutesPermissions::where('route',$getRoutename)->orderBy('id')->get();
+        $getAllRoutePermisssions = RoutesPermissions::all();
         foreach ($routesPermissions as $routesPermission) {
             $routesPermission = $routesPermission->orderBy('id')->get();
         }
@@ -50,7 +51,7 @@ class SettingUsersController extends Controller
         $mainRouteName = 'index.settings';
         //dd($mainMenus);
         //echo 'test';
-        return view('pages.dashboard.settings.users', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions'));
+        return view('pages.dashboard.settings.users', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','getAllRoutePermisssions'));
     }
 
     public function userActive(Request $request, $user_id){
@@ -103,6 +104,7 @@ class SettingUsersController extends Controller
 
         $getRoutename = request()->route()->getName();
         $routesPermissions = RoutesPermissions::where('user_id',$user_id)->orderBy('id')->get();
+        $getAllRoutePermisssions = RoutesPermissions::all();
         foreach ($routesPermissions as $routesPermission) {
             $routesPermission = $routesPermission->orderBy('id')->get();
         }
@@ -156,7 +158,7 @@ class SettingUsersController extends Controller
         //dd($mainMenus);
         //echo 'test';
         //$userPermissionLists = $bulkUsers;
-        return view('pages.dashboard.settings.privilege', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','permissionsTypes','currentUser','systemUsers','routesPermissions','bulkUsers','permissionType','userPermissionLists'));
+        return view('pages.dashboard.settings.privilege', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','permissionsTypes','currentUser','systemUsers','routesPermissions','bulkUsers','permissionType','userPermissionLists','getAllRoutePermisssions'));
     }
 
     public function userBulkPrivilege(Request $request){
@@ -181,6 +183,7 @@ class SettingUsersController extends Controller
         $currentUser = SystemUsers::find(Auth::user()->id);
         $systemUsers = SystemUsers::all();
         $routesPermissions = RoutesPermissions::all();
+        $getAllRoutePermisssions = RoutesPermissions::all();
 
         foreach ($subsMenus as $submenu) {
             $submenu->subMenus = $submenu->orderBy('order')->get();
@@ -243,7 +246,7 @@ class SettingUsersController extends Controller
             }
         }
 
-        return view('pages.dashboard.settings.privilege', compact('mainMenus', 'subsMenus', 'data', 'mainRouteName', 'remindersRoute', 'parentid', 'routesPermissions', 'permissionsTypes', 'currentUser', 'systemUsers', 'routesPermissions', 'bulkUsers','permissionType','userPermissionLists'));
+        return view('pages.dashboard.settings.privilege', compact('mainMenus', 'subsMenus', 'data', 'mainRouteName', 'remindersRoute', 'parentid', 'routesPermissions', 'permissionsTypes', 'currentUser', 'systemUsers', 'routesPermissions', 'bulkUsers','permissionType','userPermissionLists','getAllRoutePermisssions'));
     }
 
     public function userPrivilegeSave(Request $request){

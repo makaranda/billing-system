@@ -31,6 +31,7 @@ class DocumentsController extends Controller
         }
         $getRoutename = request()->route()->getName();
         $routesPermissions = RoutesPermissions::where('route',$getRoutename)->orderBy('id')->get();
+        $getAllRoutePermisssions = RoutesPermissions::all();
         foreach ($routesPermissions as $routesPermission) {
             $routesPermission = $routesPermission->orderBy('id')->get();
         }
@@ -39,7 +40,7 @@ class DocumentsController extends Controller
         $parentid = 4;
         $mainRouteName = 'index.documents';
         //dd($mainMenus);
-        return view('pages.dashboard.documents.index', compact('mainMenus', 'data','mainRouteName', 'remindersRoute','routesPermissions'));
+        return view('pages.dashboard.documents.index', compact('mainMenus', 'data','mainRouteName', 'remindersRoute','routesPermissions','getAllRoutePermisssions'));
 
     }
 

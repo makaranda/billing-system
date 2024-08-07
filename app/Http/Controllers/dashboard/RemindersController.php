@@ -21,6 +21,7 @@ class RemindersController extends Controller
         }
         $getRoutename = request()->route()->getName();
         $routesPermissions = RoutesPermissions::where('route',$getRoutename)->orderBy('id')->get();
+        $getAllRoutePermisssions = RoutesPermissions::all();
         foreach ($routesPermissions as $routesPermission) {
             $routesPermission = $routesPermission->orderBy('id')->get();
         }
@@ -28,7 +29,7 @@ class RemindersController extends Controller
         $remindersRoute = '';
         //dd($mainMenus);
         $mainRouteName = 'index.reminders';
-        return view('pages.dashboard.reminders.index', compact('mainMenus', 'data','mainRouteName', 'remindersRoute','routesPermissions'));
+        return view('pages.dashboard.reminders.index', compact('mainMenus', 'data','mainRouteName', 'remindersRoute','routesPermissions','getAllRoutePermisssions'));
 
     }
 

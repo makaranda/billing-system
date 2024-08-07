@@ -29,6 +29,7 @@ class MessageFormatsController extends Controller
 
         $getRoutename = request()->route()->getName();
         $routesPermissions = RoutesPermissions::where('route',$getRoutename)->orderBy('id')->get();
+        $getAllRoutePermisssions = RoutesPermissions::all();
         foreach ($routesPermissions as $routesPermission) {
             $routesPermission = $routesPermission->orderBy('id')->get();
         }
@@ -37,6 +38,6 @@ class MessageFormatsController extends Controller
         $parentid = 9;
         $mainRouteName = 'index.settings';
         //dd($mainMenus);
-        return view('pages.dashboard.settings.messageformats', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions'));
+        return view('pages.dashboard.settings.messageformats', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','getAllRoutePermisssions'));
     }
 }

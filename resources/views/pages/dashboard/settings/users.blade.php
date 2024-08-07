@@ -49,7 +49,7 @@
                             <div class="row">
                                 <div class="col-12">
                                      <h1 class="text-uppercase">SYSTEM USERS</h1>
-
+                                     {{-- {{ Auth::user()->id }} --}}
                                      @if (count($routesPermissions) == 1)
                                             @if ($routesPermissions[0]->route == request()->route()->getName() && Auth::user()->privilege === $routesPermissions[0]->userType)
                                                 @if($routesPermissions[0]->show == 1)

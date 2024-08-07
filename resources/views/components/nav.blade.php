@@ -35,58 +35,62 @@
             </li>
 
             @if(Auth::user()->privilege === 1)
-            {{-- {{ var_dump($subMenus) }} --}}
+                    {{-- {{ var_dump($subMenus) }} --}}
 
-            @if ($mainMenus)
+                @if ($mainMenus)
 
-                @foreach($mainMenus as $key => $mainMenu)
+                    @foreach($mainMenus as $key => $mainMenu)
 
-                    @if(request()->routeIs($mainMenu->route))
-                    <li class="nav-item {{ request()->routeIs($mainMenu->route) ? 'active' : '' }}">
+                        @if(request()->routeIs($mainMenu->route))
+                        <li class="nav-item {{ request()->routeIs($mainMenu->route) ? 'active' : '' }}">
 
-                        @if($mainMenu->subMenus->isNotEmpty())
-                        <div class="">
-                            <ul class="nav nav-lists mt-0">
-                                @foreach($mainMenu->subMenus as $subMenu)
-                                    <li class="nav-list">
-                                        <a class="sub-item text-uppercase" href="{{ route($subMenu->route) }}"><span class="sub-item">{{ $subMenu->name }}</span></a>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        </div>
+                            @if($mainMenu->subMenus->isNotEmpty())
+                            <div class="">
+                                <ul class="nav nav-lists mt-0">
+                                    @foreach($mainMenu->subMenus as $subMenu)
+                                        <li class="nav-list">
+                                            <a class="sub-item text-uppercase" href="{{ route($subMenu->route) }}"><span class="sub-item">{{ $subMenu->name }}</span></a>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                            @endif
+                        </li>
                         @endif
-                    </li>
-                    @endif
-                @endforeach
+                    @endforeach
 
-               @endif
+                @endif
                {{-- {{ var_dump($subsMenus) }} --}}
 
                @if(isset($subsMenus))
-
                <li class="nav-item">
-               <div class="">
-                    <ul class="nav nav-lists mt-0">
-                  @foreach($mainMenus as $subsMenu)
+                   <div class="">
+                       <ul class="nav nav-lists mt-0">
+                           @foreach($mainMenus as $subsMenu)
+                               @foreach($subsMenu->subMenus as $key => $subM)
+                                   @if($subM->parent_id === $parentid)
+                                       @php
+                                           $subsRoutes = $subM->mainroute;
+                                           // Check if the user's routesPermissions contains the sub route
+                                           $hasPermission = $getAllRoutePermisssions->contains(function ($permission) use ($subsRoutes) {
+                                               return $permission->user_id === Auth::user()->id && $permission->route === $subsRoutes;
+                                           });
+                                       @endphp
 
-                      @foreach($subsMenu->subMenus as $key => $subM)
-                          @if($subM->parent_id === $parentid)
-                            @php
-                                $subsRoutes = $subM->route;
-                            @endphp
-                          <li class="nav-list {{ $subsMenu->route }} {{ request()->routeIs($subsRoutes) ? 'active' : '' }}">
-                            <a class="sub-item text-uppercase" href="{{ route($subM->route) }}"><span class="sub-item">{{ $subM->name }}</span></a>
-                          </li>
-
-                          @endif
-                      @endforeach
-
-
-                  @endforeach
-                    </ul>
-                </div>
+                                       @if ($hasPermission)
+                                           <li class="nav-list {{ $subsMenu->name }} {{ request()->routeIs($subsRoutes) ? 'active' : '' }}">
+                                               <a class="sub-item text-uppercase" href="{{ route($subM->route) }}">
+                                                   <span class="sub-item">{{ $subM->name }}</span>
+                                               </a>
+                                           </li>
+                                       @endif
+                                   @endif
+                               @endforeach
+                           @endforeach
+                       </ul>
+                   </div>
                </li>
-              @endif
+            @endif
             @endif
           </ul>
         </div>
@@ -124,33 +128,42 @@
           >
             <div class="container-fluid">
 
-              <ul class="navbar-nav topbar-nav align-items-center mt-2 mb-2 top-menu">
-                @if(Auth::user()->privilege === 1)
-                    {{-- {{ request()->route()->getName() }} --}}
-                    @if ($mainMenus)
-                        @php
-                           $menuCounts = 0;
-                        @endphp
-                        @foreach($mainMenus as $key => $mainMenu)
+                <ul class="navbar-nav topbar-nav align-items-center mt-2 mb-2 top-menu">
+                    {{-- {{ print_r($routesPermissions) }} --}}
+                    @if(Auth::user()->privilege === 1)
+                        {{-- {{ request()->route()->getName() }} --}}
+                        @if ($mainMenus)
                             @php
-                                $mainRoutes = $mainMenu->route;
+                                $menuCounts = 0;
+                                // Fetch routesPermissions for the authenticated user
+                                $userRoutesPermissions = $getAllRoutePermisssions->filter(function ($permission) {
+                                    return $permission->user_id === Auth::user()->id;
+                                });
                             @endphp
+                            @foreach($mainMenus as $key => $mainMenu)
+                                @php
+                                    $mainRoutes = $mainMenu->route;
+                                    // Check if the user's routesPermissions contains the main route
+                                    $hasPermission = $userRoutesPermissions->contains('main_route', $mainRoutes);
+                                @endphp
 
-                            <li class="nav-item topbar-user dropdown hidden-caret">
-                                <a class="dropdown-toggle top-menu-link {{ $mainMenu->route }} {{ $mainRouteName == $mainRoutes ? 'active' : '' }}" href="{{ route($mainMenu->route) }}">
-                                    <span class="profile-username">
-                                        <span class="fw-bold text-uppercase">{{ $mainMenu->name }}</span>
-                                    </span>
-                                </a>
-                            </li>
-                            @php
-                                $menuCounts++;
-                            @endphp
-                        @endforeach
+                                @if ($hasPermission)
+                                    <li class="nav-item topbar-user dropdown hidden-caret">
+                                        <a class="dropdown-toggle top-menu-link {{ $mainMenu->route }} {{ $mainRouteName == $mainRoutes ? 'active' : '' }}" href="{{ route($mainMenu->route) }}">
+                                            <span class="profile-username">
+                                                <span class="fw-bold text-uppercase">{{ $mainMenu->name }}</span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    @php
+                                        $menuCounts++;
+                                    @endphp
+                                @endif
+                            @endforeach
 
-                   @endif
-                @endif
-            </ul>
+                        @endif
+                    @endif
+                </ul>
             <ul class="navbar-nav topbar-nav ms-md-auto align-items-center mt-2 mb-2">
 
                 <li class="nav-item topbar-user dropdown hidden-caret">
