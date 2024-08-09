@@ -46,12 +46,38 @@ class SettingUsersController extends Controller
             $routesPermission = $routesPermission->orderBy('id')->get();
         }
 
+        //$getAllRoutePermisssionsUser = RoutesPermissions::where('user_id', Auth::user()->id)->get();
+        $permissionsTypes = PermissionsTypes::all();
+        $systemUsers = SystemUsers::all();
+
+        $routepermissions = [];
+        foreach ($permissionsTypes as $permissionsType) {
+            $routepermissions[$permissionsType->name] = 0;
+        }
+        $getAllRoutePermisssionsUser = RoutesPermissions::where('user_id', Auth::user()->id)
+                                                        ->where('route', $getRoutename)
+                                                        ->get();
+
+        $currentRoute = request()->route()->getName();
+        $parentRoute = 'index.' . explode('.', $currentRoute)[0];
+        foreach ($permissionsTypes as $permissionsType) {
+            $type = $permissionsType->permission_type;
+
+            // Check if the user has this permission for the current route or parent route
+            $hasPermission = $getAllRoutePermisssionsUser->contains(function ($permission) use ($type, $currentRoute, $parentRoute) {
+                return $permission->permission_type == $type && ($permission->route == $currentRoute || $permission->route == $parentRoute);
+            });
+
+            // Update the routepermissions array
+            $routepermissions[$type] = $hasPermission ? 1 : 0;
+        }
+
         $remindersRoute = request()->route()->getName();
         $parentid = 9;
         $mainRouteName = 'index.settings';
         //dd($mainMenus);
         //echo 'test';
-        return view('pages.dashboard.settings.users', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','getAllRoutePermisssions'));
+        return view('pages.dashboard.settings.users', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','getAllRoutePermisssions','routepermissions'));
     }
 
     public function userActive(Request $request, $user_id){
@@ -556,15 +582,8 @@ class SettingUsersController extends Controller
         $responses = '';
 
         if ($systemUsers->count() > 0) {
-            $responses .= '<div class="p-3">
-                                <a href="ajax/users/excel.php" target="_blank"><button style="margin:2px;" class="btn btn-success btn-xs pull-right">
-                                        <i class="bi bi-file-earmark-excel"></i> Excel
-                                </button> </a>
-                                <a href="ajax/users/pdf.php" target="_blank"><button style="margin:2px;" class="btn btn-danger btn-xs pull-right">
-                                        <i class="bi bi-file-earmark-pdf"></i> Pdf
-                                </button> </a>
-                            </div>
-                                <br/>
+            $responses .= '
+
                             <small class="p-2"><table class="table table-stripped table-hover" width="100%"><thead>
 			                <tr>
                                 <td align="left"><strong><input type="checkbox" id="check_all" /></strong></td>

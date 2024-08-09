@@ -69,15 +69,21 @@
                             <div class="row">
                                 <div class="col-sm-12 col-lg-12">
                                     <br/>
+                                    {{-- {{ '<pre>' }}
+                                    {{ var_dump($routepermissions['read']) }}
+                                    {{ '</pre>' }} --}}
                                     <!-- your page content -->
                                     <div class="row">
                                         <div class="col-md-12">
                                             <div class="card">
                                                 <div class="card-header">
                                                     <input type="hidden" name="permissions_users_List" id="permissions_users_List"/>
-                                                    <a class="btn btn-default btn-xs pull-right addNewUser ml-1" data-bs-toggle="modal" data-bs-target="#addUserModal" role="button">
-                                                    <span class="fa fa-plus"></span> ADD NEW USER
-                                                    </a>
+                                                    @if(isset($routepermissions['create']) && $routepermissions['create'] == 1)
+                                                        <a class="btn btn-default btn-xs pull-right addNewUser ml-1" data-bs-toggle="modal" data-bs-target="#addUserModal" role="button">
+                                                            <span class="fa fa-plus"></span> ADD NEW USER
+                                                        </a>
+                                                    @endif
+                                                    @if(isset($routepermissions['privilege']) && $routepermissions['privilege'] == 1)
                                                     <button type="button" id="remove_selected" class="btn btn-xs btn-danger pull-right ml-1" style="display: none;">
                                                         <span class="glyphicon glyphicon-plus"></span>
                                                         Remove Rights (Bulk)
@@ -86,6 +92,7 @@
                                                         <span class="glyphicon glyphicon-plus"></span>
                                                         Assign Rights (Bulk)
                                                     </button>
+                                                    @endif
                                                 </div>
                                                 <div class="panel-body">
                                                     <div class="row">
@@ -132,6 +139,16 @@
                                         </div>
                                         <div class="col-md-12">
                                             <div class="card card-default">
+                                                @if(isset($routepermissions['print']) && $routepermissions['print'] == 1)
+                                                    <div class="p-3">
+                                                        <a href="ajax/users/excel.php" target="_blank"><button style="margin:2px;" class="btn btn-success btn-xs pull-right">
+                                                                <i class="bi bi-file-earmark-excel"></i> Excel
+                                                        </button> </a>
+                                                        <a href="ajax/users/pdf.php" target="_blank"><button style="margin:2px;" class="btn btn-danger btn-xs pull-right">
+                                                                <i class="bi bi-file-earmark-pdf"></i> Pdf
+                                                        </button> </a>
+                                                    </div>
+                                                @endif
                                                 <div class="" id="users_list"></div>
                                             </div>
                                         </div>
