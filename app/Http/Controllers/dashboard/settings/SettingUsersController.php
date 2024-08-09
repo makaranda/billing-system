@@ -26,6 +26,8 @@ class SettingUsersController extends Controller
         $route = $route ?? 'home';
         $data = session('data');
 
+        $userPrivileges = UserPrivileges::all();
+
         $mainMenus = SystemMenus::whereNull('parent_id')
                                 ->orderBy('order')
                                 ->get();
@@ -77,7 +79,7 @@ class SettingUsersController extends Controller
         $mainRouteName = 'index.settings';
         //dd($mainMenus);
         //echo 'test';
-        return view('pages.dashboard.settings.users', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','getAllRoutePermisssions','routepermissions'));
+        return view('pages.dashboard.settings.users', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','getAllRoutePermisssions','userPrivileges','routepermissions'));
     }
 
     public function userActive(Request $request, $user_id){

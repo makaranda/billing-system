@@ -113,7 +113,11 @@
                                                                 <label>Privilege</label>
                                                                 <select class="form-control" id="s_privilege">
                                                                     <option value=""> - All Privileges - </option>
-
+                                                                    @foreach ($userPrivileges as $userPrivilege)
+                                                                        @if($userPrivilege->status == 1)
+                                                                            <option value="{{ $userPrivilege->id }}"> {{ $userPrivilege->name }} </option>
+                                                                        @endif
+                                                                    @endforeach
                                                                 </select>
                                                             </div>
                                                         </div>
