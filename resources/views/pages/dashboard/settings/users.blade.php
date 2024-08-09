@@ -148,7 +148,7 @@
                                                         <a href="ajax/users/excel.php" target="_blank"><button style="margin:2px;" class="btn btn-success btn-xs pull-right">
                                                                 <i class="bi bi-file-earmark-excel"></i> Excel
                                                         </button> </a>
-                                                        <a href="ajax/users/pdf.php" target="_blank"><button style="margin:2px;" class="btn btn-danger btn-xs pull-right">
+                                                        <a href="{{ route('system.users.pdf') }}" target="_blank"><button style="margin:2px;" class="btn btn-danger btn-xs pull-right">
                                                                 <i class="bi bi-file-earmark-pdf"></i> Pdf
                                                         </button> </a>
                                                     </div>

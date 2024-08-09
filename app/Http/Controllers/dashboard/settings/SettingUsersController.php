@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use PDF;
 //use Illuminate\Support\Facades\MD5;
 
 class SettingUsersController extends Controller
@@ -27,7 +28,6 @@ class SettingUsersController extends Controller
         $data = session('data');
 
         $userPrivileges = UserPrivileges::all();
-
         $mainMenus = SystemMenus::whereNull('parent_id')
                                 ->orderBy('order')
                                 ->get();
@@ -80,6 +80,21 @@ class SettingUsersController extends Controller
         //dd($mainMenus);
         //echo 'test';
         return view('pages.dashboard.settings.users', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','getAllRoutePermisssions','userPrivileges','routepermissions'));
+    }
+
+    public function generatePDF()
+{
+        // Fetch the data from the SystemUsers model
+        $systemUsers = SystemUsers::all();
+
+        // Load the view and pass the data
+        $pdf = PDF::loadView('pages.dashboard.settings.pdf.system_users_pdf', compact('systemUsers'));
+
+        // Optional: Set additional options like page size, orientation, etc.
+        $pdf->setPaper('A4', 'landscape');
+
+        // Return the generated PDF to the browser for download or viewing
+        return $pdf->download('system_users_report.pdf');
     }
 
     public function userActive(Request $request, $user_id){
@@ -654,11 +669,13 @@ class SettingUsersController extends Controller
                                         </a>';
                 }
 
+                $userPrivilegesName = UserPrivileges::where('id', $systemUser->privilege)->first();
+
                 $responses .= '<tr>
                                     <td style="vertical-align: middle;"><input type="checkbox" name="chk[]" id="chk_'.$i++.'" class="chk_user" value="'.$systemUser->id.'" /></td>
                                     <td style="vertical-align: middle;">'.$systemUser->username.'</td>
                                     <td style="vertical-align: middle;">'.$systemUser->group_id.'</td>
-                                    <td style="vertical-align: middle;"></td>
+                                    <td style="vertical-align: middle;">'.$userPrivilegesName->name.'</td>
                                     <td style="vertical-align: middle;">'.$systemUser->full_name.'</td>
                                     <td style="vertical-align: middle;">'.$systemUser->email.'</td>
                                     <td style="vertical-align: middle;">'.$systemUser->phone.'</td>
