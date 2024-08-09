@@ -81,7 +81,15 @@ class SettingUsersController extends Controller
         $mainRouteName = 'index.settings';
         //dd($mainMenus);
         //echo 'test';
-        return view('pages.dashboard.settings.users', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','getAllRoutePermisssions','userPrivileges','routepermissions'));
+        $countCheckThisRoutes = RoutesPermissions::where('route', $getRoutename)
+        ->where('user_id', Auth::user()->id)
+        ->where('main_route', $mainRouteName)
+        ->count();
+        if($countCheckThisRoutes == 0){
+            return redirect()->route('admin.dashboard')->with('error', 'You do not have permission to access this route.');
+        }else{
+            return view('pages.dashboard.settings.users', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','getAllRoutePermisssions','userPrivileges','routepermissions'));
+        }
     }
 
     public function generatePDF(Request $request)

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\dashboard\reminders;
 
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\SystemMenus;
@@ -38,6 +39,14 @@ class RecurringAmmendmentsController extends Controller
         $remindersRoute = request()->route()->getName();
         $parentid = 1;
         $mainRouteName = 'index.reminders';
-        return view('pages.dashboard.reminders.recurringammendments', compact('mainMenus', 'data','subsMenus', 'parentid','mainRouteName','routesPermissions'));
+        $countCheckThisRoutes = RoutesPermissions::where('route', $getRoutename)
+        ->where('user_id', Auth::user()->id)
+        ->where('main_route', $mainRouteName)
+        ->count();
+        if($countCheckThisRoutes == 0){
+            return redirect()->route('admin.dashboard')->with('error', 'You do not have permission to access this route.');
+        }else{
+            return view('pages.dashboard.reminders.recurringammendments', compact('mainMenus', 'data','subsMenus', 'parentid','mainRouteName','routesPermissions'));
+        }
     }
 }

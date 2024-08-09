@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\dashboard\reports;
 
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\SystemMenus;
@@ -36,6 +37,14 @@ class BadPayersController extends Controller
         $remindersRoute = request()->route()->getName();
         $parentid = 7;
         $mainRouteName = 'index.reports';
-        return view('pages.dashboard.reports.badpayers', compact('mainMenus', 'data','subsMenus', 'parentid','mainRouteName','routesPermissions'));
+        $countCheckThisRoutes = RoutesPermissions::where('route', $getRoutename)
+        ->where('user_id', Auth::user()->id)
+        ->where('main_route', $mainRouteName)
+        ->count();
+        if($countCheckThisRoutes == 0){
+            return redirect()->route('admin.dashboard')->with('error', 'You do not have permission to access this route.');
+        }else{
+            return view('pages.dashboard.reports.badpayers', compact('mainMenus', 'data','subsMenus', 'parentid','mainRouteName','routesPermissions'));
+        }
     }
 }

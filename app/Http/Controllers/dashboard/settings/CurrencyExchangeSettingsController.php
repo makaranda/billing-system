@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\dashboard\settings;
 
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\SystemMenus;
@@ -38,6 +39,15 @@ class CurrencyExchangeSettingsController extends Controller
         $parentid = 9;
         $mainRouteName = 'index.settings';
         //dd($mainMenus);
-        return view('pages.dashboard.settings.currencyexchangesettings', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','getAllRoutePermisssions'));
+        $countCheckThisRoutes = RoutesPermissions::where('route', $getRoutename)
+        ->where('user_id', Auth::user()->id)
+        ->where('main_route', $mainRouteName)
+        ->count();
+
+        if($countCheckThisRoutes == 0){
+            return redirect()->route('admin.dashboard')->with('error', 'You do not have permission to access this route.');
+        }else{
+            return view('pages.dashboard.settings.currencyexchangesettings', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','getAllRoutePermisssions'));
+        }
     }
 }
