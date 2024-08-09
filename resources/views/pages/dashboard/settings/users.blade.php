@@ -145,10 +145,10 @@
                                             <div class="card card-default">
                                                 @if(isset($routepermissions['print']) && $routepermissions['print'] == 1)
                                                     <div class="p-3">
-                                                        <a href="ajax/users/excel.php" target="_blank"><button style="margin:2px;" class="btn btn-success btn-xs pull-right">
+                                                        <a href="#" target="_blank"><button type="button" style="margin:2px;" class="btn btn-success btn-xs pull-right get_excel_report">
                                                                 <i class="bi bi-file-earmark-excel"></i> Excel
                                                         </button> </a>
-                                                        <a href="{{ route('system.users.pdf') }}" target="_blank"><button style="margin:2px;" class="btn btn-danger btn-xs pull-right">
+                                                        <a href="#" target="_blank"><button type="button" style="margin:2px;" class="btn btn-danger btn-xs pull-right get_pdf_report">
                                                                 <i class="bi bi-file-earmark-pdf"></i> Pdf
                                                         </button> </a>
                                                     </div>
@@ -698,6 +698,20 @@
                 console.log('Error:', errors);
             }
         });
+    });
+
+    $(document).on('click','.get_excel_report',function(event){
+        event.preventDefault();
+        let s_privilege = $('#s_privilege').val();
+        let s_status = $('#s_status').val();
+        $.redirect("{{ route('system.users.excel') }}", {'privilege': s_privilege,'status': s_status, _token: '{{ csrf_token() }}'}, "GET", "_self");
+    });
+
+    $(document).on('click','.get_pdf_report',function(event){
+        event.preventDefault();
+        let s_privilege = $('#s_privilege').val();
+        let s_status = $('#s_status').val();
+        $.redirect("{{ route('system.users.pdf') }}", {'privilege': s_privilege,'status': s_status, _token: '{{ csrf_token() }}'}, "GET", "_self");
     });
 
     $(document).on('click','.userActivete',function(){

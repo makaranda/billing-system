@@ -17,6 +17,8 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use App\Exports\SystemUsersExport;
+use Maatwebsite\Excel\Facades\Excel;
 use PDF;
 //use Illuminate\Support\Facades\MD5;
 
@@ -82,11 +84,25 @@ class SettingUsersController extends Controller
         return view('pages.dashboard.settings.users', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','getAllRoutePermisssions','userPrivileges','routepermissions'));
     }
 
-    public function generatePDF()
+    public function generatePDF(Request $request)
 {
         // Fetch the data from the SystemUsers model
-        $systemUsers = SystemUsers::all();
+        //$systemUsers = SystemUsers::all();
+        $privilege = $request->input('privilege');
+        $status = $request->input('status');
 
+        // Build the query with optional filters
+        $query = SystemUsers::query();
+
+        if (!is_null($privilege)) {
+            $query->where('privilege', $privilege);
+        }
+
+        if (!is_null($status)) {
+            $query->where('status', $status);
+        }
+
+        $systemUsers = $query->get();
         // Load the view and pass the data
         $pdf = PDF::loadView('pages.dashboard.settings.pdf.system_users_pdf', compact('systemUsers'));
 
@@ -95,6 +111,17 @@ class SettingUsersController extends Controller
 
         // Return the generated PDF to the browser for download or viewing
         return $pdf->download('system_users_report.pdf');
+    }
+
+    public function generateExcel(Request $request){
+        // Retrieve filters from the request
+        $privilege = $request->input('privilege');
+        $status = $request->input('status');
+
+        //echo $privilege.'|'.$status;
+        // Pass the filters to the export class
+        return Excel::download(new SystemUsersExport($privilege, $status), 'system_users.xlsx');
+        //return Excel::download(new SystemUsersExport, 'system_users.xlsx');
     }
 
     public function userActive(Request $request, $user_id){

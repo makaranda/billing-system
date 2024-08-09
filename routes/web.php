@@ -285,6 +285,7 @@ Route::group(['prefix' => '/'], function () {
                 Route::post('/{user_id}/update', [SettingUsersController::class, 'userUpdate'])->name('users.update');
                 Route::post('/saveRecord', [SettingUsersController::class, 'saveRecord'])->name('users.saveRecord');
                 Route::get('/system-users-pdf', [SettingUsersController::class, 'generatePDF'])->name('system.users.pdf');
+                Route::get('/export-system-users', [SettingUsersController::class, 'generateExcel'])->name('system.users.excel');
 
                 Route::group(['prefix' => 'privilege', 'middleware' => 'role:admin'], function () {
                     Route::get('/', [SettingUsersController::class, 'indexPrivilege'])->name('index.privilege');
