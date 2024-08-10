@@ -63,10 +63,17 @@
                                             <input type="checkbox" onclick="checkAllMenuPrivileges(this);"> Select All
                                         </div>
                                         {{-- {{ var_dump($mainMenus) }} --}}
-
+                                        @php
+                                            if($userPermissionLists){
+                                                $userPermissionLists = rtrim($userPermissionLists, ",");
+                                            }else{
+                                                $userPermissionLists = '';
+                                            }
+                                        @endphp
                                         <input type="hidden" name="permissionsUsersList" id="permissionsUsersList" value="{{ ($bulkUsers != '')?$bulkUsers:$bulkUsers }}"/>
                                         <input type="hidden" name="permissionType" id="permissionType" value="{{ ($permissionType != '')?$permissionType:'' }}"/>
                                         <input type="hidden" name="permissions" id="permissions" value="{{ ($userPermissionLists != '')?$userPermissionLists:'' }}"/>
+                                        <input type="hidden" name="permissionsRemove" id="permissionsRemove" value=""/>
                                         <div class="accordion accordion-flush" id="accordionFlushExample">
 
                                             {{-- {{ 'user Permission Lists : '.$userPermissionLists }} --}}
@@ -111,17 +118,20 @@
                                                                                         @endphp
                                                                                     @endif
                                                                                 @endif
+
                                                                             @endforeach
-                                                                            <li>
-                                                                                <a>
-                                                                                    <div class="checkbox">
-                                                                                        <label class="text-uppercase">
-                                                                                            <input type="checkbox" name="{{ $permissionsType->permission_type }}[]" value="{{ $mainMenu->id.'/'.$subMenu->id.'/'.$permissionsType->permission_type }}" id="{{ $subMenu->id }}_{{ $permissionsType->permission_type }}" class="chk_user sub_of_{{ $mainMenu->id }}" {{ $checked }}/>
-                                                                                            {{ $permissionsType->permission_type }}
-                                                                                        </label>
-                                                                                    </div>
-                                                                                </a>
-                                                                            </li>
+                                                                            @if ($subMenu->route == $permissionsType->route)
+                                                                                <li>
+                                                                                    <a>
+                                                                                        <div class="checkbox">
+                                                                                            <label class="text-uppercase">
+                                                                                                <input type="checkbox" name="{{ $permissionsType->permission_type }}[]" value="{{ $mainMenu->id.'/'.$subMenu->id.'/'.$permissionsType->permission_type }}" id="{{ $subMenu->id }}_{{ $permissionsType->permission_type }}" class="chk_user sub_of_{{ $mainMenu->id }}" {{ $checked }}/>
+                                                                                                {{ $permissionsType->permission_type }}
+                                                                                            </label>
+                                                                                        </div>
+                                                                                    </a>
+                                                                                </li>
+                                                                            @endif
                                                                         @endforeach
                                                                     </ul>
                                                                 </div>
@@ -137,7 +147,7 @@
                                             @endforeach
                                         </div>
                                         <div class="col-md-12 text-center mt-4">
-											<button type="button" class="btn btn-primary" id="save_permission">	SAVE USER MENU PERMISSIONS</button>
+											<button type="button" class="btn btn-primary" id="{{ ($permissionType == 'remove')?'remove':'save' }}_permission">	{{ ($permissionType == 'remove')?'REMOVE':'SAVE' }} USER MENU PERMISSIONS</button>
 										</div>
                                 </div>
                             </div>
@@ -190,7 +200,24 @@
 
     $(document).on('click','.chk_user',function(){
         updateHiddenInput();
+        removeHiddenInput(this);
     });
+
+    function removeHiddenInput(clickedCheckbox){
+        const checkedValues2 = $('#permissionsRemove').val() ? $('#permissionsRemove').val().split(',') : [];
+        const value = $(clickedCheckbox).val();
+
+        if ($(clickedCheckbox).is(':checked')) {
+            checkedValues2.push(value);
+        } else {
+            const index = checkedValues2.indexOf(value);
+            if (index > -1) {
+                checkedValues2.splice(index, 1);
+            }
+        }
+
+        $('#permissionsRemove').val(checkedValues2.join(','));
+    }
 
     function updateHiddenInput() {
         const checkboxes = document.querySelectorAll('.chk_user');

@@ -133,7 +133,10 @@ class SettingUsersController extends Controller
     }
 
     public function userActive(Request $request, $user_id){
+        $message = '';
         $systemUsers = SystemUsers::find($request->user_id);
+        $user_name = $systemUsers->username;
+        $user_id = $systemUsers->id;
 
         $updateStatus = ($request->user_status == 1) ? 0 : 1;
 
@@ -141,8 +144,40 @@ class SettingUsersController extends Controller
             'status' => $updateStatus,
         ];
         $systemUsers->update($userData);
+        $message = 'success';
 
-        echo 'success';
+        $responseData = [
+            'message' => $message,
+            'user_id' => $user_id,
+            'user_name' => $user_name,
+        ];
+        //echo 'test';
+        return response()->json($responseData);
+        //echo 'success';
+    }
+
+    public function userLogStatus(Request $request){
+        $message = '';
+        $systemUsers = SystemUsers::where('id', $request->user_id)
+                          ->where('username', $request->user_name)
+                          ->first();
+
+        if($systemUsers->id){
+            if($systemUsers->id == Auth::user()->id){
+                $message = 'current';
+                //Auth::guard('admin')->logout();
+            }else{
+                $message = 'other';
+            }
+        }else{
+            $message = 'error';
+        }
+
+        $responseData = [
+            'message' => $message,
+        ];
+        //echo 'test';
+        return response()->json($responseData);
     }
 
     public function indexPrivilege(Request $request){
@@ -462,10 +497,6 @@ class SettingUsersController extends Controller
             'password' => 'required',
             'repassword' => 'required|same:password',
             'group_id' => 'required',
-            'branch_id' => 'required',
-            'employee_id' => 'required',
-            'collection_bureau' => 'required',
-            'email' => 'required|email|unique:system_users,email'
         ]);
 
         if ($validator->fails()) {
@@ -473,18 +504,18 @@ class SettingUsersController extends Controller
             $message = $validator->errors()->all()[0];
         } else {
             $userData = [
-                'branch_id' => $request->branch_id,
+                'branch_id' => ($request->branch_id)?$request->branch_id:'',
                 'username' => $request->login,
                 'password' => md5($request->password), // Hashing password with MD5
                 'privilege' => $request->privilege,
                 'full_name' => $request->full_name,
-                'email' => $request->email,
-                'phone' => $request->phone,
+                'email' => ($request->email)?$request->email:'',
+                'phone' => ($request->phone)?$request->phone:'',
                 'receipt_printer_id' => 1,
-                'employee_id' => $request->employee_id,
-                'group_id' => $request->group_id,
-                'is_debt_collect' => 0,
-                'collection_bureau_id' => $request->collection_bureau, // Fix field name to match database
+                'employee_id' => ($request->employee_id)?$request->employee_id:'',
+                'group_id' => ($request->group_id)?$request->group_id:'',
+                'is_debt_collect' => ($request->collection_budebtCollectorValreau)?$request->debtCollectorVal:0,
+                'collection_bureau_id' => ($request->collection_bureau)?$request->collection_bureau:'', // Fix field name to match database
                 'last_login_time' => now(),
                 'session_timeout' => $request->session_timeout,
                 'tfa_phone' => 0,
@@ -513,18 +544,14 @@ class SettingUsersController extends Controller
         $message = '';
         $messageType = '';
 
-        if(!empty($request->password) && !empty($request->repassword)){
+        if(!empty($request->password) || !empty($request->repassword)){
             $validator = Validator::make($request->all(), [
                 'full_name' => 'required',
                 'privilege' => 'required',
-                'login' => 'required',
                 'password' => 'required',
                 'repassword' => 'required|same:password',
+                'login' => 'required',
                 'group_id' => 'required',
-                'branch_id' => 'required',
-                'employee_id' => 'required',
-                'collection_bureau' => 'required',
-                'email' => 'required'
             ]);
         }else{
             $validator = Validator::make($request->all(), [
@@ -532,10 +559,6 @@ class SettingUsersController extends Controller
                 'privilege' => 'required',
                 'login' => 'required',
                 'group_id' => 'required',
-                'branch_id' => 'required',
-                'employee_id' => 'required',
-                'collection_bureau' => 'required',
-                'email' => 'required'
             ]);
         }
 
@@ -556,7 +579,7 @@ class SettingUsersController extends Controller
                     'receipt_printer_id' => 1,
                     'employee_id' => $request->employee_id,
                     'group_id' => $request->group_id,
-                    'is_debt_collect' => 0,
+                    'is_debt_collect' => $request->debtCollectorVal,
                     'collection_bureau_id' => $request->collection_bureau, // Fix field name to match database
                     'last_login_time' => now(),
                     'session_timeout' => $request->session_timeout,
@@ -577,7 +600,7 @@ class SettingUsersController extends Controller
                     'receipt_printer_id' => 1,
                     'employee_id' => $request->employee_id,
                     'group_id' => $request->group_id,
-                    'is_debt_collect' => 0,
+                    'is_debt_collect' => $request->debtCollectorVal,
                     'collection_bureau_id' => $request->collection_bureau,
                     'last_login_time' => now(),
                     'session_timeout' => $request->session_timeout,

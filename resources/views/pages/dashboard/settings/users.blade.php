@@ -202,7 +202,7 @@
 					<div class="row">
 						<div class="col-md-6">
 							<div class="form-group">
-								<label class="control-label required" for="full_name">Full Name</label>
+								<label class="control-label required" for="full_name">Full Name <span class="text-danger">*</span></label>
 								<input type="text" class="form-control" id="full_name" name="full_name" placeholder="Enter Full Name" required="required" />
 							</div>
 						</div>
@@ -222,7 +222,7 @@
 						</div>
 						<div class="col-md-6">
 							<div class="form-group">
-								<label class="control-label required" for="privilege">Privilege</label>
+								<label class="control-label required" for="privilege">Privilege <span class="text-danger">*</span></label>
 								<select class="form-control" id="privilege" name="privilege" required="required">
 									<option value="">- SELECT PRIVILEGE -</option>
 								</select>
@@ -232,19 +232,19 @@
 					<div class="row">
 						<div class="col-md-4">
 							<div class="form-group">
-								<label class="control-label required" for="login">Login Name (Username)</label>
+								<label class="control-label required" for="login">Login Name (Username) <span class="text-danger">*</span></label>
 								<input type="text" class="form-control" id="login" name="login" placeholder="Enter Login Name" required="required" autocomplete="off" />
 							</div>
 						</div>
 						<div class="col-md-4">
 							<div class="form-group">
-								<label class="control-label required" for="password">Password</label>
+								<label class="control-label required" for="password">Password <span class="text-danger">*</span></label>
 								<input type="password" class="form-control" id="password" name="password" placeholder="Enter Password" required="required" autocomplete="off" />
 							</div>
 						</div>
 						<div class="col-md-4">
 							<div class="form-group">
-								<label class="control-label required" for="repassword">Re-Type Password</label>
+								<label class="control-label required" for="repassword">Re-Type Password <span class="text-danger">*</span></label>
 								<input type="password" class="form-control" id="repassword" name="repassword" placeholder="Enter Re-Type Password" required="required" autocomplete="off" />
 							</div>
 						</div>
@@ -260,7 +260,7 @@
 						</div>
 						<div class="col-md-4">
 							<div class="form-group">
-								<label for="group_id" class="control-label required">User Group</label>
+								<label for="group_id" class="control-label required">User Group <span class="text-danger">*</span></label>
 								<select name="group_id" id="group_id" class="form-control" style="width:100%" required>
 								<option value="">- SELECT GROUP -</option>
 								</select>
@@ -276,7 +276,7 @@
 							<div class="form-group">
 								<label for="branch_id">Branch</label>
 								<select name="branch_id" id="branch_id" class="searchable form-control" style="width:100%">
-								<option value="">- SELECT Branch -</option>
+								    <option value="">- SELECT Branch -</option>
 								</select>
 							</div>
 						</div>
@@ -447,6 +447,24 @@
         $('#overlay').hide();
     });
 
+    $(document).on('click','#remove_selected',function(){
+        $('#overlay').show();
+        const permissionsUsersList = $('#permissions_users_List').val();
+        //alert();
+        if(permissionsUsersList == ''){
+            Swal.fire({
+                position: "bottom-end",
+                icon: "error",
+                title: "First You must select one or more users from this table..!!",
+                showConfirmButton: false,
+                timer: 3500
+            });
+        }else{
+            $.redirect("{{ route('users.bulkprivilege') }}", {bulk_users: permissionsUsersList,'permission_type': 'remove', _token: '{{ csrf_token() }}'}, "POST", "_self");
+        }
+        $('#overlay').hide();
+    });
+
     listUsers();
 
     function listUsers() {
@@ -536,7 +554,7 @@
                     branchesDropdown.empty();
                     branchesDropdown.append('<option value="">- SELECT BRANCH -</option>');
                     $.each(response.branches, function(index, branche) {
-                        branchesDropdown.append('<option value="'+branche.id+'">'+branche.name+'</option>');
+                        branchesDropdown.append('<option value="'+branche.name+'">'+branche.name+'</option>');
                     });
 
                     var collectionBureauDropdown = $('#collection_bureau');
@@ -550,7 +568,7 @@
                     groupsDropdown.empty();
                     groupsDropdown.append('<option value="">- SELECT GROUP -</option>');
                     $.each(response.groups, function(index, group) {
-                        groupsDropdown.append('<option value="'+group.id+'">'+group.group_id+'</option>');
+                        groupsDropdown.append('<option value="'+group.name+'">'+group.group_id+'</option>');
                     });
 
             },
@@ -589,6 +607,10 @@
                     $('#session_timeout').val(response.systemUsers.session_timeout);
                     $('#debt_collector').val(response.systemUsers.debt_collector);
 
+                    //$(response.systemUsers.debt_collector == 1) ? $('#debt_collector').attr('checked', true); : $('#debt_collector').attr('checked', false);
+                    $('#debt_collector').attr('checked', response.systemUsers.is_debt_collect == 1);
+                    //var debtCollectorValue = $('#debt_collector').is(':checked') ? 1 : 0;
+
                     var privilegeDropdown = $('#privilege');
                     privilegeDropdown.empty();
                     privilegeDropdown.append('<option value="">- SELECT PRIVILEGE -</option>');
@@ -621,7 +643,7 @@
                     groupsDropdown.empty();
                     groupsDropdown.append('<option value="">- SELECT GROUP -</option>');
                     $.each(response.usersGroups, function(index, usersGroup) {
-                        groupsDropdown.append('<option value="'+usersGroup.id+'">'+usersGroup.group_id+'</option>');
+                        groupsDropdown.append('<option value="'+usersGroup.group_id+'">'+usersGroup.group_id+'</option>');
                     });
 
                     if (response.systemUsers.privilege) {
@@ -659,15 +681,16 @@
         var form_type = ($('#form_type').val() == 'users.save')?'{{ route("users.save") }}':'{{ route("users.update",'+user_id+') }}';
 
         var form_name = (form_type == 'users.save')? 'Added': 'Updated';
+        var debtCollectorValue = $('#debt_collector').is(':checked') ? 1 : 0;
 
         $('#overlay').show();
         $('#overlay').hide();
-
+        //alert();
         $.ajax({
             url: ""+form_type+"",
             cache: false,
             method: 'POST',
-            data: $(this).serialize() + '&_token={{ csrf_token() }}&action=addUpdateUser',
+            data: $(this).serialize() + '&_token={{ csrf_token() }}&action=addUpdateUser&debtCollectorVal='+debtCollectorValue+'',
             success: function(response){
                 console.log(response.message);
                 listUsers();
@@ -714,6 +737,36 @@
         $.redirect("{{ route('system.users.pdf') }}", {'privilege': s_privilege,'status': s_status, _token: '{{ csrf_token() }}'}, "GET", "_self");
     });
 
+    function userLogStatus(userId,userName){
+        $.ajax({
+            url: '{{ route('users.userLogStatus') }}',
+            cache: false,
+            method: 'POST',
+            dataType: 'json',
+            data: {_token: '{{ csrf_token() }}','action':'activeLogUser','user_id': userId,'user_name':userName},
+            success: function(response){
+                console.log(response.message);
+                if(response.message == 'current'){
+                    setTimeout(function() {
+                        Swal.fire({
+                            position: "bottom-end",
+                            icon: "error",
+                            title: "Current User will be logout now..!!",
+                            showConfirmButton: false,
+                            timer: 3500
+                        });
+                        setTimeout(function() {
+                            $.redirect("{{ route('admin.logout') }}", {'action': 'logout', _token: '{{ csrf_token() }}'}, "GET", "_self");
+                        }, 4000);
+                    }, 3500);
+                }
+            },
+            error: function (errors) {
+                console.log('Error:', errors);
+            }
+        });
+    }
+
     $(document).on('click','.userActivete',function(){
         var user_id = ($(this).attr('data-id'))?$(this).attr('data-id'):'';
         var user_status = ($(this).attr('data-status'))?$(this).attr('data-status'):'';
@@ -722,11 +775,12 @@
             url: '{{ route('users.userActive','+user_id+') }}',
             cache: false,
             method: 'POST',
+            dataType: 'json',
             data: {_token: '{{ csrf_token() }}','action':'activeUser','user_status': user_status,'user_id':user_id},
             success: function(response){
-                console.log(response);
+                //console.log(response.message);
                 listUsers();
-                if(response == 'success'){
+                if(response.message == 'success'){
                     Swal.fire({
                         position: "bottom-end",
                         icon: "success",
@@ -734,6 +788,9 @@
                         showConfirmButton: false,
                         timer: 2500
                     });
+                    //console.log(response.user_id);
+                    //console.log(response.user_name);
+                    userLogStatus(response.user_id,response.user_name);
                 }
             },
             error: function (errors) {

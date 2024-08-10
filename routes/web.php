@@ -277,6 +277,7 @@ Route::group(['prefix' => '/'], function () {
                 Route::get('/', [SettingUsersController::class, 'index'])->name('index.users');
                 Route::get('/fetch-users', [SettingUsersController::class, 'fetchuserAll'])->name('users.fetchusers');
                 Route::post('/{user_id}/users-active', [SettingUsersController::class, 'userActive'])->name('users.userActive');
+                Route::post('/users-log-status', [SettingUsersController::class, 'userLogStatus'])->name('users.userLogStatus');
                 Route::get('/create', [SettingUsersController::class, 'userCreate'])->name('users.create');
                 Route::post('/save', [SettingUsersController::class, 'userSave'])->name('users.save');
                 Route::get('/user-open-form', [SettingUsersController::class, 'userOpenForm'])->name('users.form');
@@ -294,7 +295,6 @@ Route::group(['prefix' => '/'], function () {
                     Route::post('/user-privilege-save', [SettingUsersController::class, 'userPrivilegeSave'])->name('privileges.save');
                     Route::post('/user-privilege-delete', [SettingUsersController::class, 'userPrivilegeDelete'])->name('privileges.delete');
                 });
-
             });
 
             Route::get('/collection-bureaus', [CollectionBureausController::class, 'index'])->name('index.collectionbureaus');
