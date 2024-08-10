@@ -401,9 +401,12 @@ class SettingUsersController extends Controller
                         'permission_type' => $permission_type
                     ];
                 }
+
             }
 
+
         }
+        $message = 'success';
         RoutesPermissions::insert($routesData);
         //return redirect()->back();
 
@@ -418,7 +421,7 @@ class SettingUsersController extends Controller
         // Return a response or redirect as needed
         //return response()->json(['message' => 'Routes saved successfully']);
 
-        return response()->json(['message' => 'success']);
+        return response()->json(['message' => $message]);
 
     }
 
