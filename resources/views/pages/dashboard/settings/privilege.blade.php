@@ -118,7 +118,6 @@
                                                                                         @endphp
                                                                                     @endif
                                                                                 @endif
-
                                                                             @endforeach
                                                                             @if ($subMenu->route == $permissionsType->route)
                                                                                 <li>
