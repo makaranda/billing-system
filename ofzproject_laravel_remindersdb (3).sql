@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 07, 2024 at 12:16 PM
+-- Generation Time: Aug 11, 2024 at 03:49 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.1.25
 
@@ -224,7 +224,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (32, '2024_08_03_045528_create_employees_table', 7),
 (33, '2024_08_03_051740_create_collection_bureaus_table', 8),
 (34, '2024_08_03_052640_create_branches_table', 9),
-(35, '2024_08_06_093210_add_user_id_to_routes_permissions_table', 10);
+(35, '2024_08_06_093210_add_user_id_to_routes_permissions_table', 10),
+(36, '2024_08_10_051854_add_route_to_permissions_types_table', 11);
 
 -- --------------------------------------------------------
 
@@ -247,6 +248,7 @@ CREATE TABLE `password_reset_tokens` (
 CREATE TABLE `permissions_types` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `permission_type` varchar(50) NOT NULL,
+  `route` varchar(150) NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -255,15 +257,17 @@ CREATE TABLE `permissions_types` (
 -- Dumping data for table `permissions_types`
 --
 
-INSERT INTO `permissions_types` (`id`, `permission_type`, `created_at`, `updated_at`) VALUES
-(1, 'read', '2024-08-02 04:00:05', '2024-08-02 04:00:05'),
-(2, 'create', '2024-08-02 04:00:05', '2024-08-02 04:00:05'),
-(3, 'update', '2024-08-02 04:00:05', '2024-08-02 04:00:05'),
-(4, 'delete', '2024-08-02 04:00:05', '2024-08-02 04:00:05'),
-(5, 'post', '2024-08-02 04:00:05', '2024-08-02 04:00:05'),
-(6, 'print', '2024-08-02 04:00:05', '2024-08-02 04:00:05'),
-(7, 'privilege', '2024-08-02 04:00:05', '2024-08-02 04:00:05'),
-(8, 'other', '2024-08-02 04:00:05', '2024-08-02 04:00:05');
+INSERT INTO `permissions_types` (`id`, `permission_type`, `route`, `created_at`, `updated_at`) VALUES
+(1, 'read', 'index.users', '2024-08-02 04:00:05', '2024-08-02 04:00:05'),
+(2, 'create', 'index.users', '2024-08-02 04:00:05', '2024-08-02 04:00:05'),
+(3, 'update', 'index.users', '2024-08-02 04:00:05', '2024-08-02 04:00:05'),
+(4, 'delete', 'index.users', '2024-08-02 04:00:05', '2024-08-02 04:00:05'),
+(5, 'post', 'index.users', '2024-08-02 04:00:05', '2024-08-02 04:00:05'),
+(6, 'print', 'index.users', '2024-08-02 04:00:05', '2024-08-02 04:00:05'),
+(7, 'privilege', 'index.users', '2024-08-02 04:00:05', '2024-08-02 04:00:05'),
+(8, 'other', 'index.users', '2024-08-02 04:00:05', '2024-08-02 04:00:05'),
+(11, 'read', 'index.prepreminders', '2024-08-02 04:00:05', '2024-08-02 04:00:05'),
+(12, 'create', 'index.prepreminders', '2024-08-02 04:00:05', '2024-08-02 04:00:05');
 
 -- --------------------------------------------------------
 
@@ -313,34 +317,15 @@ INSERT INTO `routes_permissions` (`id`, `user_id`, `main_route`, `route`, `userT
 (49, 1066, 'index.reminders', 'index.reminderdelivery', '9', 'read', NULL, NULL),
 (51, 1066, 'index.reminders', 'index.archivecategories', '9', 'create', NULL, NULL),
 (53, 1066, 'index.reminders', 'index.allocatecustomer', '9', 'create', NULL, NULL),
-(466, 1, 'index.reminders', 'index.prepreminders', '1', 'read', NULL, NULL),
-(467, 1, 'index.reminders', 'index.recurringammendments', '1', 'create', NULL, NULL),
-(468, 1, 'index.reminders', 'index.recurringreminders', '1', 'create', NULL, NULL),
-(469, 1, 'index.reminders', 'index.generatedreminders', '1', 'update', NULL, NULL),
-(470, 1, 'index.reminders', 'index.generatedreminders', '1', 'delete', NULL, NULL),
-(471, 1, 'index.reminders', 'index.generatedreminders', '1', 'post', NULL, NULL),
-(472, 1, 'index.prepaid', 'index.prepaidcustomers', '1', 'read', NULL, NULL),
-(473, 1, 'index.prepaid', 'index.prepaidfollowups', '1', 'read', NULL, NULL),
-(474, 1, 'index.customers', 'index.cuscustomers', '1', 'read', NULL, NULL),
-(475, 1, 'index.customers', 'index.cusaddcustomergroups', '1', 'read', NULL, NULL),
-(476, 1, 'index.customers', 'index.cuswhtcetificates', '1', 'read', NULL, NULL),
-(477, 1, 'index.documents', 'index.quotationformats', '1', 'read', NULL, NULL),
-(478, 1, 'index.documents', 'index.quotationinclusions', '1', 'create', NULL, NULL),
-(479, 1, 'index.settings', 'index.departments', '1', 'read', NULL, NULL),
-(480, 1, 'index.settings', 'index.departments', '1', 'create', NULL, NULL),
-(481, 1, 'index.settings', 'index.departments', '1', 'update', NULL, NULL),
-(482, 1, 'index.settings', 'index.departments', '1', 'delete', NULL, NULL),
-(483, 1, 'index.settings', 'index.products', '1', 'read', NULL, NULL),
-(484, 1, 'index.settings', 'index.products', '1', 'create', NULL, NULL),
-(485, 1, 'index.settings', 'index.products', '1', 'update', NULL, NULL),
-(486, 1, 'index.settings', 'index.users', '1', 'read', NULL, NULL),
-(487, 1, 'index.settings', 'index.users', '1', 'create', NULL, NULL),
-(488, 1, 'index.settings', 'index.users', '1', 'update', NULL, NULL),
-(489, 1, 'index.settings', 'index.users', '1', 'delete', NULL, NULL),
-(490, 1, 'index.settings', 'index.users', '1', 'post', NULL, NULL),
-(491, 1, 'index.settings', 'index.users', '1', 'print', NULL, NULL),
-(492, 1, 'index.settings', 'index.users', '1', 'privilege', NULL, NULL),
-(493, 1, 'index.settings', 'index.users', '1', 'other', NULL, NULL);
+(2060, 1, 'index.reminders', 'index.prepreminders', '1', 'read', NULL, NULL),
+(2061, 1, 'index.reminders', 'index.prepreminders', '1', 'create', NULL, NULL),
+(2062, 1, 'index.settings', 'index.users', '1', 'create', NULL, NULL),
+(2063, 1, 'index.settings', 'index.users', '1', 'update', NULL, NULL),
+(2064, 1, 'index.settings', 'index.users', '1', 'delete', NULL, NULL),
+(2065, 1, 'index.settings', 'index.users', '1', 'post', NULL, NULL),
+(2066, 1, 'index.settings', 'index.users', '1', 'print', NULL, NULL),
+(2067, 1, 'index.settings', 'index.users', '1', 'privilege', NULL, NULL),
+(2068, 1, 'index.settings', 'index.users', '1', 'other', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -496,7 +481,7 @@ CREATE TABLE `system_users` (
 --
 
 INSERT INTO `system_users` (`id`, `branch_id`, `username`, `password`, `privilege`, `full_name`, `email`, `phone`, `receipt_printer_id`, `employee_id`, `group_id`, `is_debt_collect`, `collection_bureau_id`, `last_login_time`, `last_login_ip`, `last_login_user_agent`, `last_online`, `session_timeout`, `tfa_phone`, `tfa_email`, `otp_code`, `status`, `created_by`, `created_at`, `updated_at`) VALUES
-(1, 1, 'admin', '202cb962ac59075b964b07152d234b70', 1, 'System Administrator', 'admin@globemw.net', '0999535555', '1', 3, 'undefined', 0, 3, '2024-08-05 10:58:03', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36', NULL, 3306, 0, 0, NULL, 1, 1, '2019-12-28 14:58:48', '2024-08-07 03:13:42'),
+(1, 1, 'admin', '202cb962ac59075b964b07152d234b70', 1, 'System Administrator', 'admin@globemw.net', '0999535555', '1', 3, 'OFFICE', 1, 3, '2024-08-09 11:15:45', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36', NULL, 3306, 0, 0, NULL, 1, 1, '2019-12-28 14:58:48', '2024-08-09 22:58:18'),
 (2, 1, 'systemuser001', '21232f297a57a5a743894a0e4a801fc3', 4, 'SYSTEM USER', 'billing@globemw.net', '01841044', '', 0, 'OFFICE', 0, 0, NULL, NULL, NULL, NULL, 3600, 0, 0, NULL, 1, 1, '2019-12-28 14:58:48', '2020-04-21 20:37:03'),
 (1005, 1, 'mercyk', '471f41abd45a4e591d01bcaf163bcd3b', 4, 'MERCY MKUPU', 'salesbt6@globemw.net', '0883841469', '', 0, 'OFFICE', 0, 0, NULL, NULL, NULL, NULL, 3600, 0, 0, NULL, 1, 1, '2019-12-28 14:58:48', '2020-04-22 21:19:16'),
 (1017, 1, 'creditcontrol3@globemw.net', 'f7e55584f754b234060b3140e60a548e', 5, 'Likson', 'creditcontrol3@globemw.net', '088', '', 0, 'OFFICE', 1, 0, NULL, NULL, NULL, NULL, 3600, 0, 0, NULL, 1, 13, '2019-12-28 14:58:48', '2024-08-02 05:44:58'),
@@ -507,7 +492,7 @@ INSERT INTO `system_users` (`id`, `branch_id`, `username`, `password`, `privileg
 (1030, 1, 'creditcontrol2@globemw.net', '5d1f7b045ca3b4509746f51e8bf44b82', 5, 'Lickson Mayankho Mkona', 'creditcontrol2@globemw.net', '0880004661', '', 0, 'OFFICE', 1, 2, NULL, NULL, NULL, NULL, 3600, 0, 0, NULL, 1, 1, '2020-04-22 21:11:51', '2024-08-02 05:44:47'),
 (1031, 2, 'llwdesk@globemw.net', 'f7e55584f754b234060b3140e60a548e', 5, 'Raphael Kuyesa', 'llwdesk@globemw.net', '0885978537', '', 0, 'OFFICE', 1, 4, '2024-05-17 10:41:42', '41.216.228.23', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36', NULL, 3600, 0, 0, NULL, 0, 1, '2020-04-22 21:12:49', '2024-05-16 19:22:37'),
 (1032, 1, 'kmalida@globemw.net', '911d52b5243d608e1c76064b1b3cf5dd', 5, 'Kausar Malida', 'kmalida@globemw.net', '0999409449', '', 0, 'HEAD_OFFICE', 1, 2, '2024-07-19 16:39:41', '41.77.14.21', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36', NULL, 3600, 0, 0, NULL, 1, 1, '2020-04-22 21:13:38', '2024-07-18 22:09:41'),
-(1033, 1, 'accounts.clerk@globemw.net', 'e117415ee47c41a6c6e20075642fb546', 4, 'Esther Mhango', 'accounts.clerk@globemw.net', '0999475021', '', 0, 'OFFICE', 0, 0, NULL, NULL, NULL, NULL, 3600, 0, 0, NULL, 1, 1, '2020-04-22 21:15:11', '2024-08-07 03:51:51'),
+(1033, 1, 'accounts.clerk@globemw.net', 'e117415ee47c41a6c6e20075642fb546', 4, 'Esther Mhango', 'accounts.clerk@globemw.net', '0999475021', '', 0, 'OFFICE', 0, 0, NULL, NULL, NULL, NULL, 3600, 0, 0, NULL, 1, 1, '2020-04-22 21:15:11', '2024-08-10 00:08:18'),
 (1034, 1, 'del--gildebtors@globemw.net', 'e117415ee47c41a6c6e20075642fb546', 5, 'Peter Silungwe', 'del--gildebtors@globemw.net', '0999089107', '', 0, 'OFFICE', 1, 0, NULL, NULL, NULL, NULL, 3600, 0, 0, NULL, 0, 1, '2020-04-22 21:16:35', '2022-05-10 15:23:29'),
 (1035, 2, 'linda@globemw.net', 'f7e55584f754b234060b3140e60a548e', 5, 'Linda Kaunga', 'linda@globemw.net', '0882211', '', 0, 'OFFICE', 1, 4, NULL, NULL, NULL, NULL, 3600, 0, 0, NULL, 0, 1, '2020-04-22 21:17:27', '2021-08-02 21:57:15'),
 (1036, 1, 'madhawa@globemw.net', 'e117415ee47c41a6c6e20075642fb546', 8, 'Madhawa Vimukthi', 'madhawa@globemw.net', '0888246756', '', 0, 'OFFICE', 0, 0, NULL, NULL, NULL, NULL, 3600, 0, 0, NULL, 0, 1, '2020-04-22 21:41:19', '2021-06-09 15:03:28'),
@@ -581,7 +566,8 @@ INSERT INTO `system_users` (`id`, `branch_id`, `username`, `password`, `privileg
 (1104, 1, 'nishantha@globemw.net', '7acc05835e45bde840a8df28f72fd1d3', 9, 'Nishantha Thennakon', 'nishantha@globemw.net', '0888888888', '', 0, 'HEAD_OFFICE', 1, 0, '2024-07-17 07:48:01', '41.77.12.73', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36', NULL, 3600, 0, 0, NULL, 1, 1073, '2024-02-21 19:54:21', '2024-07-16 13:18:01'),
 (1105, 1, 'keisha@globemw.net', '8c988912a61d671b802c944ab5a033bc', 8, 'Keisha Callcentre', 'keisha@globemw.net', '0888888881', '', 0, 'HEAD_OFFICE', 1, 0, '2024-07-16 10:10:52', '41.77.8.72', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36', NULL, 3600, 0, 0, NULL, 1, 1073, '2024-04-21 21:12:27', '2024-07-15 15:40:52'),
 (1106, 1, 'kelvin@globemw.net', '8c988912a61d671b802c944ab5a033bc', 8, 'Kelvin Callcentre', 'kelvin@globemw.net', '0888888831', '', 0, 'HEAD_OFFICE', 1, 0, '2024-07-22 07:36:09', '41.77.8.72', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36', NULL, 3600, 0, 0, NULL, 1, 1073, '2024-04-21 21:13:16', '2024-07-21 13:06:09'),
-(1107, 2, 'thusitha@globemw.net', '7135dd3a03516ec51c8af60602cca368', 9, 'Thusitha Perera', 'thusitha@globemw.net', '888416426', '', 0, 'LILONGWE', 1, 0, '2024-05-24 12:20:26', '41.77.13.202', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36', NULL, 3600, 0, 0, NULL, 1, 1073, '2024-05-05 21:40:09', '2024-05-23 17:50:26');
+(1107, 2, 'thusitha@globemw.net', '7135dd3a03516ec51c8af60602cca368', 9, 'Thusitha Perera', 'thusitha@globemw.net', '888416426', '', 0, 'LILONGWE', 1, 0, '2024-05-24 12:20:26', '41.77.13.202', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36', NULL, 3600, 0, 0, NULL, 1, 1073, '2024-05-05 21:40:09', '2024-05-23 17:50:26'),
+(1112, 17, 'makara', '202cb962ac59075b964b07152d234b70', 2, 'WebSL', NULL, NULL, '1', 1, 'OFFICE', 1, 2, '2024-08-09 11:29:38', NULL, NULL, NULL, 3600, 0, 0, NULL, 1, 1, '2024-08-09 05:58:13', '2024-08-09 05:59:38');
 
 -- --------------------------------------------------------
 
@@ -763,13 +749,13 @@ ALTER TABLE `failed_jobs`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- AUTO_INCREMENT for table `permissions_types`
 --
 ALTER TABLE `permissions_types`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `personal_access_tokens`
@@ -781,7 +767,7 @@ ALTER TABLE `personal_access_tokens`
 -- AUTO_INCREMENT for table `routes_permissions`
 --
 ALTER TABLE `routes_permissions`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=494;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2069;
 
 --
 -- AUTO_INCREMENT for table `system_menus`
@@ -793,7 +779,7 @@ ALTER TABLE `system_menus`
 -- AUTO_INCREMENT for table `system_users`
 --
 ALTER TABLE `system_users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1112;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1113;
 
 --
 -- AUTO_INCREMENT for table `users`

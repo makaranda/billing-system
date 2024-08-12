@@ -138,14 +138,17 @@ class SettingUsersController extends Controller
         $user_name = $systemUsers->username;
         $user_id = $systemUsers->id;
 
-        $updateStatus = ($request->user_status == 1) ? 0 : 1;
+        if($request->user_id != Auth::user()->id){
+            $updateStatus = ($request->user_status == 1) ? 0 : 1;
 
-        $userData = [
-            'status' => $updateStatus,
-        ];
-        $systemUsers->update($userData);
-        $message = 'success';
-
+            $userData = [
+                'status' => $updateStatus,
+            ];
+            $systemUsers->update($userData);
+            $message = 'success';
+        }else{
+            $message = 'already';
+        }
         $responseData = [
             'message' => $message,
             'user_id' => $user_id,

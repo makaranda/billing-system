@@ -791,6 +791,14 @@
                     //console.log(response.user_id);
                     //console.log(response.user_name);
                     userLogStatus(response.user_id,response.user_name);
+                }else{
+                    Swal.fire({
+                        position: "bottom-end",
+                        icon: "error",
+                        title: "You are the current user, and the system cannot disable you now..!!",
+                        showConfirmButton: false,
+                        timer: 4500
+                    });
                 }
             },
             error: function (errors) {
