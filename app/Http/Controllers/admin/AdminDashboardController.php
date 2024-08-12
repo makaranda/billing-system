@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\SystemMenus;
 use App\Models\RoutesPermissions;
+use App\Models\SystemUsers;
 
 class AdminDashboardController extends Controller
 {
@@ -33,6 +34,30 @@ class AdminDashboardController extends Controller
         }
         $mainRouteName = 'index.dashboard';
         return view('pages.dashboard.dashboard', compact('mainMenus', 'data','routesPermissions','mainRouteName','getAllRoutePermisssions'));
+    }
+
+    public function usersAvailability(){
+        $message = '';
+        $systemUsers = SystemUsers::where('id', Auth::user()->id)
+                          ->first();
+
+        if($systemUsers->id){
+            if(($systemUsers->id == Auth::user()->id) && ($systemUsers->status == 0)){
+                $message = 'inactive';
+                //Auth::guard('admin')->logout();
+            }else{
+                $message = 'active';
+            }
+        }else{
+            $message = 'error';
+        }
+
+        $responseData = [
+            'message' => $message,
+        ];
+        //echo 'test';
+        //return $message;
+        return response()->json($responseData);
     }
 
 

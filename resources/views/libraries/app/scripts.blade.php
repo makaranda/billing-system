@@ -69,5 +69,41 @@
       },
     });
 
+setInterval(function() {
+    //alert();
+    checkUserAvailability();
+}, 60000);
+
+function checkUserAvailability(){
+    $.ajax({
+        url: '{{ route('users.availability') }}',
+        cache: false,
+        method: 'GET',
+        dataType: 'json',
+        data: {_token: '{{ csrf_token() }}','action':'activeUser'},
+        success: function(response){
+            //alert();
+            console.log(response.message);
+            if(response.message == 'inactive'){
+                Swal.fire({
+                    position: "bottom-end",
+                    icon: "success",
+                    title: "You have Not Permission to access anything here please contact System Administrator..!!",
+                    showConfirmButton: false,
+                    timer: 5000
+                });
+
+                setTimeout(function() {
+                    $.redirect("{{ route('admin.logout') }}", {'action': 'logout', _token: '{{ csrf_token() }}'}, "GET", "_self");
+                }, 10000);
+                //console.log(response.user_id);
+                //console.log(response.user_name);
+            }
+        },
+        error: function (errors) {
+            console.log('Error:', errors);
+        }
+    });
+}
 
   </script>

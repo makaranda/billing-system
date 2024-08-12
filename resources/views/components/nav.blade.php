@@ -1,3 +1,6 @@
+@php
+    $menuCounts = 0;
+@endphp
 <div class="wrapper">
     <!-- Sidebar -->
     <div class="sidebar" data-background-color="dark">
@@ -34,7 +37,7 @@
               </a>
             </li>
 
-            @if(Auth::user()->privilege === 1)
+            @if(Auth::user()->privilege >= 1)
                     {{-- {{ var_dump($subMenus) }} --}}
 
                 @if ($mainMenus)
@@ -210,12 +213,12 @@
 
                 <ul class="navbar-nav topbar-nav align-items-center mt-2 mb-2 top-menu">
                     {{-- {{ print_r($routesPermissions) }} --}}
-                    @if(Auth::user()->privilege === 1)
+                    @if(Auth::user()->privilege >= 1)
                         {{-- {{ request()->route()->getName() }} --}}
 
                         @if ($mainMenus)
                             @php
-                                $menuCounts = 0;
+
                                 // Fetch routesPermissions for the authenticated user
                                 $userRoutesPermissions = $getAllRoutePermisssions->filter(function ($permission) {
                                     return $permission->user_id === Auth::user()->id;

@@ -271,10 +271,25 @@ class SettingUsersController extends Controller
                 }
             }
         }
+
+        $bulkUsersArray = explode(',', $bulkUsers);
+        $routesPermissionsPrivilage = RoutesPermissions::whereIn('user_id', $bulkUsersArray)->get();
+
+        // Group the permissions by route and permission type for quick lookup
+        $routesPermissionsMap = $routesPermissionsPrivilage->groupBy(function ($item) {
+            return $item->route . '_' . $item->permission_type;
+        });
+
+        $mainMenusPrivilage = SystemMenus::with(['children:id,parent_id,name,route'])
+        ->whereNull('parent_id')
+        ->select('id', 'name')
+        ->get();
+
+        $permissionsTypesPrivilage = PermissionsTypes::select('permission_type', 'route')->get();
         //dd($mainMenus);
         //echo 'test';
         //$userPermissionLists = $bulkUsers;
-        return view('pages.dashboard.settings.privilege', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','permissionsTypes','currentUser','systemUsers','routesPermissions','bulkUsers','permissionType','userPermissionLists','getAllRoutePermisssions'));
+        return view('pages.dashboard.settings.privilege', compact('mainMenus','mainMenusPrivilage','routesPermissionsMap','permissionsTypesPrivilage','bulkUsersArray','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','permissionsTypes','currentUser','systemUsers','routesPermissions','bulkUsers','permissionType','userPermissionLists','getAllRoutePermisssions'));
     }
 
     public function userBulkPrivilege(Request $request){
@@ -362,7 +377,23 @@ class SettingUsersController extends Controller
             }
         }
 
-        return view('pages.dashboard.settings.privilege', compact('mainMenus', 'subsMenus', 'data', 'mainRouteName', 'remindersRoute', 'parentid', 'routesPermissions', 'permissionsTypes', 'currentUser', 'systemUsers', 'routesPermissions', 'bulkUsers','permissionType','userPermissionLists','getAllRoutePermisssions'));
+
+        $bulkUsersArray = explode(',', $bulkUsers);
+        $routesPermissionsPrivilage = RoutesPermissions::whereIn('user_id', $bulkUsersArray)->get();
+
+        // Group the permissions by route and permission type for quick lookup
+        $routesPermissionsMap = $routesPermissionsPrivilage->groupBy(function ($item) {
+            return $item->route . '_' . $item->permission_type;
+        });
+
+        $mainMenusPrivilage = SystemMenus::with(['children:id,parent_id,name,route'])
+        ->whereNull('parent_id')
+        ->select('id', 'name')
+        ->get();
+
+        $permissionsTypesPrivilage = PermissionsTypes::select('permission_type', 'route')->get();
+
+        return view('pages.dashboard.settings.privilege', compact('mainMenus','mainMenusPrivilage','routesPermissionsMap','permissionsTypesPrivilage','bulkUsersArray','subsMenus', 'data', 'mainRouteName', 'remindersRoute', 'parentid', 'routesPermissions', 'permissionsTypes', 'currentUser', 'systemUsers', 'routesPermissions', 'bulkUsers','permissionType','userPermissionLists','getAllRoutePermisssions'));
     }
 
     public function userPrivilegeSave(Request $request){
@@ -428,6 +459,72 @@ class SettingUsersController extends Controller
 
     }
 
+    public function userPrivilegeRemove(Request $request)
+{
+        // Input datasets
+        $dataset = $request->permissions;
+        $datasetUsers = $request->permissionsUsersList;
+        $permissionsToRemove = $request->permissionsRemove;
+
+        // Convert comma-separated strings to arrays
+        $records = explode(',', $dataset);
+        $recordsUsers = explode(',', $datasetUsers);
+        $recordsRemove = explode(',', $permissionsToRemove);
+
+        // Iterate over each user to remove specified permissions
+        foreach ($recordsUsers as $userId) {
+            foreach ($recordsRemove as $permission) {
+                $parts = explode('/', $permission);
+                $mainMenuId = $parts[0];
+                $subMenuId = $parts[1];
+                $permissionType = $parts[2];
+
+                // Find the main menu and sub menu
+                $mainMenu = SystemMenus::find($mainMenuId);
+                $subMenu = SystemMenus::find($subMenuId);
+
+                if ($mainMenu && $subMenu) {
+                    // Delete the specific permission for the user
+                    RoutesPermissions::where('user_id', $userId)
+                        ->where('main_route', $mainMenu->route)
+                        ->where('route', $subMenu->route)
+                        ->where('permission_type', $permissionType)
+                        ->delete();
+                }
+            }
+        }
+
+        // Reinsert the remaining permissions if necessary
+        $routesData = [];
+        foreach ($records as $record) {
+            $parts = explode('/', $record);
+            $mainMenuId = $parts[0];
+            $subMenuId = $parts[1];
+            $permissionType = $parts[2];
+
+            $mainMenu = SystemMenus::find($mainMenuId);
+            $subMenu = SystemMenus::find($subMenuId);
+
+            if ($mainMenu && $subMenu) {
+                foreach ($recordsUsers as $userId) {
+                    $systemUser = SystemUsers::find($userId);
+                    $routesData[] = [
+                        'user_id' => $systemUser->id,
+                        'main_route' => $mainMenu->route,
+                        'route' => $subMenu->route,
+                        'userType' => $systemUser->privilege,
+                        'permission_type' => $permissionType
+                    ];
+                }
+            }
+        }
+
+        if (!empty($routesData)) {
+            RoutesPermissions::insert($routesData);
+        }
+
+        return response()->json(['message' => 'success']);
+    }
 
     public function userPrivilegeDelete(Request $request){
         $dataset = $request->permissions;

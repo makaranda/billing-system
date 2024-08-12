@@ -155,7 +155,7 @@ Route::group(['prefix' => '/'], function () {
             //     Route::post('/{page_id}/update', [UsersController::class, 'update'])->name('users.update');
             //     Route::post('/saveRecord', [UsersController::class, 'saveRecord'])->name('users.saveRecord');
             // });
-
+            Route::get('/users-availability',[AdminDashboardController::class,'usersAvailability'])->name('users.availability');
         //Reminders Prepaid Services Documents Pay Online Task Reports Accounting Settings
         Route::group(['prefix' => 'reminders', 'middleware' => 'role:admin'], function () {
             Route::get('/', [RemindersController::class, 'index'])->name('index.reminders');
@@ -293,6 +293,7 @@ Route::group(['prefix' => '/'], function () {
                     Route::get('/{user_id}/user-privilege', [SettingUsersController::class, 'userPrivilege'])->name('users.privilege');
                     Route::post('/user-privilege', [SettingUsersController::class, 'userBulkPrivilege'])->name('users.bulkprivilege');
                     Route::post('/user-privilege-save', [SettingUsersController::class, 'userPrivilegeSave'])->name('privileges.save');
+                    Route::post('/user-privilege-remove', [SettingUsersController::class, 'userPrivilegeRemove'])->name('privileges.remove');
                     Route::post('/user-privilege-delete', [SettingUsersController::class, 'userPrivilegeDelete'])->name('privileges.delete');
                 });
             });

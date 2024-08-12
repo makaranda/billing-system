@@ -62,7 +62,7 @@
                                         <div class="panel text-right" style="padding-right:8px;">
                                             <input type="checkbox" onclick="checkAllMenuPrivileges(this);"> Select All
                                         </div>
-                                        {{-- {{ var_dump($mainMenusPrivilage) }} --}}
+                                        {{-- {{ var_dump($mainMenus) }} --}}
                                         @php
                                             if($userPermissionLists){
                                                 $userPermissionLists = rtrim($userPermissionLists, ",");
@@ -77,58 +77,72 @@
                                         <div class="accordion accordion-flush" id="accordionFlushExample">
 
                                             {{-- {{ 'user Permission Lists : '.$userPermissionLists }} --}}
-                                            @foreach ($mainMenusPrivilage as $key => $mainMenu)
-                                                <div class="accordion-item mb-2 border">
-                                                    <h2 class="accordion-header rounded">
-                                                        <div class="row justify-content-center">
-                                                            <div class="col-9 col-md-10 align-content-center">
-                                                            <button class="accordion-button collapsed pl-4" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse{{ $key }}" aria-expanded="false" aria-controls="flush-collapse{{ $key }}">{{ $mainMenu->name }}</button>
-                                                            </div>
-                                                            <div class="col-3 col-md-2">
-                                                            <div class="panel text-right" style="padding-right:8px;">
-                                                                <label class="text-capitalize">
-                                                                    <input type="checkbox" id="{{ $mainMenu->id }}" onclick="checkAll(this);"/> Select All
-                                                                </label>
-                                                            </div>
-                                                            </div>
-                                                        </div>
-                                                    </h2>
-                                                    <div id="flush-collapse{{ $key }}" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
-                                                        <div class="accordion-body">
-                                                            <div class="row">
-                                                            <div class="col-12 col-md-12"></div>
-                                                            @if($mainMenu->children->isNotEmpty())
-                                                                @foreach($mainMenu->children as $key1 => $subMenu)
-                                                                    <div class="col-6 col-md-3">
-                                                                        <a class="sub-item text-uppercase" href="#"><span class="sub-item">{{ $subMenu->name }}</span></a>
-                                                                        <ul class="permissions_types_list">
-                                                                        @foreach ($permissionsTypesPrivilage as $key2 => $permissionsType)
+                                            @foreach ($mainMenus as $key => $mainMenu)
+                                              <div class="accordion-item mb-2 border">
+                                                <h2 class="accordion-header rounded">
+                                                  <div class="row justify-content-center">
+                                                     <div class="col-9 col-md-10 align-content-center">
+                                                        <button class="accordion-button collapsed pl-4" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse{{ $key }}" aria-expanded="false" aria-controls="flush-collapse{{ $key }}">{{ $mainMenu->name }}</button>
+                                                     </div>
+                                                     <div class="col-3 col-md-2">
+                                                        <div class="panel text-right" style="padding-right:8px;">
+                                                            <label class="text-capitalize">
+                                                               <input type="checkbox" id="{{ $mainMenu->id }}" onclick="checkAll(this);"/> Select All
+                                                            </label>
+                                                         </div>
+                                                     </div>
+                                                  </div>
+                                                </h2>
+                                                <div id="flush-collapse{{ $key }}" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+                                                  <div class="accordion-body">
+
+                                                    <div class="row">
+                                                        <div class="col-12 col-md-12"></div>
+                                                        @if($mainMenu->subMenus->isNotEmpty())
+                                                            @foreach($mainMenu->subMenus as $key1 => $subMenu)
+                                                                <div class="col-6 col-md-3">
+                                                                    <a class="sub-item text-uppercase" href="#"><span class="sub-item">{{ $subMenu->name }}</span></a>
+                                                                    <ul class="permissions_types_list">
+                                                                        @foreach ($permissionsTypes as $key2 => $permissionsType)
                                                                             @php
-                                                                                $checked = isChecked($subMenu->route, $permissionsType->permission_type, $routesPermissionsMap, $bulkUsersArray) ? 'checked' : '';
+                                                                                $checked = '';
+                                                                                $bulkUsersArray = explode(',', $bulkUsers);
                                                                             @endphp
+                                                                            @foreach ($routesPermissions as $routesPermission)
+                                                                                @if ($routesPermission->route == $subMenu->route && $routesPermission->permission_type == $permissionsType->permission_type)
+                                                                                    @if(in_array($routesPermission->user_id, $bulkUsersArray))
+                                                                                        @php
+                                                                                            $checked = 'checked';
+                                                                                            break;
+                                                                                        @endphp
+                                                                                    @endif
+                                                                                @endif
+                                                                            @endforeach
                                                                             @if ($subMenu->route == $permissionsType->route)
                                                                                 <li>
                                                                                     <a>
-                                                                                    <div class="checkbox">
-                                                                                        <label class="text-uppercase">
-                                                                                            <input type="checkbox" name="{{ $permissionsType->permission_type }}[]" value="{{ $mainMenu->id.'/'.$subMenu->id.'/'.$permissionsType->permission_type }}" id="{{ $subMenu->id }}_{{ $permissionsType->permission_type }}" class="chk_user sub_of_{{ $mainMenu->id }}" {{ $checked }}/>
-                                                                                            {{ $permissionsType->permission_type }}
-                                                                                        </label>
-                                                                                    </div>
+                                                                                        <div class="checkbox">
+                                                                                            <label class="text-uppercase">
+                                                                                                <input type="checkbox" name="{{ $permissionsType->permission_type }}[]" value="{{ $mainMenu->id.'/'.$subMenu->id.'/'.$permissionsType->permission_type }}" id="{{ $subMenu->id }}_{{ $permissionsType->permission_type }}" class="chk_user sub_of_{{ $mainMenu->id }}" {{ $checked }}/>
+                                                                                                {{ $permissionsType->permission_type }}
+                                                                                            </label>
+                                                                                        </div>
                                                                                     </a>
                                                                                 </li>
                                                                             @endif
                                                                         @endforeach
-                                                                        </ul>
-                                                                    </div>
-                                                                @endforeach
-                                                            @endif
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                @endforeach
+                                                                    </ul>
+                                                                </div>
+                                                            @endforeach
+                                                        @endif
 
+                                                    </div>
+
+
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            @endforeach
                                         </div>
                                         <div class="col-md-12 text-center mt-4">
 											<button type="button" class="btn btn-primary" id="{{ ($permissionType == 'remove')?'remove':'save' }}_permission">	{{ ($permissionType == 'remove')?'REMOVE':'SAVE' }} USER MENU PERMISSIONS</button>
@@ -191,7 +205,7 @@
         const checkedValues2 = $('#permissionsRemove').val() ? $('#permissionsRemove').val().split(',') : [];
         const value = $(clickedCheckbox).val();
 
-        if (!$(clickedCheckbox).is(':checked')) {
+        if ($(clickedCheckbox).is(':checked')) {
             checkedValues2.push(value);
         } else {
             const index = checkedValues2.indexOf(value);
@@ -215,43 +229,6 @@
     }
     document.querySelectorAll('.chk_user').forEach(checkbox => {
         checkbox.addEventListener('change', updateHiddenInput);
-    });
-
-    $(document).on('click','#remove_permission',function(){
-        $('#overlay').show();
-        const permissionsUsersList = $('#permissionsUsersList').val();
-        const permissionType = $('#permissionType').val();
-        const permissions = $('#permissions').val();
-        const permissionsRemove = $('#permissionsRemove').val();
-        //alert();
-        $.ajax({
-            url: '{{ route('privileges.remove') }}',
-            cache: false,
-            method: 'POST',
-            dataType: 'json',
-            data: {_token: '{{ csrf_token() }}','action':'formUser','permissionsUsersList':permissionsUsersList,'permissionType':permissionType,'permissions':permissions,'permissionsRemove':permissionsRemove},
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') // Ensure you include the CSRF token
-            },
-            success: function(response){
-                //alert(response);
-                $('#overlay').hide();
-                console.log(response.message);
-                if(response.message == 'success'){
-                    Swal.fire({
-                        position: "bottom-end",
-                        icon: "success",
-                        title: "You Have Removed User Permissions Successfully ",
-                        showConfirmButton: false,
-                        timer: 4000
-                    });
-                };
-
-            },
-            error: function (errors) {
-                console.log('Error:', errors);
-            }
-        });
     });
 
     $(document).on('click','#save_permission',function(){

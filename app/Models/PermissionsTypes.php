@@ -11,5 +11,6 @@ class PermissionsTypes extends Model
     protected $table = 'permissions_types';
     protected $fillable = [
         'permission_type',
+        'route',
     ];
 }
