@@ -223,7 +223,7 @@
         const permissionType = $('#permissionType').val();
         const permissions = $('#permissions').val();
         const permissionsRemove = $('#permissionsRemove').val();
-        //alert();
+
         $.ajax({
             url: '{{ route('privileges.remove') }}',
             cache: false,
