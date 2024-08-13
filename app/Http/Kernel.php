@@ -21,6 +21,7 @@ class Kernel extends HttpKernel
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
         \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
+        \App\Http\Middleware\CheckUserStatus::class,
     ];
 
     /**
@@ -73,5 +74,6 @@ class Kernel extends HttpKernel
         //'admin.auth' => \App\Http\Middleware\AdminAuthenticate::class,
         // Add other middleware if necessary
         'role' => \App\Http\Middleware\CheckRole::class,
+        'check.status' => \App\Http\Middleware\CheckUserStatus::class,
     ];
 }

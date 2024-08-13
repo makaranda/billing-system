@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
+@auth
+
 <div class="container">
     <div class="page-inner">
       <div class="page-header">
@@ -69,10 +71,12 @@
                             <div class="row">
                                 <div class="col-sm-12 col-lg-12">
                                     <br/>
+
                                     {{-- {{ '<pre>' }}
                                     {{ var_dump($routepermissions['read']) }}
                                     {{ '</pre>' }} --}}
                                     <!-- your page content -->
+
                                     <div class="row">
                                         <div class="col-md-12">
                                             <div class="card">
@@ -114,7 +118,7 @@
                                                                 <select class="form-control" id="s_privilege">
                                                                     <option value=""> - All Privileges - </option>
                                                                     @foreach ($userPrivileges as $userPrivilege)
-                                                                        @if($userPrivilege->status == 1)
+                                                                        @if($userPrivilege->status == 1 && $userPrivilege->id > Auth::user()->privilege)
                                                                             <option value="{{ $userPrivilege->id }}"> {{ $userPrivilege->name }} </option>
                                                                         @endif
                                                                     @endforeach
@@ -172,7 +176,7 @@
 
     </div>
 </div>
-
+@endauth
 
 <!-- Add User Modal -->
 <div class="modal fade" id="addUserModal" role="dialog">
@@ -199,6 +203,8 @@
 			    	<form name="frm_add_user" id="frm_add_user" method="post">
                     <input type="hidden" name="form_type" id="form_type" value="users.save">
                     <input type="hidden" name="form_user_id" id="form_user_id" value="">
+                    <input type="hidden" name="user_privilege" id="user_privilege" value="{{ Auth::user()->privilege }}">
+                    <input type="hidden" name="current_user_id" id="current_user_id" value="{{ Auth::user()->id }}">
 					<div class="row">
 						<div class="col-md-6">
 							<div class="form-group">
@@ -540,7 +546,9 @@
                     privilegeDropdown.empty();
                     privilegeDropdown.append('<option value="">- SELECT PRIVILEGE -</option>');
                     $.each(response.userPrivileges, function(index, privilege) {
-                        privilegeDropdown.append('<option value="'+privilege.id+'">'+privilege.name+'</option>');
+                        if($('#user_privilege').val() < privilege.id){
+                            privilegeDropdown.append('<option value="'+privilege.id+'">'+privilege.name+'</option>');
+                        }
                     });
 
                     var employeesDropdown = $('#employee_id');
@@ -615,7 +623,11 @@
                     privilegeDropdown.empty();
                     privilegeDropdown.append('<option value="">- SELECT PRIVILEGE -</option>');
                     $.each(response.userPrivileges, function(index, privilege) {
-                        privilegeDropdown.append('<option value="'+privilege.id+'">'+privilege.name+'</option>');
+                        if($('#user_privilege').val() <= privilege.id && $('#current_user_id').val() == user_id){
+                            privilegeDropdown.append('<option value="'+privilege.id+'">'+privilege.name+'</option>');
+                        }else if($('#user_privilege').val() < privilege.id && $('#current_user_id').val() != user_id){
+                            privilegeDropdown.append('<option value="'+privilege.id+'">'+privilege.name+'</option>');
+                        }
                     });
 
                     var employeesDropdown = $('#employee_id');
@@ -789,7 +801,7 @@
                         timer: 2500
                     });
                     //console.log(response.user_id);
-                    //console.log(response.user_name);
+
                     userLogStatus(response.user_id,response.user_name);
                 }else{
                     Swal.fire({
