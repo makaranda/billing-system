@@ -25,6 +25,7 @@ class User extends Authenticatable
         'privilege',
         'extensions',
         'status',
+        'session_timeout',
     ];
 
     /**

@@ -76,5 +76,6 @@ class Kernel extends HttpKernel
         // Add other middleware if necessary
         'role' => \App\Http\Middleware\CheckRole::class,
         'check.status' => \App\Http\Middleware\CheckUserStatus::class,
+        'setSessionTimeout' => \App\Http\Middleware\SetSessionTimeout::class,
     ];
 }
