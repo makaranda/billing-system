@@ -32,13 +32,13 @@ return [
     |
     */
 
-    //'lifetime' => env('SESSION_LIFETIME', 2),
-    'lifetime' => function() {
-        if (auth()->check()) {
-            return auth()->user()->session_timeout;
+    'lifetime' => env('SESSION_LIFETIME', 2),
+    /*'lifetime' => function() {
+        if (Auth::user()->id) {
+            return Auth::user()->session_timeout;
         }
         return env('SESSION_LIFETIME', 2); // Fallback to a default value if not authenticated
-    },
+    },*/
 
     'expire_on_close' => true,
 

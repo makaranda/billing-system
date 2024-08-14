@@ -19,12 +19,15 @@ class SetSessionTimeout
     public function handle(Request $request, Closure $next): Response
     {
         if (Auth::check()) {
-            // Get the session timeout from the authenticated user
-            $sessionTimeout = Auth::user()->session_timeout;
+            $sessionTimeout = Auth::user()->session_timeout; // This should be an integer
 
-            //Log::info('Session timeout for user: ' . $sessionTimeout);
-            // Override the session lifetime configuration
-            Config::set('session.lifetime', $sessionTimeout);
+            // Ensure sessionTimeout is an integer
+            if (is_int($sessionTimeout)) {
+                Config::set('session.lifetime', $sessionTimeout);
+            } else {
+                // Fallback to default session lifetime if it's not an integer
+                Config::set('session.lifetime', env('SESSION_LIFETIME', 120));
+            }
         }
 
         return $next($request);
