@@ -19,17 +19,21 @@ class SetSessionTimeout
     public function handle(Request $request, Closure $next): Response
     {
         if (Auth::check()) {
-            $sessionTimeout = Auth::user()->session_timeout; // This should be an integer
+            $sessionTimeout = Auth::user()->session_timeout;
+            $lastActivity = session('lastActivityTime');
+            $currentTime = now();
 
-            // Ensure sessionTimeout is an integer
-            if (is_int($sessionTimeout)) {
-                Config::set('session.lifetime', $sessionTimeout);
-            } else {
-                // Fallback to default session lifetime if it's not an integer
-                Config::set('session.lifetime', env('SESSION_LIFETIME', 120));
+            if ($lastActivity !== null && $currentTime->diffInMinutes($lastActivity) >= $sessionTimeout) {
+                Auth::logout();
+                session()->invalidate();
+
+                return redirect()->route('login')->with('message', 'You have been logged out due to inactivity.');
             }
+
+            session(['lastActivityTime' => $currentTime]);
         }
 
         return $next($request);
+
     }
 }
