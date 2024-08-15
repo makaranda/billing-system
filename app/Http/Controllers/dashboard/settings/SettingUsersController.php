@@ -286,10 +286,12 @@ class SettingUsersController extends Controller
         ->get();
 
         $permissionsTypesPrivilage = PermissionsTypes::select('permission_type', 'route')->get();
+
         //dd($mainMenus);
         //echo 'test';
         //$userPermissionLists = $bulkUsers;
         return view('pages.dashboard.settings.privilege', compact('mainMenus','mainMenusPrivilage','routesPermissionsMap','permissionsTypesPrivilage','bulkUsersArray','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','permissionsTypes','currentUser','systemUsers','routesPermissions','bulkUsers','permissionType','userPermissionLists','getAllRoutePermisssions'));
+
     }
 
     public function userBulkPrivilege(Request $request){
@@ -319,6 +321,7 @@ class SettingUsersController extends Controller
         foreach ($subsMenus as $submenu) {
             $submenu->subMenus = $submenu->orderBy('order')->get();
         }
+
         foreach ($mainMenus as $menu) {
             $menu->subMenus = $menu->children()->orderBy('order')->get();
         }
@@ -823,32 +826,54 @@ class SettingUsersController extends Controller
                                         </a>';
                 }
 
-                $privilegeButton = '';
-                if ($canPrivilege) {
-                    $privilegeButton = '<a href="'.route("users.privilege","$systemUser->id").'" title="Privileges">
-                                            <button type="button" class="btn btn-xs btn-warning"><i class="fa fa-lock"></i></button>
-                                        </a>';
-                }
 
+                $privilegeButton = '';
+                if($systemUser->id != Auth::user()->id){
+                    if ($canPrivilege) {
+                        $privilegeButton = '<a href="'.route("users.privilege","$systemUser->id").'" title="Privileges">
+                                                <button type="button" class="btn btn-xs btn-warning"><i class="fa fa-lock"></i></button>
+                                            </a>';
+                    }
+                }
                 $userPrivilegesName = UserPrivileges::where('id', $systemUser->privilege)->first();
 
-                $responses .= '<tr>
-                                    <td style="vertical-align: middle;"><input type="checkbox" name="chk[]" id="chk_'.$i++.'" class="chk_user" value="'.$systemUser->id.'" /></td>
-                                    <td style="vertical-align: middle;">'.$systemUser->username.'</td>
-                                    <td style="vertical-align: middle;">'.$systemUser->group_id.'</td>
-                                    <td style="vertical-align: middle;">'.$userPrivilegesName->name.'</td>
-                                    <td style="vertical-align: middle;">'.$systemUser->full_name.'</td>
-                                    <td style="vertical-align: middle;">'.$systemUser->email.'</td>
-                                    <td style="vertical-align: middle;">'.$systemUser->phone.'</td>
-                                    <td style="vertical-align: middle;">'.$btnActivateType.'</td>
+                if($systemUser->privilege > Auth::user()->privilege){
+                    $responses .= '<tr>
+                                        <td style="vertical-align: middle;"><input type="checkbox" name="chk[]" id="chk_'.$i++.'" class="chk_user" value="'.$systemUser->id.'" /></td>
+                                        <td style="vertical-align: middle;">'.$systemUser->username.'</td>
+                                        <td style="vertical-align: middle;">'.$systemUser->group_id.'</td>
+                                        <td style="vertical-align: middle;">'.$userPrivilegesName->name.'</td>
+                                        <td style="vertical-align: middle;">'.$systemUser->full_name.'</td>
+                                        <td style="vertical-align: middle;">'.$systemUser->email.'</td>
+                                        <td style="vertical-align: middle;">'.$systemUser->phone.'</td>
+                                        <td style="vertical-align: middle;">'.$btnActivateType.'</td>
 
-                                    <td style="vertical-align: middle;">
-                                        '.$privilegeButton.'
-                                        '.$editButton.'
-                                        '.$activeInactivebtn.'
+                                        <td style="vertical-align: middle;">
+                                            '.$privilegeButton.'
+                                            '.$editButton.'
+                                            '.$activeInactivebtn.'
 
-                                    </td>
-                                </tr>';
+                                        </td>
+                                    </tr>';
+                }elseif($systemUser->privilege == Auth::user()->privilege && $systemUser->id == Auth::user()->id){
+                    $responses .= '<tr>
+                                        <td style="vertical-align: middle;"></td>
+                                        <td style="vertical-align: middle;">'.$systemUser->username.'</td>
+                                        <td style="vertical-align: middle;">'.$systemUser->group_id.'</td>
+                                        <td style="vertical-align: middle;">'.$userPrivilegesName->name.'</td>
+                                        <td style="vertical-align: middle;">'.$systemUser->full_name.'</td>
+                                        <td style="vertical-align: middle;">'.$systemUser->email.'</td>
+                                        <td style="vertical-align: middle;">'.$systemUser->phone.'</td>
+                                        <td style="vertical-align: middle;">'.$btnActivateType.'</td>
+
+                                        <td style="vertical-align: middle;">
+                                            '.$privilegeButton.'
+                                            '.$editButton.'
+                                            '.$activeInactivebtn.'
+
+                                        </td>
+                                    </tr>';
+                }
             }
 
             $responses .= '<tbody></table>';

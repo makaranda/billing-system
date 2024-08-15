@@ -136,7 +136,7 @@ Route::group(['prefix' => '/'], function () {
         Route::get('/login', [LoginController::class, 'index'])->name('login.index');
         Route::post('/authenticate', [AdminLoginController::class, 'authenticate'])->name('admin.authenticate');
     });
-    Route::group(['middleware' => 'admin.auth'], function () {
+    Route::group(['middleware' => ['admin.auth','check.status','setSessionTimeout']], function () {
         //Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
         //Route::get('/users', [AdminDashboardController::class, 'users'])->name('admin.users');
         Route::get('/export-excel', [DashboardController::class, 'excelExport'])->name('export.excell');
@@ -313,5 +313,6 @@ Route::group(['prefix' => '/'], function () {
             Route::post('/{page_id}/update', [ExtensionsController::class, 'update'])->name('extensions.update');
         });
       });
+
     });
 });

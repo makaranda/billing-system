@@ -14,4 +14,21 @@ if (!function_exists('isChecked')) {
     }
 }
 
+if (!function_exists('getUserIP')) {
+    function getUserIP() {
+        // Check if user is behind a proxy
+        if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+            // IP from shared internet
+            $ip = $_SERVER['HTTP_CLIENT_IP'];
+        } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            // IP passed from proxy
+            $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+        } else {
+            // Regular IP address
+            $ip = $_SERVER['REMOTE_ADDR'];
+        }
+        return $ip;
+    }
+}
+
 ?>

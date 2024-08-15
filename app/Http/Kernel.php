@@ -21,6 +21,8 @@ class Kernel extends HttpKernel
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
         \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
+        \App\Http\Middleware\CheckUserStatus::class,
+        \App\Http\Middleware\SetSessionTimeout::class,
     ];
 
     /**
@@ -36,6 +38,7 @@ class Kernel extends HttpKernel
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\SetSessionTimeout::class,
         ],
 
         'api' => [
@@ -73,5 +76,7 @@ class Kernel extends HttpKernel
         //'admin.auth' => \App\Http\Middleware\AdminAuthenticate::class,
         // Add other middleware if necessary
         'role' => \App\Http\Middleware\CheckRole::class,
+        'check.status' => \App\Http\Middleware\CheckUserStatus::class,
+        'setSessionTimeout' => \App\Http\Middleware\SetSessionTimeout::class,
     ];
 }

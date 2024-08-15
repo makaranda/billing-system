@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\SystemMenus;
 use App\Models\RoutesPermissions;
 use App\Models\SystemUsers;
+use App\Models\UserPrivileges;
 
 class AdminDashboardController extends Controller
 {
@@ -28,12 +29,13 @@ class AdminDashboardController extends Controller
 
         $getRoutename = request()->route()->getName();
         $routesPermissions = RoutesPermissions::where('route',$getRoutename)->orderBy('id')->get();
+        $userPrivileges = UserPrivileges::where('id',Auth::user()->privilege)->first();
         $getAllRoutePermisssions = RoutesPermissions::all();
         foreach ($routesPermissions as $routesPermission) {
             $routesPermission = $routesPermission->orderBy('id')->get();
         }
         $mainRouteName = 'index.dashboard';
-        return view('pages.dashboard.dashboard', compact('mainMenus', 'data','routesPermissions','mainRouteName','getAllRoutePermisssions'));
+        return view('pages.dashboard.dashboard', compact('mainMenus', 'data','routesPermissions','mainRouteName','getAllRoutePermisssions','userPrivileges'));
     }
 
     public function usersAvailability(){

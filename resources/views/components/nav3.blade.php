@@ -43,11 +43,10 @@
                     $segments = request()->segments();
                     $parentRoute = implode('/', array_slice($segments, 0, 3));
                     $parentRoute2 = implode('/', array_slice($segments, 0, 2));
-                    $parentRoute3 = implode('/', array_slice($segments, 3, 1));
                     $parentRouteUrl = 'index.'.str_replace(''.$parentRoute2.'/','',$parentRoute);
                     $parentRouteUrl2 = 'index.'.str_replace('dashboard/','',$parentRoute2);
 
-                    //var_dump($parentRoute3);
+                    //var_dump($parentRouteUrl2);
                 @endphp
                 @if ($mainMenus)
                     @foreach($mainMenus as $key => $mainMenu)
@@ -72,24 +71,6 @@
 
                                     @if ($hasPermission2)
                                         <li class="nav-list {{ (request()->route()->getName() == $subMenu->route) ? 'active' : '' }}">
-                                            <a class="sub-item text-uppercase" href="{{ route($subMenu->route) }}"><span class="sub-item">{{ $subMenu->name }}</span></a>
-                                        </li>
-                                    @endif
-                                @endforeach
-                                </ul>
-                            </div>
-                            @elseif (request()->route()->getName() != $mainMenu->route && !empty($parentRoute3)&& $mainMenu->route == $parentRouteUrl2 && $mainMenu->subMenus->isNotEmpty())
-                            <div class="">
-                                <ul class="nav nav-lists mt-0">
-                                @foreach($mainMenu->subMenus as $subMenu)
-                                    @php
-                                        $subMenuRoute = $subMenu->route;
-                                        // Check if the user's routesPermissions contains the main route
-                                        $hasPermission2 = $getAllRoutePermisssions->contains('route', $subMenuRoute);
-                                    @endphp
-
-                                    @if ($hasPermission2)
-                                        <li class="nav-list {{ ($parentRouteUrl == $subMenu->route) ? 'active' : '' }}">
                                             <a class="sub-item text-uppercase" href="{{ route($subMenu->route) }}"><span class="sub-item">{{ $subMenu->name }}</span></a>
                                         </li>
                                     @endif

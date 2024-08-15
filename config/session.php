@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 
 return [
 
@@ -31,9 +32,15 @@ return [
     |
     */
 
-    'lifetime' => env('SESSION_LIFETIME', 120),
+    //'lifetime' => env('SESSION_LIFETIME', 2),
+    'lifetime' => function() {
+        if (Auth::user()->id) {
+            return (Auth::user()->session_timeout)/60;
+        }
+        return env('SESSION_LIFETIME', 2); // Fallback to a default value if not authenticated
+    },
 
-    'expire_on_close' => false,
+    'expire_on_close' => true,
 
     /*
     |--------------------------------------------------------------------------

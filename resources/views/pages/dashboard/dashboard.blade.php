@@ -3,21 +3,38 @@
 @section('content')
 <div class="container">
     <div class="page-inner">
-      <div class="page-header">
-        <h3 class="fw-bold mb-3 text-capitalize">Dashboard</h3>
-        <ul class="breadcrumbs mb-3">
-          <li class="nav-home">
-            <a href="#">
-              <i class="icon-home"></i>
-            </a>
-          </li>
-          <li class="separator">
-            <i class="icon-arrow-right"></i>
-          </li>
-          <li class="nav-item text-capitalize">
-            <a href="#">Dashboard</a>
-          </li>
-        </ul>
+      <div class="page-header d-block">
+
+
+        <div class="row">
+            <div class="col-12 col-md-12"><h3 class="fw-bold mb-3 text-capitalize">Dashboard</h3></div>
+        </div>
+        <div class="mb-3 row justify-content-end">
+            <div class="col-12 col-md-7">
+                <ul class="breadcrumbs mb-3 float-left">
+                    <li class="nav-home">
+                      <a href="#">
+                        <i class="icon-home"></i>
+                      </a>
+                    </li>
+                    <li class="separator">
+                      <i class="icon-arrow-right"></i>
+                    </li>
+                    <li class="nav-item text-capitalize">
+                      <a href="#">Dashboard</a>
+                    </li>
+                  </ul>
+            </div>
+            <div class="col-12 col-md-3">
+              <a href="#">
+                <span class="fw-bold text-dark">Logged In User:</span> {{ $userPrivileges->name }}
+              </a>
+            </div>
+            <div class="col-6 col-md-2">
+              <a href="#"><span class="fw-bold text-dark">IP Address:</span> {{ getUserIP() }}</a>
+            </div>
+        </div>
+
       </div>
         @php
             // str_replace('index.','',request()->route()->getName())
