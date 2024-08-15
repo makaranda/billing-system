@@ -313,5 +313,6 @@ Route::group(['prefix' => '/'], function () {
             Route::post('/{page_id}/update', [ExtensionsController::class, 'update'])->name('extensions.update');
         });
       });
+
     });
 });
