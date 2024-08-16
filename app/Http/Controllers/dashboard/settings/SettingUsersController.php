@@ -441,8 +441,8 @@ class SettingUsersController extends Controller
 
             }
 
-
         }
+
         $message = 'success';
         RoutesPermissions::insert($routesData);
         //return redirect()->back();
