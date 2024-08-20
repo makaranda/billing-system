@@ -477,6 +477,7 @@ class SettingUsersController extends Controller
         // Iterate over each user to remove specified permissions
         foreach ($recordsUsers as $userId) {
             foreach ($recordsRemove as $permission) {
+
                 $parts = explode('/', $permission);
                 $mainMenuId = $parts[0];
                 $subMenuId = $parts[1];
