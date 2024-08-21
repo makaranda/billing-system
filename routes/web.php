@@ -295,6 +295,7 @@ Route::group(['prefix' => '/'], function () {
                     Route::post('/user-privilege-save', [SettingUsersController::class, 'userPrivilegeSave'])->name('privileges.save');
                     Route::post('/user-privilege-remove', [SettingUsersController::class, 'userPrivilegeRemove'])->name('privileges.remove');
                     Route::post('/user-privilege-delete', [SettingUsersController::class, 'userPrivilegeDelete'])->name('privileges.delete');
+                    Route::post('/user-import-privilege', [SettingUsersController::class, 'userImportPrivilege'])->name('privileges.import');
                 });
             });
 

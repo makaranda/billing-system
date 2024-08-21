@@ -3,27 +3,36 @@
 @section('content')
 <div class="container">
     <div class="page-inner">
-      <div class="page-header">
-        <h3 class="fw-bold mb-3 text-capitalize">Permissions</h3>
-        <ul class="breadcrumbs mb-3">
-          <li class="nav-home">
-            <a href="{{ route('index.prepaid') }}">
-              <i class="icon-home"></i>
-            </a>
-          </li>
-          <li class="separator">
-            <i class="icon-arrow-right"></i>
-          </li>
-          <li class="nav-item text-capitalize">
-            <a href="{{ route('index.users') }}">Users</a>
-          </li>
-          <li class="separator">
-            <i class="icon-arrow-right"></i>
-          </li>
-          <li class="nav-item text-capitalize">
-            <a href="#">Permissions</a>
-          </li>
-        </ul>
+      <div class="page-header d-block">
+        <div class="row">
+            <div class="col-12 col-md-6">
+                <h3 class="fw-bold mb-3 text-capitalize">Permissions</h3>
+                <ul class="breadcrumbs mb-3">
+                  <li class="nav-home">
+                    <a href="{{ route('index.prepaid') }}">
+                      <i class="icon-home"></i>
+                    </a>
+                  </li>
+                  <li class="separator">
+                    <i class="icon-arrow-right"></i>
+                  </li>
+                  <li class="nav-item text-capitalize">
+                    <a href="{{ route('index.users') }}">Users</a>
+                  </li>
+                  <li class="separator">
+                    <i class="icon-arrow-right"></i>
+                  </li>
+                  <li class="nav-item text-capitalize">
+                    <a href="#">Permissions</a>
+                  </li>
+                </ul>
+            </div>
+            <div class="col-12 col-md-6 align-content-end text-right">
+                <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#importUserRightsModal"><i class="fas fa-file-import"></i> Import</button>
+            </div>
+        </div>
+
+
       </div>
         @php
             // $segments = explode('/', request()->path());
@@ -55,6 +64,23 @@
                             <div class="row">
                                 <div class="col-12">
                                      <h1 class="text-uppercase">APPLY USER MENU PERMISSIONS</h1>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="alert alert-info bg-light">
+                                    @php
+                                        $countArr = explode(',',$bulkUsers);
+                                        $bulkUsersNamesArrs = (count(explode(',',$bulkUsersNames)))?explode(',',$bulkUsersNames):$bulkUsersNames;
+                                        //$bulkUsersNamesArrs = 'Amal,Kamal';
+                                    @endphp
+                                    <strong><u>{{ count($countArr) }} User(s) Selected</u></strong> <br>
+                                    @if (count(explode(',',$bulkUsersNames)) > 1)
+                                        @foreach ($bulkUsersNamesArrs as $index => $bulkUsersNamesArr)
+                                            <i>{{ $bulkUsersNamesArr }}</i>@if($index < count($bulkUsersNamesArrs) - 1), @endif
+                                        @endforeach
+                                    @else
+                                        <i>{{ $bulkUsersNamesArrs[0] }}</i>
+                                    @endif
                                 </div>
                             </div>
                             <div class="row">
@@ -151,6 +177,57 @@
 
 
 
+<!-- Import User Rights Modal -->
+<div class="modal fade" id="importUserRightsModal" role="dialog">
+    <div class="modal-dialog">
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title"><span class="fa fa-plus"></span> IMPORT RIGHTS FROM ANOTHER USER</h4>
+          <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
+        </div>
+            <form id="frm_rights_import" name="frm_rights_import" method="post">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            This will remove all permissions from the selected user(s) and insert all the persmissions from the copy/import user. <hr/>
+                        </div>
+                    </div>
+                  <div class="row">
+                      <div class="col-md-12">
+                          <div class="form-group">
+                              <label for="import_user_id" class="fw-bold">Copy / Import Rights From the User</label>
+                              <select name="import_user_id" id="import_user_id" class="form-control searchable select2-list" style="width:100%;" required>
+                                  <option value="">- Select User -</option>
+                                  @foreach ($systemUserPrivilages as $systemUserPrivilage)
+                                     <option value="{{ $systemUserPrivilage->id }}">{{ $systemUserPrivilage->username }}</option>
+                                  @endforeach
+                              </select>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+              <div class="modal-footer d-block">
+                  <div class="row">
+                      <div class="col-md-6">
+                          <div class="form-group p-0">
+                              <button type="button" class="btn btn-default form-control w-100" data-bs-dismiss="modal">Cancel</button>
+                              <input type="hidden" name="to_user_ids" id="to_user_ids" value="{{ ($bulkUsers != '')?$bulkUsers:$bulkUsers }}"/>
+                          </div>
+                      </div>
+                      <div class="col-md-6">
+                          <div class="form-group p-0">
+                              <button type="submit" name="submit_import" id="submit_import" class="btn btn-primary form-control w-100">Import</button>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </form>
+          </div>
+      </div>
+  </div>
+
+
 
 @endsection
 
@@ -162,6 +239,17 @@
 
 @push('scripts')
     <script>
+    $(document).ready(function() {
+        //NiceSelect.bind(document.getElementById("import_user_id"), {searchable: true, placeholder: 'select', searchtext: 'zoek', selectedtext: 'geselecteerd'});
+        //$('.searchable').select2();
+        $('.searchable').removeAttr('disabled').removeClass('disabled').select2({
+            allowClear: true
+        });
+
+        $(document).on('click', '.select2-search__field', function() {
+            $(this).trigger('focus'); // Set focus on the input field
+        });
+    });
     $(function () {
         $("#datepicker").datepicker({
             autoclose: true
@@ -216,6 +304,56 @@
     document.querySelectorAll('.chk_user').forEach(checkbox => {
         checkbox.addEventListener('change', updateHiddenInput);
     });
+
+    $('#frm_rights_import').parsley();
+    $('#frm_rights_import').on('submit',function(event){
+        event.preventDefault();
+        $('#overlay').show();
+        var import_user_id = $('#import_user_id').val();
+        var to_user_ids = $('#to_user_ids').val();
+        $.ajax({
+            url: "{{ route('privileges.import') }}",
+            cache: false,
+            method: 'POST',
+            //dataType: 'json',
+            data: {_token: '{{ csrf_token() }}','import_user_id':import_user_id,'to_user_ids':to_user_ids},
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') // Ensure you include the CSRF token
+            },
+            success: function(response){
+                //console.log(response.message);
+                 console.log(response);
+
+                $('#importUserRightsModal').modal('hide');
+                $('#frm_rights_import').parsley().reset();
+                $('#frm_rights_import')[0].reset();
+                $('#import_user_id').val(null).trigger('change');
+                if(response.message == 'success'){
+                    Swal.fire({
+                        position: "bottom-end",
+                        icon: "success",
+                        title: "User Import Successfully..!!",
+                        showConfirmButton: false,
+                        timer: 4000
+                    });
+                }else if(response.message == 'error'){
+                    Swal.fire({
+                        position: "bottom-end",
+                        icon: "error",
+                        title: "There have errors..!!",
+                        showConfirmButton: false,
+                        timer: 2500
+                    });
+                }
+
+            },
+            error: function (errors) {
+                console.log('Error:', errors);
+            }
+        });
+
+        $('#overlay').hide();
+    })
 
     $(document).on('click','#remove_permission',function(){
         $('#overlay').show();

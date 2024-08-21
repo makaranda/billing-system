@@ -14,5 +14,10 @@
 <link href="https://cdn.datatables.net/2.0.8/css/dataTables.dataTables.css" rel="stylesheet">
 <link rel="stylesheet" href="{{ url('public/assets/css/parsley.css') }}?v={{ date('is') }}"/>
 <link rel="stylesheet" href="{{ url('public/assets/css/padding.css') }}?v={{ date('is') }}"/>
+
+{{-- <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" /> --}}
+<link href="{{ url('public/assets/css/select2.min.css') }}" rel="stylesheet" />
+{{-- <link href="{{ url('public/assets/css/nice.select.css') }}" rel="stylesheet" /> --}}
+
 <link rel="stylesheet" href="{{ url('public/assets/css/mystyle.css') }}?v={{ date('is') }}"/>
 <link rel="stylesheet" href="{{ url('public/assets/css/mystyle.responsive.css') }}?v={{ date('is') }}"/>

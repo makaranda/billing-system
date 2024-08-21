@@ -192,8 +192,6 @@ class SettingUsersController extends Controller
         $route = $route ?? 'home';
         $data = session('data');
 
-        $bulkUsersNames ='';
-
         $realUser = SystemUsers::find($user_id);
         $permissionsTypes = PermissionsTypes::all();
         $currentUser = SystemUsers::find(Auth::user()->id);
@@ -240,11 +238,6 @@ class SettingUsersController extends Controller
 
         $bulkUsersList = (count(explode(',',$bulkUsers)) > 1)?explode(',',$bulkUsers):$bulkUsers;
         $userPermissionLists = '';
-
-
-        $bulkcurrentUser = SystemUsers::find($bulkUsers);
-
-        $bulkUsersNames = $bulkcurrentUser->full_name;
 
         foreach ($routesPermissions as $routesPermission) {
             if (is_array($bulkUsersList) && count($bulkUsersList) > 1) {
@@ -302,7 +295,7 @@ class SettingUsersController extends Controller
         //dd($mainMenus);
         //echo 'test';
         //$userPermissionLists = $bulkUsers;
-        return view('pages.dashboard.settings.privilege', compact('mainMenus','mainMenusPrivilage','routesPermissionsMap','permissionsTypesPrivilage','bulkUsersArray','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','permissionsTypes','currentUser','systemUsers','routesPermissions','bulkUsers','permissionType','userPermissionLists','getAllRoutePermisssions','systemUserPrivilages','bulkUsersNames'));
+        return view('pages.dashboard.settings.privilege', compact('mainMenus','mainMenusPrivilage','routesPermissionsMap','permissionsTypesPrivilage','bulkUsersArray','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','permissionsTypes','currentUser','systemUsers','routesPermissions','bulkUsers','permissionType','userPermissionLists','getAllRoutePermisssions','systemUserPrivilages'));
 
     }
 
@@ -403,20 +396,10 @@ class SettingUsersController extends Controller
 
         $bulkUsersList = (count(explode(',',$bulkUsers)) > 1)?explode(',',$bulkUsers):$bulkUsers;
         $userPermissionLists = '';
-        $bulkUsersNamesArry = [];
-
-        foreach ($bulkUsersList as $bulkUser) {
-            $bulkcurrentUser = SystemUsers::find($bulkUser);
-            $bulkUsersNamesArry[] = $bulkcurrentUser->full_name;
-        }
-
-        $bulkUsersNames = implode(', ', $bulkUsersNamesArry);
-
         //$permissionsLists .= $mainMenu->id.'/'.$subMenu->id.'/'.$permissionsType->permission_type;
         foreach ($routesPermissions as $routesPermission) {
             if (is_array($bulkUsersList) && count($bulkUsersList) > 1) {
                 foreach ($bulkUsersList as $bulkUser) {
-
                     if ($routesPermission->user_id == $bulkUser) {
                         foreach ($mainMenus as $menu2) {
                             $perMainMenuId = ($menu2->route == $routesPermission->main_route) ? $menu2->id : null;
