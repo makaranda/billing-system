@@ -448,7 +448,6 @@
                 timer: 3500
             });
         }else{
-
             $.redirect("{{ route('users.bulkprivilege') }}", {bulk_users: permissionsUsersList,'permission_type': 'apply', _token: '{{ csrf_token() }}'}, "POST", "_self");
         }
         $('#overlay').hide();
