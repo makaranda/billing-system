@@ -423,6 +423,7 @@
     function updateHiddenInput() {
         const checkboxes = document.querySelectorAll('.chk_user');
         const checkedValues = [];
+
         checkboxes.forEach(checkbox => {
             if (checkbox.checked) {
                 checkedValues.push(checkbox.value);
