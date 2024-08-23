@@ -260,6 +260,49 @@
     $( document ).ready( function () {
         CKEDITOR.replace( 'tandc' );
 
+        $('#system_information').parsley();
+        $('#system_information').on('submit',function(event){
+            event.preventDefault();
+            $('#overlay').show();
+        //alert();
+            $.ajax({
+                url: ""+form_type+"",
+                cache: false,
+                method: 'POST',
+                data: $(this).serialize() + '&_token={{ csrf_token() }}&action=addSystemInformation&debtCollectorVal='+debtCollectorValue+'',
+                success: function(response){
+                    console.log(response.message);
+                    get_hotel();
+
+                    $('#system_information').parsley().reset();
+                    //$('#system_information')[0].reset();
+                    if(response.messageType == 'success'){
+                        Swal.fire({
+                            position: "bottom-end",
+                            icon: "success",
+                            title: ""+response.message+"",
+                            showConfirmButton: false,
+                            timer: 4000
+                        });
+                    }else if(response.messageType == 'wrong'){
+                        Swal.fire({
+                            position: "bottom-end",
+                            icon: "error",
+                            title: ""+response.message+"",
+                            showConfirmButton: false,
+                            timer: 2500
+                        });
+                    }
+
+                    $('#overlay').hide();
+                },
+                error: function (errors) {
+                    console.log('Error:', errors);
+                    $('#overlay').hide();
+                }
+            });
+        });
+
         get_hotel();
         function get_hotel() {
             $('#overlay').show();
@@ -267,36 +310,68 @@
             $.ajax({
             url : "{{ route('system.information') }}",
             cache: false,
-            data: {'hotel':'hotel'},
-            type: 'POST',
+            data: {_token: '{{ csrf_token() }}','hotel':'hotel'},
+            type: 'GET',
+            dataType: 'json',
             success : function(data) {
-                var arr = data.split("^");
-                if(arr[0]=="success") {
-                    $('#hotel_name').val(arr[1]);
-                    $('#physical_address').val(arr[2]);
-                    $('#postal_address').val(arr[3]);
-                    $('#telephone').val(arr[4]);
-                    $('#mobile').val(arr[5]);
-                    $('#fax').val(arr[6]);
-                    $('#email').val(arr[7]);
-                    $('#web_site').val(arr[8]);
-                    CKEDITOR.instances.tandc.setData(arr[9]);
-                    $('#logo_image').attr('src', '../' + arr[10] + '?' + new Date().getTime());
-                    $('#letter_head_image').attr('src', '../' + arr[11] + '?' + new Date().getTime());
-                }
-                else {
-                    $('#errorMessage').html(arr[0]);
-                    $('#errorModal').modal();
+                console.log(data);
+                if(data.getSyetemDetails != ''){
+                    //alert(data.getSyetemDetails[0].name);
+                    $('#hotel_name').val(data.getSyetemDetails[0].name);
+                    $('#physical_address').val(data.getSyetemDetails[0].address);
+                    $('#postal_address').val(data.getSyetemDetails[0].address_post);
+                    $('#telephone').val(data.getSyetemDetails[0].telephone);
+                    $('#mobile').val(data.getSyetemDetails[0].mobile);
+                    $('#fax').val(data.getSyetemDetails[0].fax);
+                    $('#email').val(data.getSyetemDetails[0].email);
+                    $('#web_site').val(data.getSyetemDetails[0].web);
+                    CKEDITOR.instances.tandc.setData(data.getSyetemDetails[0].tandc);
+                    $('#logo_image').attr('src', "{{ url('public/images/setting/') }}/" + data.getSyetemDetails[0].logo + "?" + new Date().getTime());
+                    $('#letter_head_image').attr('src', "{{ url('public/images/setting/') }}/" + data.getSyetemDetails[0].letter_head + "?" + new Date().getTime());
                 }
                 $('#overlay').hide();
             },
             error: function(data) {
-                $('#errorMessage').html("Internal problem detected, Please try again later !");
-                $('#errorModal').modal();
                 $('#overlay').hide();
             }
         });
         }
+
+
+        function readURL1(input){
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+
+                reader.onload = function(e) {
+                $('#logo_image').attr('src',e.target.result);
+                $('#photo_logo').val(e.target.result);
+                }
+
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function readURL2(input){
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+
+                reader.onload = function(e) {
+                $('#letter_head_image').attr('src',e.target.result);
+                $('#photo_letter_head').val(e.target.result);
+                }
+
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        $('#logo').change(function() {
+            readURL1(this);
+        });
+
+        $('#letter_head').change(function() {
+            readURL2(this);
+        });
+
     });
     $(function () {
         $("#datepicker").datepicker({

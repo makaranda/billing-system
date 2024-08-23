@@ -53,6 +53,29 @@ class SystemController extends Controller
     }
 
     public function systemInformation(Request $request){
-        
+        $getSyetemDetails = HotelInformation::where('id', 2)->get();
+        // $responseData = [
+        //     'name' => $getSyetemDetails->name,
+        //     'address' => $getSyetemDetails->address,
+        //     'address_post' => $getSyetemDetails->address_post,
+        //     'telephone' => $getSyetemDetails->telephone,
+        //     'mobile' => $getSyetemDetails->mobile,
+        //     'fax' => $getSyetemDetails->fax,
+        //     'email' => $getSyetemDetails->email,
+        //     'web' => $getSyetemDetails->web,
+        //     'tandc' => $getSyetemDetails->tandc,
+        //     'tpin' => $getSyetemDetails->tpin,
+        //     'acc_name' => $getSyetemDetails->acc_name,
+        //     'acc_number' => $getSyetemDetails->acc_number,
+        //     'status' => $getSyetemDetails->status,
+        //     'logo' => $getSyetemDetails->logo,
+        //     'letter_head' => $getSyetemDetails->letter_head,
+        // ];
+
+        $responseData = [
+            'getSyetemDetails' => $getSyetemDetails,
+        ];
+
+        return response()->json($responseData);
     }
 }
