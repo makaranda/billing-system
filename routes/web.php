@@ -260,7 +260,6 @@ Route::group(['prefix' => '/'], function () {
 
         Route::group(['prefix' => 'settings', 'middleware' => 'role:admin'], function () {
             Route::get('/', [SettingsController::class, 'index'])->name('index.settings');
-            Route::get('/system', [SystemController::class, 'index'])->name('index.system');
             Route::get('/departments', [DepartmentsController::class, 'index'])->name('index.departments');
             Route::get('/ota-operators', [OtaOperatorsController::class, 'index'])->name('index.otaoperators');
             Route::get('/credit-card-types', [CreditCardTypesController::class, 'index'])->name('index.creditcardtypes');
@@ -272,6 +271,11 @@ Route::group(['prefix' => '/'], function () {
             Route::get('/message-formats', [MessageFormatsController::class, 'index'])->name('index.messageformats');
             Route::get('/currencies', [CurrenciesController::class, 'index'])->name('index.currencies');
             Route::get('/price-types', [PriceTypesController::class, 'index'])->name('index.pricetypes');
+
+            Route::group(['prefix' => 'system', 'middleware' => 'role:admin'], function () {
+                Route::get('/', [SystemController::class, 'index'])->name('index.system');
+                Route::get('/get-informations', [SystemController::class, 'systemInformation'])->name('system.information');
+            });
 
             Route::group(['prefix' => 'users', 'middleware' => 'role:admin'], function () {
                 Route::get('/', [SettingUsersController::class, 'index'])->name('index.users');

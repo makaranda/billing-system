@@ -193,3 +193,8 @@ small *, .small * {
         align-content: center;
     }
 }
+
+input:focus {
+    border: 2px solid #3e93ff !important;
+}
+

@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\SystemMenus;
 use App\Models\RoutesPermissions;
+use App\Models\HotelInformation;
 
 class SystemController extends Controller
 {
@@ -49,5 +50,9 @@ class SystemController extends Controller
         }else{
             return view('pages.dashboard.settings.system', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','getAllRoutePermisssions'));
         }
+    }
+
+    public function systemInformation(Request $request){
+        
     }
 }
