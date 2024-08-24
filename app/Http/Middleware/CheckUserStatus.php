@@ -16,9 +16,14 @@ class CheckUserStatus
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::check() && Auth::user()->status != 1) {
-            Auth::guard('admin')->logout();
-            return redirect('/')->withErrors(['Your account is inactive.']);
+        //dd(Auth::user()->status);
+        if (Auth::check()) {
+            $user = Auth::user();
+
+            if ($user && $user->status !== 1) {
+                Auth::guard('admin')->logout();
+                return redirect('/')->withErrors(['Your account is inactive.']);
+            }
         }
 
         return $next($request);

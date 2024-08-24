@@ -275,6 +275,9 @@ Route::group(['prefix' => '/'], function () {
             Route::group(['prefix' => 'system', 'middleware' => 'role:admin'], function () {
                 Route::get('/', [SystemController::class, 'index'])->name('index.system');
                 Route::get('/get-informations', [SystemController::class, 'systemInformation'])->name('system.information');
+                Route::post('/update-informations', [SystemController::class, 'systemUpdateInformation'])->name('system.updateinformation');
+                Route::post('/update-logo', [SystemController::class, 'systemUpdateLogo'])->name('system.updatelogo');
+                Route::post('/update-letterhead', [SystemController::class, 'systemUpdateLetterhead'])->name('system.updateletterhead');
             });
 
             Route::group(['prefix' => 'users', 'middleware' => 'role:admin'], function () {

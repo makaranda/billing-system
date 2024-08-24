@@ -8,6 +8,9 @@ use Illuminate\Http\Request;
 use App\Models\SystemMenus;
 use App\Models\RoutesPermissions;
 use App\Models\HotelInformation;
+use Spatie\ImageOptimizer\OptimizerChainFactory;
+use Illuminate\Support\Facades\Validator;
+use Exception;
 
 class SystemController extends Controller
 {
@@ -77,5 +80,124 @@ class SystemController extends Controller
         ];
 
         return response()->json($responseData);
+    }
+
+    public function systemUpdateInformation(Request $request){
+        $messageType = '';
+        $message = '';
+        //var_dump($request);
+        //`name`, `address`, `address_post`, `telephone`, `mobile`, `fax`, `email`, `web`, `tandc`, `tpin`, `acc_name`, `acc_number`, `status`, `logo`, `letter_head`
+        $tandc = $request->tandc;
+        $system_information_id = $request->system_information_id;
+        $systemInformationDatas = HotelInformation::find($request->system_information_id);
+
+        if(!empty($request->hotel_name) && !empty($request->system_information_id)){
+            $systemData = [
+                'name' => $request->hotel_name,
+                'address' => $request->physical_address,
+                'address_post' => $request->postal_address,
+                'telephone' => $request->telephone,
+                'mobile' => $request->mobile,
+                'fax' => $request->fax,
+                'email' => $request->email,
+                'web' => $request->web_site,
+                'tandc' => $request->tandc,
+            ];
+
+            $systemInformationDatas->update($systemData);
+            $messageType = 'success';
+            $message = 'You have successfully updated the System Information to the database..';
+
+        }else{
+            $messageType = 'Wrong';
+            $message = 'There have something error..';
+        }
+        //echo 'Sucess';
+        $responseData = [
+            'messageType' => $messageType,
+            'message' => $message
+        ];
+
+        return response()->json($responseData);
+    }
+
+    public function systemUpdateLogo(Request $request){
+
+        $validator = Validator::make($request->all(), [
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'messageType' => 'error',
+                'message' => $validator->errors()->first()
+            ]);
+        }
+
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imageName = 'logo_'.time().'.'.$image->getClientOriginalExtension();
+
+            $pathToImage = $image->move(public_path('images/setting'), $imageName);
+
+            // Optimize the image using Spatie Image Optimizer
+            $optimizerChain = OptimizerChainFactory::create();
+            $optimizerChain->optimize($pathToImage);
+
+            $systemInformationDatas = HotelInformation::find($request->system_id);
+            $systemInformationDatas->logo = $imageName;
+            $systemInformationDatas->save();
+            //$systemInformationDatas->update($systemData);
+
+            return response()->json([
+                'messageType' => 'success',
+                'message' => 'Logo updated and optimized successfully!'
+            ]);
+        }
+
+        return response()->json([
+            'messageType' => 'error',
+            'message' => 'No image uploaded.'
+        ]);
+
+    }
+
+    public function systemUpdateLetterhead(Request $request){
+        $validator = Validator::make($request->all(), [
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'messageType' => 'error',
+                'message' => $validator->errors()->first()
+            ]);
+        }
+
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imageName = 'letter_head_image_'.time().'.'.$image->getClientOriginalExtension();
+
+            $pathToImage = $image->move(public_path('images/setting'), $imageName);
+
+            // Optimize the image using Spatie Image Optimizer
+            $optimizerChain = OptimizerChainFactory::create();
+            $optimizerChain->optimize($pathToImage);
+
+            $systemInformationDatas = HotelInformation::find($request->system_id);
+            $systemInformationDatas->letter_head = $imageName;
+            $systemInformationDatas->save();
+            //$systemInformationDatas->update($systemData);
+
+            return response()->json([
+                'messageType' => 'success',
+                'message' => 'Letter Head Image updated and optimized successfully!'
+            ]);
+        }
+
+        return response()->json([
+            'messageType' => 'error',
+            'message' => 'No image uploaded.'
+        ]);
     }
 }

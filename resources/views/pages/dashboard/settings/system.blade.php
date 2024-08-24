@@ -73,6 +73,7 @@
                                             <div class="card-header">PROPERTY INFORMATION</div>
                                               <div class="card-body">
                                                 <form name="system_information" id="system_information" method="post">
+                                                    <input type="hidden" name="system_information_id" id="system_information_id" value="2">
                                                     <div class="row">
                                                         <div class="col-md-6">
                                                             <div class="form-group">
@@ -156,20 +157,20 @@
                                             <div class="card">
                                             <div class="card-header">LOGO IMAGE</div>
                                               <div class="card-body">
-                                                <form name="frm_logo" id="frm_logo" method="post">
+                                                <form name="frm_logo" id="frm_logo" action="#" method="post" enctype="multipart/form-data">
                                                     <div class="row">
                                                         <div class="col-md-6">
                                                             <div class="row">
                                                                 <div class="col-md-12">
                                                                     <div class="form-group">
                                                                         <label class="control-label" for="logo">Logo Image</label>
-                                                                        <input type="file" id="logo" />
-                                                                        <input type="hidden" class="form-control" id="photo_logo" name="photo_logo">
+                                                                        <input type="file" id="logo" name="logo" required/>
+                                                                        <input type="hidden" class="form-control" id="photo_logo_id" name="photo_logo_id" value="2">
                                                                     </div>
                                                                 </div>
                                                                 <div class="col-md-12">
                                                                     <div class="form-group">
-                                                                        <button type="button" id="upload_logo" class="btn btn-primary form-control">Save</button>
+                                                                        <button type="submit" id="upload_logo" class="btn btn-primary form-control">Save</button>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -194,20 +195,20 @@
                                             <div class="card">
                                             <div class="card-header">LETTER HEAD IMAGE (2380 X 300 Pixels)</div>
                                               <div class="card-body">
-                                                <form name="frm_letter_head" id="frm_letter_head" method="post">
+                                                <form name="frm_letter_head" id="frm_letter_head" action="#" method="post">
                                                     <div class="row">
                                                         <div class="col-md-6">
                                                             <div class="row">
                                                                 <div class="col-md-12">
                                                                     <div class="form-group">
                                                                         <label class="control-label" for="letter_head">Letter Head Image</label>
-                                                                        <input type="file" id="letter_head" />
-                                                                        <input type="hidden" class="form-control" id="photo_letter_head" name="photo_letter_head">
+                                                                        <input type="file" id="letter_head" name="letter_head" required/>
+                                                                        <input type="hidden" class="form-control" id="photo_letter_head_id" name="photo_letter_head_id" value="2">
                                                                     </div>
                                                                 </div>
                                                                 <div class="col-md-12">
                                                                     <div class="form-group">
-                                                                        <button type="button" id="upload_letter_head" class="btn btn-primary form-control">Save</button>
+                                                                        <button type="submit" id="upload_letter_head" class="btn btn-primary form-control">Save</button>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -256,6 +257,7 @@
 
 @push('scripts')
     <script src="{{ url('public/vendors/ckeditor/ckeditor.js') }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pica/8.0.0/pica.min.js"></script>
     <script>
     $( document ).ready( function () {
         CKEDITOR.replace( 'tandc' );
@@ -264,18 +266,20 @@
         $('#system_information').on('submit',function(event){
             event.preventDefault();
             $('#overlay').show();
+            var tandc = CKEDITOR.instances.tandc.getData();
         //alert();
+        //&action=addSystemInformation&debtCollectorVal='+debtCollectorValue+'
             $.ajax({
-                url: ""+form_type+"",
+                url: "{{ route('system.updateinformation') }}",
                 cache: false,
                 method: 'POST',
-                data: $(this).serialize() + '&_token={{ csrf_token() }}&action=addSystemInformation&debtCollectorVal='+debtCollectorValue+'',
+                data: $(this).serialize() + '&_token={{ csrf_token() }}&tandc='+tandc+'',
                 success: function(response){
-                    console.log(response.message);
+                    console.log(response);
                     get_hotel();
 
                     $('#system_information').parsley().reset();
-                    //$('#system_information')[0].reset();
+                    $('#system_information')[0].reset();
                     if(response.messageType == 'success'){
                         Swal.fire({
                             position: "bottom-end",
@@ -303,6 +307,244 @@
             });
         });
 
+        $('#frm_logo').parsley();
+        $('#frm_logo').on('submit',function(ev){
+        ev.preventDefault();
+            $('#overlay').show();
+
+                let fileInput = $('#logo')[0];
+                let file = fileInput.files[0];
+
+                if(file){
+
+                    let fileSize = file.size / 1024 / 1024; // in MB
+                    let fileType = file.type;
+
+                    if(fileSize > 2){
+                        Swal.fire({
+                            position: "bottom-end",
+                            icon: "error",
+                            title: "File size must be less than 2MB",
+                            showConfirmButton: false,
+                            timer: 2500
+                        });
+                        return;
+                    }
+
+                    if(!fileType.match('image.*')){
+                        Swal.fire({
+                            position: "bottom-end",
+                            icon: "error",
+                            title: "Please upload a valid image.",
+                            showConfirmButton: false,
+                            timer: 2500
+                        });
+                        return;
+                    }
+
+
+                    let reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = function(event) {
+                        let img = new Image();
+                        img.src = event.target.result;
+                        img.onload = function() {
+                            let canvas = document.createElement('canvas');
+                            let ctx = canvas.getContext('2d');
+                            let max_width = 800;
+                            let max_height = 800;
+                            let width = img.width;
+                            let height = img.height;
+
+                            if (width > height) {
+                                if (width > max_width) {
+                                    height = Math.round((height *= max_width / width));
+                                    width = max_width;
+                                }
+                            } else {
+                                if (height > max_height) {
+                                    width = Math.round((width *= max_height / height));
+                                    height = max_height;
+                                }
+                            }
+
+                            canvas.width = width;
+                            canvas.height = height;
+                            ctx.drawImage(img, 0, 0, width, height);
+
+                            canvas.toBlob(function(blob){
+                                const formData = new FormData();
+                                formData.append('image', blob, file.name);
+
+                                formData.append('_token', '{{ csrf_token() }}');
+                                formData.append('system_id', $('#photo_logo_id').val());
+
+                                //console.log($('#photo_logo_id').val());
+                                // for (let [key, value] of formData.entries()) {
+                                //     console.log(key, value);
+                                // }
+                                $.ajax({
+                                    url: "{{ route('system.updatelogo') }}",
+                                    data: formData,
+                                    type: 'POST',
+                                    dataType: 'json',
+                                    cache: false,
+                                    processData: false,
+                                    contentType: false,
+                                    success: function(response){
+                                        //console.log(response);
+                                        get_hotel();
+
+                                        $('#frm_logo').parsley().reset();
+                                        $('#frm_logo')[0].reset();
+                                        if(response.messageType == 'success'){
+                                            Swal.fire({
+                                                position: "bottom-end",
+                                                icon: "success",
+                                                title: ""+response.message+"",
+                                                showConfirmButton: false,
+                                                timer: 4000
+                                            });
+                                        }else if(response.messageType == 'wrong'){
+                                            Swal.fire({
+                                                position: "bottom-end",
+                                                icon: "error",
+                                                title: ""+response.message+"",
+                                                showConfirmButton: false,
+                                                timer: 2500
+                                            });
+                                        }
+                                    },
+                                    error: function(errors){
+                                        console.log('Error:', errors);
+                                        $('#overlay').hide();
+                                    }
+                                });
+                            }, file.type, 0.7);
+                        }
+                    }
+                }
+        });
+
+        $('#frm_letter_head').parsley();
+        $('#frm_letter_head').on('submit',function(ev){
+           ev.preventDefault();
+            $('#overlay').show();
+
+                let fileInput = $('#letter_head')[0];
+                let file = fileInput.files[0];
+
+                if(file){
+
+                    let fileSize = file.size / 1024 / 1024; // in MB
+                    let fileType = file.type;
+
+                    if(fileSize > 2){
+                        Swal.fire({
+                            position: "bottom-end",
+                            icon: "error",
+                            title: "File size must be less than 2MB",
+                            showConfirmButton: false,
+                            timer: 2500
+                        });
+                        return;
+                    }
+
+                    if(!fileType.match('image.*')){
+                        Swal.fire({
+                            position: "bottom-end",
+                            icon: "error",
+                            title: "Please upload a valid image.",
+                            showConfirmButton: false,
+                            timer: 2500
+                        });
+                        return;
+                    }
+
+
+                    let reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = function(event) {
+                        let img = new Image();
+                        img.src = event.target.result;
+                        img.onload = function() {
+                            let canvas = document.createElement('canvas');
+                            let ctx = canvas.getContext('2d');
+                            let max_width = 800;
+                            let max_height = 800;
+                            let width = img.width;
+                            let height = img.height;
+
+                            if (width > height) {
+                                if (width > max_width) {
+                                    height = Math.round((height *= max_width / width));
+                                    width = max_width;
+                                }
+                            } else {
+                                if (height > max_height) {
+                                    width = Math.round((width *= max_height / height));
+                                    height = max_height;
+                                }
+                            }
+
+                            canvas.width = width;
+                            canvas.height = height;
+                            ctx.drawImage(img, 0, 0, width, height);
+
+                            canvas.toBlob(function(blob){
+                                const formData = new FormData();
+                                formData.append('image', blob, file.name);
+
+                                formData.append('_token', '{{ csrf_token() }}');
+                                formData.append('system_id', $('#photo_letter_head_id').val());
+
+                                //console.log($('#photo_logo_id').val());
+                                // for (let [key, value] of formData.entries()) {
+                                //     console.log(key, value);
+                                // }
+                                $.ajax({
+                                    url: "{{ route('system.updateletterhead') }}",
+                                    data: formData,
+                                    type: 'POST',
+                                    dataType: 'json',
+                                    cache: false,
+                                    processData: false,
+                                    contentType: false,
+                                    success: function(response){
+                                        //console.log(response);
+                                        get_hotel();
+
+                                        $('#frm_letter_head').parsley().reset();
+                                        $('#frm_letter_head')[0].reset();
+                                        if(response.messageType == 'success'){
+                                            Swal.fire({
+                                                position: "bottom-end",
+                                                icon: "success",
+                                                title: ""+response.message+"",
+                                                showConfirmButton: false,
+                                                timer: 4000
+                                            });
+                                        }else if(response.messageType == 'wrong'){
+                                            Swal.fire({
+                                                position: "bottom-end",
+                                                icon: "error",
+                                                title: ""+response.message+"",
+                                                showConfirmButton: false,
+                                                timer: 2500
+                                            });
+                                        }
+                                    },
+                                    error: function(errors){
+                                        console.log('Error:', errors);
+                                        $('#overlay').hide();
+                                    }
+                                });
+                            }, file.type, 0.7);
+                        }
+                    }
+                }
+       });
+
         get_hotel();
         function get_hotel() {
             $('#overlay').show();
@@ -325,6 +567,7 @@
                     $('#fax').val(data.getSyetemDetails[0].fax);
                     $('#email').val(data.getSyetemDetails[0].email);
                     $('#web_site').val(data.getSyetemDetails[0].web);
+                    $('#photo_logo').val(data.getSyetemDetails[0].logo);
                     CKEDITOR.instances.tandc.setData(data.getSyetemDetails[0].tandc);
                     $('#logo_image').attr('src', "{{ url('public/images/setting/') }}/" + data.getSyetemDetails[0].logo + "?" + new Date().getTime());
                     $('#letter_head_image').attr('src', "{{ url('public/images/setting/') }}/" + data.getSyetemDetails[0].letter_head + "?" + new Date().getTime());

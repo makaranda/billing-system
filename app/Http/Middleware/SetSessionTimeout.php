@@ -20,7 +20,7 @@ class SetSessionTimeout
     {
         if (Auth::check()) {
 
-            $sessionTimeout = (Auth::user()->session_timeout)/60;
+            $sessionTimeout = Auth::user()->session_timeout / 60;
             $lastActivity = session('lastActivityTime');
             $currentTime = now();
 
