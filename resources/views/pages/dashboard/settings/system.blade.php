@@ -349,6 +349,7 @@
                         let img = new Image();
                         img.src = event.target.result;
                         img.onload = function() {
+
                             let canvas = document.createElement('canvas');
                             let ctx = canvas.getContext('2d');
                             let max_width = 800;
