@@ -345,6 +345,7 @@
 
                     let reader = new FileReader();
                     reader.readAsDataURL(file);
+
                     reader.onload = function(event) {
                         let img = new Image();
                         img.src = event.target.result;
