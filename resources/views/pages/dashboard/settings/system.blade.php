@@ -552,34 +552,34 @@
             $('#overlay').show();
 
             $.ajax({
-            url : "{{ route('system.information') }}",
-            cache: false,
-            data: {_token: '{{ csrf_token() }}','hotel':'hotel'},
-            type: 'GET',
-            dataType: 'json',
-            success : function(data) {
-                console.log(data);
-                if(data.getSyetemDetails != ''){
-                    //alert(data.getSyetemDetails[0].name);
-                    $('#hotel_name').val(data.getSyetemDetails[0].name);
-                    $('#physical_address').val(data.getSyetemDetails[0].address);
-                    $('#postal_address').val(data.getSyetemDetails[0].address_post);
-                    $('#telephone').val(data.getSyetemDetails[0].telephone);
-                    $('#mobile').val(data.getSyetemDetails[0].mobile);
-                    $('#fax').val(data.getSyetemDetails[0].fax);
-                    $('#email').val(data.getSyetemDetails[0].email);
-                    $('#web_site').val(data.getSyetemDetails[0].web);
-                    $('#photo_logo').val(data.getSyetemDetails[0].logo);
-                    CKEDITOR.instances.tandc.setData(data.getSyetemDetails[0].tandc);
-                    $('#logo_image').attr('src', "{{ url('public/images/setting/') }}/" + data.getSyetemDetails[0].logo + "?" + new Date().getTime());
-                    $('#letter_head_image').attr('src', "{{ url('public/images/setting/') }}/" + data.getSyetemDetails[0].letter_head + "?" + new Date().getTime());
+                url : "{{ route('system.information') }}",
+                cache: false,
+                data: {_token: '{{ csrf_token() }}','hotel':'hotel'},
+                type: 'GET',
+                dataType: 'json',
+                success : function(data) {
+                    console.log(data);
+                    if(data.getSyetemDetails != ''){
+                        //alert(data.getSyetemDetails[0].name);
+                        $('#hotel_name').val(data.getSyetemDetails[0].name);
+                        $('#physical_address').val(data.getSyetemDetails[0].address);
+                        $('#postal_address').val(data.getSyetemDetails[0].address_post);
+                        $('#telephone').val(data.getSyetemDetails[0].telephone);
+                        $('#mobile').val(data.getSyetemDetails[0].mobile);
+                        $('#fax').val(data.getSyetemDetails[0].fax);
+                        $('#email').val(data.getSyetemDetails[0].email);
+                        $('#web_site').val(data.getSyetemDetails[0].web);
+                        $('#photo_logo').val(data.getSyetemDetails[0].logo);
+                        CKEDITOR.instances.tandc.setData(data.getSyetemDetails[0].tandc);
+                        $('#logo_image').attr('src', "{{ url('public/images/setting/') }}/" + data.getSyetemDetails[0].logo + "?" + new Date().getTime());
+                        $('#letter_head_image').attr('src', "{{ url('public/images/setting/') }}/" + data.getSyetemDetails[0].letter_head + "?" + new Date().getTime());
+                    }
+                    $('#overlay').hide();
+                },
+                error: function(data) {
+                    $('#overlay').hide();
                 }
-                $('#overlay').hide();
-            },
-            error: function(data) {
-                $('#overlay').hide();
-            }
-        });
+            });
         }
 
 
