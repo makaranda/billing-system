@@ -61,8 +61,10 @@
                                                 @foreach($mainMenu->subMenus as $subMenu)
                                                     @php
                                                         $subMenuRoute = $subMenu->route;
-                                                        // Check if the user's routesPermissions contains the main route
-                                                        $hasPermission2 = $getAllRoutePermisssions->contains('route', $subMenuRoute);
+                                                        // Check if the user's RoutesPermissions contains the specific sub-route
+                                                        $hasPermission2 = $getAllRoutePermisssions->contains(function ($permission) use ($subMenuRoute) {
+                                                            return $permission->user_id == Auth::user()->id && $permission->route == $subMenuRoute;
+                                                        });
                                                     @endphp
                                                     @if ($hasPermission2)
                                                         <div class="col-12 col-md-6 mt-3">

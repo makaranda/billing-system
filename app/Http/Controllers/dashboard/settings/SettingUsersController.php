@@ -13,6 +13,7 @@ use App\Models\Employees;
 use App\Models\CollectionBureaus;
 use App\Models\PermissionsTypes;
 use App\Models\Branches;
+use App\Models\SystemUsersPermissions;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
@@ -674,6 +675,7 @@ class SettingUsersController extends Controller
 
     public function userSave(Request $request){
         $message = '';
+        $messageType = '';
 
         $validator = Validator::make($request->all(), [
             'full_name' => 'required',
@@ -686,34 +688,61 @@ class SettingUsersController extends Controller
 
         if ($validator->fails()) {
             $messageType = 'wrong';
-            $message = $validator->errors()->all()[0];
+            $message = 'Errors Here: '.$validator->errors()->all()[0];
         } else {
-            $userData = [
-                'branch_id' => ($request->branch_id)?$request->branch_id:'',
-                'username' => $request->login,
-                'password' => md5($request->password), // Hashing password with MD5
-                'privilege' => $request->privilege,
-                'full_name' => $request->full_name,
-                'email' => ($request->email)?$request->email:'',
-                'phone' => ($request->phone)?$request->phone:'',
-                'receipt_printer_id' => 1,
-                'employee_id' => ($request->employee_id)?$request->employee_id:'',
-                'group_id' => ($request->group_id)?$request->group_id:'',
-                'is_debt_collect' => ($request->collection_budebtCollectorValreau)?$request->debtCollectorVal:0,
-                'collection_bureau_id' => ($request->collection_bureau)?$request->collection_bureau:'', // Fix field name to match database
-                'last_login_time' => now(),
-                'session_timeout' => $request->session_timeout,
-                'tfa_phone' => 0,
-                'tfa_email' => 0,
-                'status' => 1,
-                'created_by' => Auth::user()->id,
-            ];
+            try {
+                $userData = [
+                    'branch_id' => $request->branch_id ?? 0,
+                    'username' => $request->login,
+                    'password' => md5($request->password),
+                    'privilege' => $request->privilege,
+                    'full_name' => $request->full_name,
+                    'email' => $request->email ?? null,
+                    'phone' => $request->phone ?? null,
+                    'receipt_printer_id' => 1,
+                    'employee_id' => $request->employee_id ?? 0,
+                    'group_id' => $request->group_id ?? 0,
+                    'is_debt_collect' => $request->debtCollectorVal ?? 0,
+                    'collection_bureau_id' => $request->collection_bureau ?? 0,
+                    'last_login_time' => now(),
+                    'session_timeout' => $request->session_timeout ?? 0,
+                    'tfa_phone' => 0,
+                    'tfa_email' => 0,
+                    'status' => 1,
+                    'created_by' => Auth::user()->id,
+                ];
 
-            SystemUsers::create($userData);
-            $messageType = 'success';
-            $message = 'You have successfully Added the user data to the database..';
+                //SystemUsers::create($userData);
+                $user = SystemUsers::create($userData);
+                $userId = $user->id;
+
+                $permissions = SystemUsersPermissions::where('userType', $request->privilege)->get();
+                $permissionTypes = ($request->privilege == 1)?['read', 'create', 'update', 'delete','post','print','privilege','other']:['read', 'post', 'create', 'print'];
+
+                foreach ($permissions as $permission) {
+                    foreach ($permissionTypes as $permissionType) {
+                        RoutesPermissions::create([
+                            'user_id' => $userId,
+                            'main_route' => $permission->main_route,
+                            'route' => $permission->route,
+                            'userType' => $request->privilege,
+                            'permission_type' => $permissionType,
+                        ]);
+                    }
+                }
+                //DB::commit();
+
+                $messageType = 'success';
+                $message = 'You have successfully Added the user data to the database..';
+
+            } catch (\Exception $e) {
+                // Catch any exception that might occur during the DB insert
+                $messageType = 'wrong';
+                $message = 'An error occurred while saving the user data: ' . $e->getMessage();
+            }
         }
-
+        //$messageType = 'success';
+        //$message = 'You have successfully Added the user data to the database..';
         $responseData = [
             'messageType' => $messageType,
             'message' => $message
@@ -752,53 +781,78 @@ class SettingUsersController extends Controller
             $messageType = 'wrong';
             $message = $validator->errors()->all()[0];
         } else {
-            if(!empty($request->password) && !empty($request->repassword)){
-                $userData = [
-                    'branch_id' => $request->branch_id,
-                    'username' => $request->login,
-                    'password' => md5($request->password), // Hashing password with MD5
-                    'privilege' => $request->privilege,
-                    'full_name' => $request->full_name,
-                    'email' => $request->email,
-                    'phone' => $request->phone,
-                    'receipt_printer_id' => 1,
-                    'employee_id' => $request->employee_id,
-                    'group_id' => $request->group_id,
-                    'is_debt_collect' => $request->debtCollectorVal,
-                    'collection_bureau_id' => $request->collection_bureau, // Fix field name to match database
-                    'last_login_time' => now(),
-                    'session_timeout' => $request->session_timeout,
-                    'tfa_phone' => 0,
-                    'tfa_email' => 0,
-                    'status' => 1,
-                    'created_by' => Auth::user()->id,
-                ];
-            }else{
-                $userData = [
-                    'branch_id' => $request->branch_id,
-                    'username' => $request->login,
-                    'password' => $oldpassword,
-                    'privilege' => $request->privilege,
-                    'full_name' => $request->full_name,
-                    'email' => $request->email,
-                    'phone' => $request->phone,
-                    'receipt_printer_id' => 1,
-                    'employee_id' => $request->employee_id,
-                    'group_id' => $request->group_id,
-                    'is_debt_collect' => $request->debtCollectorVal,
-                    'collection_bureau_id' => $request->collection_bureau,
-                    'last_login_time' => now(),
-                    'session_timeout' => $request->session_timeout,
-                    'tfa_phone' => 0,
-                    'tfa_email' => 0,
-                    'status' => 1,
-                    'created_by' => Auth::user()->id,
-                ];
+            try {
+                if(!empty($request->password) && !empty($request->repassword)){
+                    $userData = [
+                        'branch_id' => $request->branch_id ?? 0,
+                        'username' => $request->login,
+                        'password' => md5($request->password), // Hashing password with MD5
+                        'privilege' => $request->privilege,
+                        'full_name' => $request->full_name,
+                        'email' => $request->email,
+                        'phone' => $request->phone,
+                        'receipt_printer_id' => 1,
+                        'employee_id' => $request->employee_id ?? 0,
+                        'group_id' => $request->group_id,
+                        'is_debt_collect' => $request->debtCollectorVal,
+                        'collection_bureau_id' => $request->collection_bureau ?? 0, // Fix field name to match database
+                        'last_login_time' => now(),
+                        'session_timeout' => $request->session_timeout,
+                        'tfa_phone' => 0,
+                        'tfa_email' => 0,
+                        'status' => 1,
+                        'created_by' => Auth::user()->id,
+                    ];
+                }else{
+                    $userData = [
+                        'branch_id' => $request->branch_id ?? 0,
+                        'username' => $request->login,
+                        'password' => $oldpassword,
+                        'privilege' => $request->privilege,
+                        'full_name' => $request->full_name,
+                        'email' => $request->email,
+                        'phone' => $request->phone,
+                        'receipt_printer_id' => 1,
+                        'employee_id' => $request->employee_id ?? 0,
+                        'group_id' => $request->group_id,
+                        'is_debt_collect' => $request->debtCollectorVal,
+                        'collection_bureau_id' => $request->collection_bureau ?? 0,
+                        'last_login_time' => now(),
+                        'session_timeout' => $request->session_timeout,
+                        'tfa_phone' => 0,
+                        'tfa_email' => 0,
+                        'status' => 1,
+                        'created_by' => Auth::user()->id,
+                    ];
+                }
+
+                $UserDatas->update($userData);
+
+                $permissions = SystemUsersPermissions::where('userType', $request->privilege)->get();
+                $permissionTypes = ($request->form_user_id == 1)?['read', 'create', 'update', 'delete','post','print','privilege','other']:['read', 'post', 'create', 'print'];
+
+                RoutesPermissions::where('user_id', $request->form_user_id)->delete();
+
+                foreach ($permissions as $permission) {
+                    foreach ($permissionTypes as $permissionType) {
+                        RoutesPermissions::create([
+                            'user_id' => $request->form_user_id,
+                            'main_route' => $permission->main_route,
+                            'route' => $permission->route,
+                            'userType' => $request->privilege,
+                            'permission_type' => $permissionType,
+                        ]);
+                    }
+                }
+
+                $messageType = 'success';
+                $message = 'You have successfully updated the user data to the database..';
+            } catch (\Exception $e) {
+                // Catch any exception that might occur during the DB insert
+                $messageType = 'wrong';
+                $message = 'An error occurred while saving the user data: ' . $e->getMessage();
             }
 
-            $UserDatas->update($userData);
-            $messageType = 'success';
-            $message = 'You have successfully updated the user data to the database..';
         }
 
         // $messageType = 'success';

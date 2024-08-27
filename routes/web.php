@@ -163,6 +163,7 @@ Route::group(['prefix' => '/'], function () {
             Route::get('/recurring-ammendments',[RecurringAmmendmentsController::class,'index'])->name('index.recurringammendments');
             Route::get('/recurring-reminders',[RecurringRemindersController::class,'index'])->name('index.recurringreminders');
             Route::get('/generated-reminders',[GeneratedRemindersController::class,'index'])->name('index.generatedreminders');
+            Route::get('/converted-reminders',[ConvertedRemindersController::class,'index'])->name('index.convertedreminders');
             Route::get('/reminder-delivery',[ReminderDeliveryController::class,'index'])->name('index.reminderdelivery');
             Route::get('/archive-categories',[ArchiveCategoriesController::class,'index'])->name('index.archivecategories');
             Route::get('/allocate-customer',[AllocateCustomerController::class,'index'])->name('index.allocatecustomer');
@@ -193,6 +194,7 @@ Route::group(['prefix' => '/'], function () {
             Route::get('/debt-management', [CusDebtManagementController::class, 'index'])->name('index.cusdebtmanagement');
             Route::get('/vas', [CusVasController::class, 'index'])->name('index.cusvas');
             Route::get('/wht-cetificates', [CusWhtCetificatesController::class, 'index'])->name('index.cuswhtcetificates');
+            Route::get('/fiscal-receipt-upload', [CusWhtCetificatesController::class, 'index'])->name('index.fiscalreceiptupload');
         });
 
         Route::group(['prefix' => 'documents', 'middleware' => 'role:admin'], function () {

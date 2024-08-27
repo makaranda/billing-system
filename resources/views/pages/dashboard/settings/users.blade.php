@@ -536,7 +536,7 @@
             cache: false,
             method: 'GET',
             dataType: 'json',
-            data: {_token: '{{ csrf_token() }}','action':'formUser'},
+            data: {'_token': '{{ csrf_token() }}','action':'formUser'},
             success: function(response){
                 //alert(response);
                 console.log(response);
@@ -689,20 +689,19 @@
     $('#frm_add_user').on('submit', function(event){
         event.preventDefault();
 
-        var user_id = $('#form_user_id').val();
+        var user_id = ($('#form_user_id').val())?$('#form_user_id').val():'';
         var form_type = ($('#form_type').val() == 'users.save')?'{{ route("users.save") }}':'{{ route("users.update",'+user_id+') }}';
 
         var form_name = (form_type == 'users.save')? 'Added': 'Updated';
         var debtCollectorValue = $('#debt_collector').is(':checked') ? 1 : 0;
 
         $('#overlay').show();
-        $('#overlay').hide();
-        //alert();
+        alert(form_type);
         $.ajax({
             url: ""+form_type+"",
             cache: false,
             method: 'POST',
-            data: $(this).serialize() + '&_token={{ csrf_token() }}&action=addUpdateUser&debtCollectorVal='+debtCollectorValue+'',
+            data: $(this).serialize() + '&_token={{ csrf_token() }}&action=addUpdateUser&debtCollectorVal=' + debtCollectorValue,
             success: function(response){
                 console.log(response.message);
                 listUsers();
@@ -710,27 +709,22 @@
                 $('#addUserModal').modal('hide');
                 $('#frm_add_user').parsley().reset();
                 $('#frm_add_user')[0].reset();
-                if(response.messageType == 'success'){
-                    Swal.fire({
-                        position: "bottom-end",
-                        icon: "success",
-                        title: ""+response.message+"",
-                        showConfirmButton: false,
-                        timer: 4000
-                    });
-                }else if(response.messageType == 'wrong'){
-                    Swal.fire({
-                        position: "bottom-end",
-                        icon: "error",
-                        title: ""+response.message+"",
-                        showConfirmButton: false,
-                        timer: 2500
-                    });
-                }
+
+                Swal.fire({
+                    position: "bottom-end",
+                    icon: response.messageType === 'success' ? "success" : "error",
+                    title: response.message,
+                    showConfirmButton: false,
+                    timer: response.messageType === 'success' ? 4000 : 2500
+                });
 
             },
             error: function (errors) {
                 console.log('Error:', errors);
+            },
+            complete: function() {
+                // Hide overlay after the request is complete
+                $('#overlay').hide();
             }
         });
     });
