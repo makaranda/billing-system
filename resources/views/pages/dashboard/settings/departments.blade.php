@@ -48,8 +48,8 @@
                         <div class="d-md-12">
                             <div class="row">
                                 <div class="col-12">
-                                     <h1 class="text-uppercase">Departments</h1>
-
+                                     <h1 class="text-uppercase">DEPARTMENTS</h1>
+                                     {{-- {{ Auth::user()->id }} --}}
                                      @if (count($routesPermissions) == 1)
                                             @if ($routesPermissions[0]->route == request()->route()->getName() && Auth::user()->privilege === $routesPermissions[0]->userType)
                                                 @if($routesPermissions[0]->show == 1)
@@ -65,8 +65,45 @@
                                             @endif
                                       @endif
                                 </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12 col-lg-12">
+                                    <br/>
 
+                                    {{-- {{ '<pre>' }}
+                                    {{ var_dump($routepermissions['read']) }}
+                                    {{ '</pre>' }} --}}
+                                     {{-- {{ var_dump(CONST_TITLES) }} --}}
+                                    <!-- your page content -->
 
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    DEPARTMENT INFORMATION
+                                                    @if(isset($routepermissions['create']) && $routepermissions['create'] == 1)
+                                                        <button type="button" class="btn btn-xs btn-danger pull-right ml-1" data-bs-toggle="modal" data-bs-target="#addDepartmentModal" role="button">
+                                                            <span class="glyphicon glyphicon-plus"></span>
+                                                            Add New HOD
+                                                        </button>
+                                                        <button type="button" class="btn btn-xs btn-info pull-right ml-1" data-bs-toggle="modal" data-bs-target="#addHODModal" role="button">
+                                                            <span class="glyphicon glyphicon-plus"></span>
+                                                            Add New Department
+                                                        </button>
+                                                    @endif
+                                                </div>
+                                                <div class="panel-body">
+                                                    <div class="row">
+                                                        <div class="col-md-12">
+                                                            <div class="p-3" id="department_information_list"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -82,6 +119,167 @@
     </div>
 </div>
 
+
+<!-- Add Hotel Modal -->
+<div class="modal fade" id="addDepartmentModal" role="dialog">
+    <div class="modal-dialog">
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title"><span class="fa fa-plus"></span> ADD/EDIT DEPARTMENT</h4>
+          <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
+        </div>
+            <form id="frmDepartment" name="frmDepartment" method="post" action="">
+                <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label>Parent Department</label>
+                            <select class="form-control" id="department_group" name="department_group">
+                                <option value="0">- SELECT -</option>
+                                @foreach ($allDepartments as $allDepartment)
+                                    <option value="{{ $allDepartment->id }}">{{ $allDepartment->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="heading">Department Code</label>
+                            <input type="text" name="department_code" id="department_code" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="customer_name">Department Name</label>
+                            <input type="text" name="department_name" id="department_name" class="form-control" required>
+                        </div>
+                    </div>
+                </div>
+                </div>
+                <div class="modal-footer d-block">
+                <div class="row">
+                    <div class="col-md-6 p-0">
+                        <div class="form-group">
+                            <button type="button" class="btn btn-default form-control" data-bs-dismiss="modal">Cancel</button>
+                            <input type="hidden" id="department_id" name="department_id" />
+                        </div>
+                    </div>
+                    <div class="col-md-6 p-0">
+                        <div class="form-group">
+                            <button type="submit" name="submit" class="btn btn-primary form-control">Save</button>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </form>
+      </div>
+
+    </div>
+  </div>
+
+<!-- Add HOD Modal -->
+<div class="modal fade" id="addHODModal" role="dialog">
+    <div class="modal-dialog">
+
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title"><span class="fa fa-plus"></span> ADD/EDIT HOD</h4>
+          <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
+        </div>
+            <form id="frmHOD" name="frmHOD" method="post" action="">
+                <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="hod_title">Title</label>
+                            <select name="hod_title" id="hod_title" class="form-control">
+                                @foreach (CONST_TITLES as $key => $value)
+                                    <option value='{{ $key }}'>{{ $value }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="hod_full_name">Full Name</label>
+                            <input type="text" name="hod_full_name" id="hod_full_name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="hod_email">Email</label>
+                            <input type="text" name="hod_email" id="hod_email" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="hod_phone">Phone</label>
+                            <input type="text" name="hod_phone" id="hod_phone" class="form-control" >
+                        </div>
+                    </div>
+                </div>
+                </div>
+                <div class="modal-footer d-block">
+                <div class="row">
+                    <div class="col-md-6 p-0">
+                        <div class="form-group">
+                            <button type="button" class="btn btn-default form-control w-100" data-bs-dismiss="modal">Cancel</button>
+                            <input type="hidden" id="hod_id" name="hod_id" />
+                        </div>
+                    </div>
+                    <div class="col-md-6 p-0">
+                        <div class="form-group">
+                            <button type="submit" name="submit" class="btn btn-primary form-control w-100">Save</button>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </form>
+      </div>
+
+    </div>
+  </div>
+
+<!-- Add HOD Modal -->
+  <div class="modal fade" id="assignHODModal" role="dialog">
+    <div class="modal-dialog">
+
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title"><span class="fa fa-plus"></span> ADD/EDIT HOD</h4>
+          <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
+        </div>
+            <form id="frmAssignHOD" name="frmAssignHOD" method="post" action="">
+                <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="assign_hod">Department Head</label>
+
+                            <select name="assign_hod" id="assign_hod" class="form-control">
+                                <option value="">-Select HOD-</option>
+                                @foreach ($allDepartmentHeads as $allDepartmentHead)
+                                    <option value="{{ $allDepartmentHead->id }}">{{ $allDepartmentHead->full_name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                    </div>
+                </div>
+                </div>
+                <div class="modal-footer d-block">
+                <div class="row">
+                    <div class="col-md-6 p-0">
+                        <div class="form-group">
+                            <button type="button" class="btn btn-default form-control" data-bs-dismiss="modal">Cancel</button>
+                            <input type="hidden" id="hod_department_id" name="hod_department_id" />
+                        </div>
+                    </div>
+                    <div class="col-md-6 p-0">
+                        <div class="form-group">
+                            <button type="submit" name="submit" class="btn btn-primary form-control">Save</button>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </form>
+      </div>
+
+    </div>
+  </div>
 @endsection
 
 @push('css')
@@ -110,6 +308,78 @@
         titleFormat: "MM yyyy" /* Leverages same syntax as 'format' */,
         weekStart: 0,
     };
+
+    function assignDepartmentHead(id){
+        $('#hod_department_id').val(id);
+        $('#assignHODModal').modal('show');
+    }
+
+    function editDepartment(id){
+        $('#overlay').show();
+        $('#addDepartmentModal').modal('show');
+        $.ajax({
+            url : "{{ route('department.getdepartment') }}",
+            cache: false,
+            data: {' _token': '{{ csrf_token() }}','id':id},
+            type: 'GET',
+            success : function(response) {
+                $('#addDepartmentModal').modal('show');
+                //var arr = data.split("|");
+                if(response.departments.id != ''){
+                    $('#addDepartmentModal #department_id').val(response.departments.id);
+                    $('#addDepartmentModal #department_group').val(response.departments.department).change();
+                    $('#addDepartmentModal #department_code').val(response.departments.code);
+                    $('#addDepartmentModal #department_name').val(response.departments.name);
+                }
+                listUsers();
+                $('#overlay').hide();
+            },
+            error: function(data) {
+                console.log("Error getting departments ! \n");
+                $('#overlay').hide();
+            }
+        });
+    }
+
+
+    listUsers();
+
+    function listUsers() {
+		//console.log("THIS");
+		$('#overlay').show();
+        $.ajax({
+                url : "{{ route('department.fetchdepartment') }}",
+                cache: false,
+                data: { _token: '{{ csrf_token() }}','order':'ASC'},
+                type: 'GET',
+                success : function(data) {
+                    $('#overlay').hide();
+                    $('#department_information_list').html(data);
+
+                    $('#check_all').change(function(){
+                        if(this.checked) $('.chk_user').prop("checked",true).trigger('change');
+                        else $('.chk_user').prop("checked",false).trigger('change');
+                    });
+
+                    $('.chk_user').change(function(){
+                        $('#apply_selected').css("display", "none");
+                        if($('input[class="chk_user"]').is(':checked')) {
+                            $('#apply_selected').css("display","block");
+                        }
+
+                    $('#remove_selected').css("display", "none");
+                        if($('input[class="chk_user"]').is(':checked')) {
+                            $('#remove_selected').css("display","block");
+                        }
+                    });
+                },
+                error: function(data) {
+                    //$('#overlay').hide();
+                    $('#errorMessage').html(JSON.stringify(data));
+                    $('#errorModal').modal();
+                }
+        });
+    }
     </script>
 @endpush
 

@@ -497,14 +497,14 @@
 
                     $('.chk_user').change(function(){
                         $('#apply_selected').css("display", "none");
-                        if($('input[class="chk_user"]').is(':checked')) {
-                            $('#apply_selected').css("display","block");
-                        }
+                            if($('input[class="chk_user"]').is(':checked')) {
+                                $('#apply_selected').css("display","block");
+                            }
 
-                    $('#remove_selected').css("display", "none");
-                        if($('input[class="chk_user"]').is(':checked')) {
-                            $('#remove_selected').css("display","block");
-                        }
+                        $('#remove_selected').css("display", "none");
+                            if($('input[class="chk_user"]').is(':checked')) {
+                                $('#remove_selected').css("display","block");
+                            }
                     });
                 },
                 error: function(data) {

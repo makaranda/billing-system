@@ -262,7 +262,6 @@ Route::group(['prefix' => '/'], function () {
 
         Route::group(['prefix' => 'settings', 'middleware' => 'role:admin'], function () {
             Route::get('/', [SettingsController::class, 'index'])->name('index.settings');
-            Route::get('/departments', [DepartmentsController::class, 'index'])->name('index.departments');
             Route::get('/ota-operators', [OtaOperatorsController::class, 'index'])->name('index.otaoperators');
             Route::get('/credit-card-types', [CreditCardTypesController::class, 'index'])->name('index.creditcardtypes');
             Route::get('/product-categories', [ProductCategoriesController::class, 'index'])->name('index.productcategories');
@@ -273,6 +272,16 @@ Route::group(['prefix' => '/'], function () {
             Route::get('/message-formats', [MessageFormatsController::class, 'index'])->name('index.messageformats');
             Route::get('/currencies', [CurrenciesController::class, 'index'])->name('index.currencies');
             Route::get('/price-types', [PriceTypesController::class, 'index'])->name('index.pricetypes');
+
+            Route::group(['prefix' => 'departments', 'middleware' => 'role:admin'], function () {
+                Route::get('/', [DepartmentsController::class, 'index'])->name('index.departments');
+                Route::get('/fetch-departments', [DepartmentsController::class, 'fetchdepartmentAll'])->name('department.fetchdepartment');
+                Route::get('/get-departments', [DepartmentsController::class, 'getdepartmentAll'])->name('department.getdepartment');
+                Route::post('/add-new-hod', [DepartmentsController::class, 'addhodInformation'])->name('department.addhodinformation');
+                Route::post('/add-new-department', [DepartmentsController::class, 'addnewdepartmentInformation'])->name('department.addnewdepartment');
+                Route::post('/update-hod', [DepartmentsController::class, 'updatehodInformation'])->name('department.updatehodinformation');
+                Route::post('/update-department', [DepartmentsController::class, 'updatedepartmentInformation'])->name('department.updatedepartment');
+            });
 
             Route::group(['prefix' => 'system', 'middleware' => 'role:admin'], function () {
                 Route::get('/', [SystemController::class, 'index'])->name('index.system');

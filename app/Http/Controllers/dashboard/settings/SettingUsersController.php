@@ -406,13 +406,16 @@ class SettingUsersController extends Controller
         $userPermissionLists = '';
         $bulkUsersNamesArry = [];
 
-        foreach ($bulkUsersList as $bulkUser) {
-            $bulkcurrentUser = SystemUsers::find($bulkUser);
-            $bulkUsersNamesArry[] = $bulkcurrentUser->full_name;
+        if(count(explode(',',$bulkUsers)) > 1){
+            foreach ($bulkUsersList as $bulkUser) {
+                $bulkcurrentUser = SystemUsers::find($bulkUser);
+                $bulkUsersNamesArry[] = $bulkcurrentUser->full_name;
+            }
+
+            $bulkUsersNames = implode(', ', $bulkUsersNamesArry);
+        }else{
+            $bulkUsersNames = $request->bulk_users;
         }
-
-        $bulkUsersNames = implode(', ', $bulkUsersNamesArry);
-
         //$permissionsLists .= $mainMenu->id.'/'.$subMenu->id.'/'.$permissionsType->permission_type;
         foreach ($routesPermissions as $routesPermission) {
             if (is_array($bulkUsersList) && count($bulkUsersList) > 1) {
