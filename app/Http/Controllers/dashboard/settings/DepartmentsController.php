@@ -5,6 +5,13 @@ namespace App\Http\Controllers\dashboard\settings;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use App\Exports\SystemUsersExport;
+use Maatwebsite\Excel\Facades\Excel;
+use PDF;
 use App\Models\SystemMenus;
 use App\Models\PermissionsTypes;
 use App\Models\RoutesPermissions;
@@ -83,6 +90,143 @@ class DepartmentsController extends Controller
         }else{
             return view('pages.dashboard.settings.departments', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','getAllRoutePermisssions','routepermissions','allDepartments','allDepartmentHeads'));
         }
+    }
+
+    public function addhodInformation(Request $request){
+        $messageType = '';
+        $message = '';
+            // Validate the incoming request data
+        $validator = Validator::make($request->all(), [
+            'hod_title' => 'required',
+            'hod_full_name' => 'required',
+            'hod_email' => 'required|email',
+        ]);
+
+        $existingEmail = DepartmentHeads::where('email', $request->hod_email)->exists();
+
+        // Check if the validation fails
+        if ($validator->fails()) {
+            $messageType = 'error';
+            $message = $validator->errors();
+        }else{
+
+        // Prepare the data for saving
+            if($existingEmail){
+                $messageType = 'error';
+                $message = 'The email has already been taken...!! Try an Other Email..';
+            }else{
+                $userData = [
+                    'title' => $request->hod_title,
+                    'full_name' => $request->hod_full_name,
+                    'email' => $request->hod_email,
+                    'phone' => $request->hod_phone,
+                    'status' => 1,
+                ];
+
+                // Assuming DepartmentHead is the model class for the table
+                $departmentHead = new DepartmentHeads();
+
+                // Save the data
+                $departmentHead->fill($userData);
+                $departmentHead->save();
+
+                $messageType = 'success';
+                $message = 'You have successfully Added the HOD data to the database..';
+            }
+        }
+        $responseData = [
+            'message' => $message,
+            'messageType' => $messageType
+        ];
+        //echo $message;
+        return response()->json($responseData);
+    }
+
+    public function addnewdepartmentInformation(Request $request){
+        $messageType = '';
+        $message = '';
+            // Validate the incoming request data
+        $validator = Validator::make($request->all(), [
+            'department_group' => 'required',
+            'department_code' => 'required',
+            'department_name' => 'required',
+        ]);
+
+        $existingCode = Departments::where('code', $request->department_code)->exists();
+
+        // Check if the validation fails
+        if ($validator->fails()) {
+            $messageType = 'error';
+            $message = 'Errors: '.$validator->errors();
+        }else{
+
+        // Prepare the data for saving
+            if($existingCode){
+                $messageType = 'error';
+                $message = 'The Department Code has already been taken...!! Try an Other Code..';
+            }else{
+                $depData = [
+                    'code' => $request->department_code,
+                    'name' => $request->department_name,
+                    'department' => $request->department_group,
+                    'status' => 1,
+                ];
+
+                // Assuming DepartmentHead is the model class for the table
+                $departments = new Departments();
+
+                // Save the data
+                $departments->fill($depData);
+                $departments->save();
+
+                $messageType = 'success';
+                $message = 'You have successfully Added the Department data to the database..';
+            }
+        }
+        $responseData = [
+            'message' => $message,
+            'messageType' => $messageType
+        ];
+        //echo $message;
+        return response()->json($responseData);
+    }
+
+    public function updatedepartmentInformation(Request $request,$dep_id){
+        $messageType = '';
+        $message = '';
+
+        $departmentID = $request->dep_id;
+        $getDepartment = Departments::find($request->dep_id);
+
+        $validator = Validator::make($request->all(), [
+            'department_group' => 'required',
+            'department_code' => 'required',
+            'department_name' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            $messageType = 'error';
+            $message = 'Errors: '.$validator->errors();
+        }else{
+            $depData = [
+                'code' => $request->department_code,
+                'name' => $request->department_name,
+                'department' => $request->department_group,
+                'status' => 1,
+            ];
+
+            // update the data
+            $getDepartment->update($depData);
+
+            $messageType = 'success';
+            $message = 'You have successfully Updated the Department data to the database..';
+        }
+        $responseData = [
+            'message' => $message,
+            'messageType' => $messageType
+        ];
+        //echo $message;
+        return response()->json($responseData);
     }
 
     public function getdepartmentAll(Request $request){

@@ -280,7 +280,7 @@ Route::group(['prefix' => '/'], function () {
                 Route::post('/add-new-hod', [DepartmentsController::class, 'addhodInformation'])->name('department.addhodinformation');
                 Route::post('/add-new-department', [DepartmentsController::class, 'addnewdepartmentInformation'])->name('department.addnewdepartment');
                 Route::post('/update-hod', [DepartmentsController::class, 'updatehodInformation'])->name('department.updatehodinformation');
-                Route::post('/update-department', [DepartmentsController::class, 'updatedepartmentInformation'])->name('department.updatedepartment');
+                Route::post('/{dep_id}/update-department', [DepartmentsController::class, 'updatedepartmentInformation'])->name('department.updatedepartment');
             });
 
             Route::group(['prefix' => 'system', 'middleware' => 'role:admin'], function () {

@@ -696,7 +696,7 @@
         var debtCollectorValue = $('#debt_collector').is(':checked') ? 1 : 0;
 
         $('#overlay').show();
-        alert(form_type);
+        //alert(form_type);
         $.ajax({
             url: ""+form_type+"",
             cache: false,
