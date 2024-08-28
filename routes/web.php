@@ -277,10 +277,12 @@ Route::group(['prefix' => '/'], function () {
                 Route::get('/', [DepartmentsController::class, 'index'])->name('index.departments');
                 Route::get('/fetch-departments', [DepartmentsController::class, 'fetchdepartmentAll'])->name('department.fetchdepartment');
                 Route::get('/get-departments', [DepartmentsController::class, 'getdepartmentAll'])->name('department.getdepartment');
+                Route::get('/get-department-head', [DepartmentsController::class, 'getdepartmenthead'])->name('department.getdepartmenthead');
                 Route::post('/add-new-hod', [DepartmentsController::class, 'addhodInformation'])->name('department.addhodinformation');
                 Route::post('/add-new-department', [DepartmentsController::class, 'addnewdepartmentInformation'])->name('department.addnewdepartment');
                 Route::post('/update-hod', [DepartmentsController::class, 'updatehodInformation'])->name('department.updatehodinformation');
                 Route::post('/{dep_id}/update-department', [DepartmentsController::class, 'updatedepartmentInformation'])->name('department.updatedepartment');
+                Route::post('/{dep_id}/update-department-head', [DepartmentsController::class, 'updatedepartmentHead'])->name('department.updatedepartmenthead');
             });
 
             Route::group(['prefix' => 'system', 'middleware' => 'role:admin'], function () {

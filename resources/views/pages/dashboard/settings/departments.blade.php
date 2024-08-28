@@ -251,7 +251,7 @@
                         <div class="form-group">
                             <label for="assign_hod">Department Head</label>
 
-                            <select name="assign_hod" id="assign_hod" class="form-control">
+                            <select name="assign_hod" id="assign_hod" class="form-control" required>
                                 <option value="">-Select HOD-</option>
                                 @foreach ($allDepartmentHeads as $allDepartmentHead)
                                     <option value="{{ $allDepartmentHead->id }}">{{ $allDepartmentHead->full_name }}</option>
@@ -396,9 +396,76 @@
 
     });
 
+    $('#frmAssignHOD').parsley();
+    $('#frmAssignHOD').on('submit', function(event){
+        event.preventDefault();
+        $('#overlay').show();
+
+        var hodDepartmentId = $('#hod_department_id').val();
+        var updateUrl = '{{ route("department.updatedepartmenthead", ":id") }}';
+        updateUrl = updateUrl.replace(':id', hodDepartmentId);
+
+        $.ajax({
+            url : updateUrl,
+            cache: false,
+            data: $(this).serialize() + '&_token={{ csrf_token() }}',
+            type: 'POST',
+            success : function(response) {
+                $('#assignHODModal').modal('hide');
+                console.log(response);
+                //var arr = data.split("|");
+                $('#frmAssignHOD').parsley().reset();
+                $('#frmAssignHOD')[0].reset();
+                Swal.fire({
+                    position: "bottom-end",
+                    icon: response.messageType === 'success' ? "success" : "error",
+                    title: response.message,
+                    showConfirmButton: false,
+                    timer: response.messageType === 'success' ? 4000 : 2500
+                });
+                listDepartments();
+                $('#overlay').hide();
+            },
+            error: function(data) {
+                console.log("Error getting departments ! \n");
+                $('#overlay').hide();
+            }
+        });
+
+    });
+
     function assignDepartmentHead(id){
+        $('#overlay').show();
         $('#hod_department_id').val(id);
         $('#assignHODModal').modal('show');
+
+        $.ajax({
+            url : "{{ route('department.getdepartmenthead') }}",
+            cache: false,
+            data: {' _token': '{{ csrf_token() }}','id':id},
+            type: 'GET',
+            dataType: 'json',
+            success : function(response) {
+                console.log(response);
+                $('#assignHODModal').modal('show');
+                //var arr = data.split("|");
+                if(response.departments.id != ''){
+                    //$('#assignHODModal #hod_department_id').val(response.departments.id);
+                    console.log(response.departments.department_head);
+                    if (response.departments.department_head != 0) {
+                        $('#assignHODModal #assign_hod').val(response.departments.department_head).change();
+                    }else{
+                        $('#assignHODModal #assign_hod').val('').change();
+                    }
+                }
+                listDepartments();
+                $('#overlay').hide();
+            },
+            error: function(data) {
+                console.log("Error getting departments ! \n");
+                $('#overlay').hide();
+            }
+        });
     }
 
     function editDepartment(id){

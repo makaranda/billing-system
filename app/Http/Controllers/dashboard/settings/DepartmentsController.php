@@ -191,6 +191,39 @@ class DepartmentsController extends Controller
         return response()->json($responseData);
     }
 
+    public function updatedepartmentHead(Request $request,$dep_id){
+        $messageType = '';
+        $message = '';
+
+        $departmentID = $request->dep_id;
+        $getDepartment = Departments::find($request->dep_id);
+
+        $validator = Validator::make($request->all(), [
+            'assign_hod' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            $messageType = 'error';
+            $message = 'Errors: '.$validator->errors();
+        }else{
+            $depData = [
+                'department_head' => $request->assign_hod,
+            ];
+
+            // update the data
+            $getDepartment->update($depData);
+
+            $messageType = 'success';
+            $message = 'You have successfully Updated the Department Head data to the database..';
+        }
+        $responseData = [
+            'message' => $message,
+            'messageType' => $messageType
+        ];
+        //echo $message;
+        return response()->json($responseData);
+    }
+
     public function updatedepartmentInformation(Request $request,$dep_id){
         $messageType = '';
         $message = '';
@@ -229,13 +262,29 @@ class DepartmentsController extends Controller
         return response()->json($responseData);
     }
 
+    public function getdepartmenthead(Request $request){
+        $departmentID = $request->id;
+        $getDepartment = Departments::find($request->id);
+        $departmentHeads = DepartmentHeads::all();
+
+        if (!$getDepartment) {
+            return response()->json(['error' => 'Department not found'], 404);
+        }
+        $responseData = [
+            'departments' => $getDepartment,
+            'department_heads' => $departmentHeads
+        ];
+
+        return response()->json($responseData);
+    }
+
     public function getdepartmentAll(Request $request){
         $departmentID = $request->id;
         $getDepartment = Departments::find($request->id);
         $departmentHeads = DepartmentHeads::all();
 
         if (!$getDepartment) {
-            return response()->json(['error' => 'User not found'], 404);
+            return response()->json(['error' => 'Department not found'], 404);
         }
         $responseData = [
             'departments' => $getDepartment,
@@ -327,7 +376,7 @@ class DepartmentsController extends Controller
                                     <td style="vertical-align: middle;">'.($key+1).'</td>
                                     <td style="vertical-align: middle;">'.$departmentsDetail->code.'</td>
                                     <td style="vertical-align: middle;">'.$departmentsDetail->name.'</td>
-                                    <td style="vertical-align: middle;">'.$departmentsDetail->department.'--'.$parentRoute.'</td>
+                                    <td style="vertical-align: middle;">'.$departmentsDetail->department.'</td>
                                     <td style="vertical-align: middle;">'.$departmentsDetail->department_head.'</td>
 
                                     <td style="vertical-align: middle;">
