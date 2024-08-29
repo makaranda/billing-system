@@ -342,13 +342,13 @@ class DepartmentsController extends Controller
                 $activeInactivebtn = '';
                 if ($canDelete) {
                     if($departmentsDetail->status == 1){
-                        $activeInactivebtn = '<a><button type="button" class="btn btn-xs btn-danger userActivete" data-id="'.$departmentsDetail->id.'" data-status="'.$departmentsDetail->status.'" title="Disable">
+                        $activeInactivebtn = '<button type="button" class="btn btn-xs btn-danger userActivete" data-id="'.$departmentsDetail->id.'" data-status="'.$departmentsDetail->status.'" title="Disable">
                                                 <i class="bi bi-x"></i>
-                                            </button><a>';
+                                            </button>';
                     }else{
-                        $activeInactivebtn = '<a><button type="button" class="btn btn-xs btn-success userActivete" data-id="'.$departmentsDetail->id.'" data-status="'.$departmentsDetail->status.'" title="Enable">
+                        $activeInactivebtn = '<button type="button" class="btn btn-xs btn-success userActivete" data-id="'.$departmentsDetail->id.'" data-status="'.$departmentsDetail->status.'" title="Enable">
                                             <i class="bi bi-arrow-repeat"></i>
-                                            </button></a>';
+                                            </button>';
                     }
                 }
                 // $btnActivate = '';
@@ -362,7 +362,6 @@ class DepartmentsController extends Controller
                                                 <i class="bi bi-pen"></i>
                                             </button>';
                 }
-
 
                 $privilegeButton = '';
                 if($departmentsDetail->id != Auth::user()->id){
