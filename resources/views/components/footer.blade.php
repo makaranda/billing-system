@@ -221,9 +221,33 @@
           Are you sure to logout now...!!!
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
-          <a href="{{ route('admin.logout') }}" class="btn btn-danger text-white">Logout</a>
+          <button type="button" class="btn btn-primary btn-sm" data-bs-dismiss="modal">Close</button>
+          <a href="{{ route('admin.logout') }}" class="btn btn-danger text-white btn-sm">Logout</a>
         </div>
+      </div>
+    </div>
+</div>
+
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+         <form action="#" method="POST" id="deleteRecordForm">
+            <input type="hidden" name="delete_record_form" id="delete_record_form">
+            <input type="hidden" name="delete_record_id" id="delete_record_id">
+            <div class="modal-header">
+            <h5 class="modal-title" id="deleteModalLabel">Delete Record</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+            Are you sure to Delete this Record now...!!!
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-primary btn-sm" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-danger text-white btn-sm">Delete</button>
+            </div>
+          </form>
       </div>
     </div>
 </div>

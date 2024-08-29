@@ -514,7 +514,7 @@
                     $('#overlay').hide();
                     $('#department_information_list').html(data);
 
-                    $('#check_all').change(function(){
+                    /*$('#check_all').change(function(){
                         if(this.checked) $('.chk_user').prop("checked",true).trigger('change');
                         else $('.chk_user').prop("checked",false).trigger('change');
                     });
@@ -529,12 +529,19 @@
                         if($('input[class="chk_user"]').is(':checked')) {
                             $('#remove_selected').css("display","block");
                         }
-                    });
+                    });*/
                 },
                 error: function(data) {
                     //$('#overlay').hide();
-                    $('#errorMessage').html(JSON.stringify(data));
-                    $('#errorModal').modal();
+                    //$('#errorMessage').html(JSON.stringify(data));
+                    //$('#errorModal').modal();
+                    Swal.fire({
+                        position: "bottom-end",
+                        icon: "error",
+                        title: data,
+                        showConfirmButton: false,
+                        timer: 2500
+                    });
                 }
         });
     }

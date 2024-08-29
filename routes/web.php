@@ -264,7 +264,6 @@ Route::group(['prefix' => '/'], function () {
             Route::get('/', [SettingsController::class, 'index'])->name('index.settings');
             Route::get('/ota-operators', [OtaOperatorsController::class, 'index'])->name('index.otaoperators');
             Route::get('/credit-card-types', [CreditCardTypesController::class, 'index'])->name('index.creditcardtypes');
-            Route::get('/product-categories', [ProductCategoriesController::class, 'index'])->name('index.productcategories');
             Route::get('/products', [ProductsController::class, 'index'])->name('index.products');
             Route::get('/tax', [TaxController::class, 'index'])->name('index.tax');
             Route::get('/default-payment-banks', [DefaultPaymentBanksController::class, 'index'])->name('index.defaultpaymentbanks');
@@ -272,6 +271,15 @@ Route::group(['prefix' => '/'], function () {
             Route::get('/message-formats', [MessageFormatsController::class, 'index'])->name('index.messageformats');
             Route::get('/currencies', [CurrenciesController::class, 'index'])->name('index.currencies');
             Route::get('/price-types', [PriceTypesController::class, 'index'])->name('index.pricetypes');
+
+            Route::group(['prefix' => 'product-categories', 'middleware' => 'role:admin'], function () {
+                Route::get('/', [ProductCategoriesController::class, 'index'])->name('index.productcategories');
+                Route::get('/fetch-product-categories', [ProductCategoriesController::class, 'fetchproCategoriesAll'])->name('productcategories.fetchprocategories');
+                Route::get('/{cat_id}/edit-product-categories', [ProductCategoriesController::class, 'editProCategories'])->name('categories.editproductcategory');
+                Route::post('/add-new-product-category', [ProductCategoriesController::class, 'addProductCategory'])->name('categories.addproductcategory');
+                Route::post('/{cat_id}/update-new-product-category', [ProductCategoriesController::class, 'updateProductCategory'])->name('categories.updateproductcategory');
+                Route::post('/{cat_id}/delete-product-category', [ProductCategoriesController::class, 'deleteProductCategory'])->name('categories.deleteproductcategory');
+            });
 
             Route::group(['prefix' => 'departments', 'middleware' => 'role:admin'], function () {
                 Route::get('/', [DepartmentsController::class, 'index'])->name('index.departments');
