@@ -264,13 +264,21 @@ Route::group(['prefix' => '/'], function () {
             Route::get('/', [SettingsController::class, 'index'])->name('index.settings');
             Route::get('/ota-operators', [OtaOperatorsController::class, 'index'])->name('index.otaoperators');
             Route::get('/credit-card-types', [CreditCardTypesController::class, 'index'])->name('index.creditcardtypes');
-            Route::get('/products', [ProductsController::class, 'index'])->name('index.products');
             Route::get('/tax', [TaxController::class, 'index'])->name('index.tax');
             Route::get('/default-payment-banks', [DefaultPaymentBanksController::class, 'index'])->name('index.defaultpaymentbanks');
             Route::get('/currency-exchange-settings', [CurrencyExchangeSettingsController::class, 'index'])->name('index.currencyexchangesettings');
             Route::get('/message-formats', [MessageFormatsController::class, 'index'])->name('index.messageformats');
             Route::get('/currencies', [CurrenciesController::class, 'index'])->name('index.currencies');
             Route::get('/price-types', [PriceTypesController::class, 'index'])->name('index.pricetypes');
+
+            Route::group(['prefix' => 'products', 'middleware' => 'role:admin'], function () {
+                Route::get('/', [ProductsController::class, 'index'])->name('index.products');
+                Route::get('/fetch-products', [ProductsController::class, 'fetchproProductsAll'])->name('products.fetchproproducts');
+                Route::get('/{cat_id}/edit-product', [ProductsController::class, 'editProduct'])->name('products.editproduct');
+                Route::post('/add-new-product', [ProductsController::class, 'addProduct'])->name('products.addproduct');
+                Route::post('/{cat_id}/update-product', [ProductsController::class, 'updateProduct'])->name('products.updateproduct');
+                Route::post('/{cat_id}/delete-product', [ProductsController::class, 'deleteProduct'])->name('products.deleteproduct');
+            });
 
             Route::group(['prefix' => 'product-categories', 'middleware' => 'role:admin'], function () {
                 Route::get('/', [ProductCategoriesController::class, 'index'])->name('index.productcategories');
