@@ -236,16 +236,18 @@
          <form action="#" method="POST" id="deleteRecordForm">
             <input type="hidden" name="delete_record_form" id="delete_record_form">
             <input type="hidden" name="delete_record_id" id="delete_record_id">
+            <input type="hidden" name="delete_record_type" id="delete_record_type">
+
             <div class="modal-header">
-            <h5 class="modal-title" id="deleteModalLabel">Delete Record</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title deleteModelTopic" id="deleteModalLabel">Delete Record</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body deleteModelDesctiption">
             Are you sure to Delete this Record now...!!!
             </div>
             <div class="modal-footer">
-            <button type="button" class="btn btn-primary btn-sm" data-bs-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-danger text-white btn-sm">Delete</button>
+                <button type="button" class="btn btn-primary btn-sm" data-bs-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-danger text-white btn-sm deleteModelBtn">Delete</button>
             </div>
           </form>
       </div>
