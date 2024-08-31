@@ -73,13 +73,11 @@
                             <div class="row">
                                 <div class="col-sm-12 col-lg-12">
                                     <br/>
-
                                     {{-- {{ '<pre>' }}
                                     {{ var_dump($routepermissions['read']) }}
                                     {{ '</pre>' }} --}}
                                      {{-- {{ var_dump(CONST_TITLES) }} --}}
                                     <!-- your page content -->
-
                                     <div class="row">
                                         <div class="col-md-12">
                                             <div class="card">
