@@ -266,9 +266,25 @@ Route::group(['prefix' => '/'], function () {
             Route::get('/credit-card-types', [CreditCardTypesController::class, 'index'])->name('index.creditcardtypes');
             Route::get('/default-payment-banks', [DefaultPaymentBanksController::class, 'index'])->name('index.defaultpaymentbanks');
             Route::get('/currency-exchange-settings', [CurrencyExchangeSettingsController::class, 'index'])->name('index.currencyexchangesettings');
-            Route::get('/message-formats', [MessageFormatsController::class, 'index'])->name('index.messageformats');
-            Route::get('/currencies', [CurrenciesController::class, 'index'])->name('index.currencies');
             Route::get('/price-types', [PriceTypesController::class, 'index'])->name('index.pricetypes');
+
+            Route::group(['prefix' => 'currencies', 'middleware' => 'role:admin'], function () {
+                Route::get('/', [CurrenciesController::class, 'index'])->name('index.currencies');
+                Route::get('/fetch-currencies', [CurrenciesController::class, 'fetchproCurrencies'])->name('currencies.fetchcurrencies');
+                Route::get('/{pro_id}/edit-currency', [CurrenciesController::class, 'editCurrency'])->name('currencies.editcurrency');
+                Route::post('/add-new-currency', [CurrenciesController::class, 'addCurrency'])->name('currencies.addcurrency');
+                Route::post('/{pro_id}/update-currency', [CurrenciesController::class, 'updateCurrency'])->name('currencies.updatecurrency');
+                Route::post('/{pro_id}/delete-currency', [CurrenciesController::class, 'deleteCurrency'])->name('currencies.deletecurrency');
+            });
+
+            Route::group(['prefix' => 'message-formats', 'middleware' => 'role:admin'], function () {
+                Route::get('/', [MessageFormatsController::class, 'index'])->name('index.messageformats');
+                Route::get('/fetch-messageformats', [MessageFormatsController::class, 'fetchproMessageFormats'])->name('messageformats.fetchmessageformats');
+                Route::get('/{pro_id}/edit-messageformat', [MessageFormatsController::class, 'editMessageFormat'])->name('messageformats.editmessageformat');
+                Route::post('/add-new-messageformat', [MessageFormatsController::class, 'addMessageFormat'])->name('messageformats.addmessageformat');
+                Route::post('/{pro_id}/update-messageformat', [MessageFormatsController::class, 'updateMessageFormat'])->name('messageformats.updatemessageformat');
+                Route::post('/{pro_id}/delete-messageformat', [MessageFormatsController::class, 'deleteMessageFormat'])->name('messageformats.deletemessageformat');
+            });
 
             Route::group(['prefix' => 'tax', 'middleware' => 'role:admin'], function () {
                 Route::get('/', [TaxController::class, 'index'])->name('index.tax');

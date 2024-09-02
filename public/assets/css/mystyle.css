@@ -1,5 +1,5 @@
 .form-control {
-    padding: .6rem 2rem;
+    /* padding: .6rem 2rem; */
     font-size: 12px;
 }
 .navbar .navbar-nav .topbar-user .top-menu-link {
@@ -198,3 +198,14 @@ input:focus {
     border: 2px solid #3e93ff !important;
 }
 
+.form-group {
+    padding: 0px;
+}
+.row>* {
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-top: 5px;
+}
+.form-check label, .form-group label {
+    font-weight: 600;
+}

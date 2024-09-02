@@ -6,6 +6,9 @@
     .navbar .navbar-nav.top-menu {
         overflow-x: unset;
     }
+    .modal-dialog {
+        max-width: 600px !important;
+    }
 }
 
 @media screen and (max-width: 1400px) {
@@ -14,6 +17,9 @@
     }
     .navbar .navbar-nav.top-menu {
         overflow-x: unset;
+    }
+    .modal-dialog {
+        max-width: 600px !important;
     }
 }
 
@@ -24,6 +30,9 @@
     .navbar .navbar-nav.top-menu {
         overflow-x: unset;
     }
+    .modal-dialog {
+        max-width: 600px !important;
+    }
 }
 
 @media screen and (max-width: 720px) {
@@ -33,16 +42,23 @@
     .navbar .navbar-nav.top-menu {
         overflow-x: unset;
     }
+    .modal-dialog {
+        max-width: 600px !important;
+    }
 }
 
-@media screen and (max-width: 540px) {
+@media screen and (max-width: 576px) {
     nav.navbar.navbar-header.navbar-header-transparent.navbar-expand-lg.border-bottom {
         padding: 0 30px;
     }
     .navbar .navbar-nav.top-menu {
         overflow-x: unset;
     }
+    .modal-dialog {
+        max-width: 600px !important;
+    }
 }
+
 
 @media screen and (max-width: 400px) {
     nav.navbar.navbar-header.navbar-header-transparent.navbar-expand-lg.border-bottom {
