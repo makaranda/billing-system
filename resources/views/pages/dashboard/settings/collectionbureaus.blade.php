@@ -65,9 +65,44 @@
                                             @endif
                                       @endif
                                 </div>
-
-
                             </div>
+
+                            <div class="row">
+                                <div class="col-sm-12 col-lg-12">
+                                    <br/>
+
+                                    {{-- {{ '<pre>' }}
+                                    {{ var_dump($routepermissions['read']) }}
+                                    {{ '</pre>' }} --}}
+                                     {{-- {{ var_dump(CONST_TITLES) }} --}}
+                                    <!-- your page content -->
+
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <span class="text-uppercase">Currencies Information</span>
+                                                    @if(isset($routepermissions['create']) && $routepermissions['create'] == 1)
+                                                        <button type="button" class="btn btn-xs btn-info pull-right ml-1 addCurrencyButton" data-bs-toggle="modal" data-bs-target="#addCurrencyModal" role="button">
+                                                            <span class="glyphicon glyphicon-plus"></span>
+                                                            Add New Currency
+                                                        </button>
+                                                    @endif
+                                                </div>
+                                                <div class="panel-body">
+                                                    <div class="row">
+                                                        <div class="col-md-12">
+                                                            <div class="p-3" id="table_list"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
 
                     </div>

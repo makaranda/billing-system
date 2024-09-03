@@ -268,6 +268,15 @@ Route::group(['prefix' => '/'], function () {
             Route::get('/currency-exchange-settings', [CurrencyExchangeSettingsController::class, 'index'])->name('index.currencyexchangesettings');
             Route::get('/price-types', [PriceTypesController::class, 'index'])->name('index.pricetypes');
 
+            Route::group(['prefix' => 'collection-bureaus', 'middleware' => 'role:admin'], function () {
+                Route::get('/', [CollectionBureausController::class, 'index'])->name('index.collectionbureaus');
+                Route::get('/fetch-collection-bureaus', [CollectionBureausController::class, 'fetchCollectionBureaus'])->name('collectionbureaus.fetchcollectionbureaus');
+                Route::get('/{pro_id}/edit-collection-bureaus', [CollectionBureausController::class, 'editCollectionBureaus'])->name('collectionbureaus.editcollectionbureaus');
+                Route::post('/add-new-collection-bureaus', [CollectionBureausController::class, 'addCollectionBureaus'])->name('collectionbureaus.addcollectionbureaus');
+                Route::post('/{pro_id}/update-collection-bureaus', [CollectionBureausController::class, 'updateCollectionBureaus'])->name('collectionbureaus.updatecollectionbureaus');
+                Route::post('/{pro_id}/delete-collection-bureaus', [CollectionBureausController::class, 'deleteCollectionBureaus'])->name('collectionbureaus.deletecollectionbureaus');
+            });
+
             Route::group(['prefix' => 'currencies', 'middleware' => 'role:admin'], function () {
                 Route::get('/', [CurrenciesController::class, 'index'])->name('index.currencies');
                 Route::get('/fetch-currencies', [CurrenciesController::class, 'fetchproCurrencies'])->name('currencies.fetchcurrencies');
@@ -359,7 +368,6 @@ Route::group(['prefix' => '/'], function () {
                 });
             });
 
-            Route::get('/collection-bureaus', [CollectionBureausController::class, 'index'])->name('index.collectionbureaus');
             Route::get('/territories', [TerritoriesController::class, 'index'])->name('index.territories');
             Route::get('/set-employee-ot-factor', [SetEmployeeOtFactorController::class, 'index'])->name('index.setemployeeotfactor');
         });
