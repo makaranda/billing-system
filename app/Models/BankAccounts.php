@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Observers\SystemLogObserver;
 
-class AcAccounts extends Model
+class BankAccounts extends Model
 {
     use HasFactory;
     protected static function boot()
@@ -14,19 +14,21 @@ class AcAccounts extends Model
         parent::boot();
         self::observe(SystemLogObserver::class);
     }
-    protected $table = 'ac_accounts';
+    protected $table = 'bank_accounts';
     protected $fillable = [
-        'code',
-        'name',
-        'sub_category_id',
-        'is_control',
-        'control_type',
-        'special_name',
-        'allow_dr',
-        'allow_cr',
-        'is_floating',
-        'created_by',
-        'active',
+        'hotel_id',
+        'bank_id',
+        'currency_id',
+        'account_id',
+        'account_type',
+        'account_code',
+        'account_no',
+        'account_name',
+        'od_limit',
+        'last_cheque_no',
+        'balance',
+        'payment_method',
         'status',
     ];
+
 }

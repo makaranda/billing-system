@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Observers\SystemLogObserver;
 
-class DepartmentHeads extends Model
+class EmployeeOtFactor extends Model
 {
     use HasFactory;
     protected static function boot()
@@ -14,12 +14,10 @@ class DepartmentHeads extends Model
         parent::boot();
         self::observe(SystemLogObserver::class);
     }
-    protected $table = 'department_heads';
+    protected $table = 'employee_ot_factor';
     protected $fillable = [
-    'title',
-    'full_name',
-    'email',
-    'phone',
-    'status',
+        'ot_factor',
+        'created_by	',
+        'status',
     ];
 }

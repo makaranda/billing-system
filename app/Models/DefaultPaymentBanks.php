@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Observers\SystemLogObserver;
 
-class DepartmentHeads extends Model
+class DefaultPaymentBanks extends Model
 {
     use HasFactory;
     protected static function boot()
@@ -14,12 +14,13 @@ class DepartmentHeads extends Model
         parent::boot();
         self::observe(SystemLogObserver::class);
     }
-    protected $table = 'department_heads';
+    protected $table = 'default_payment_banks';
     protected $fillable = [
-    'title',
-    'full_name',
-    'email',
-    'phone',
-    'status',
+        'payment_method',
+        'currency_id',
+        'card_type_id',
+        'bank_account_id',
+        'created_by',
     ];
+
 }

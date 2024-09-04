@@ -8,11 +8,17 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use App\Observers\SystemLogObserver;
 
 class SystemUsers extends Authenticatable
 {
     // use HasFactory;
     use HasApiTokens, HasFactory, Notifiable;
+    protected static function boot()
+    {
+        parent::boot();
+        self::observe(SystemLogObserver::class);
+    }
     protected $table = 'system_users';
 
     // Specify the primary key if it's not 'id'

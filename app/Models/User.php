@@ -7,11 +7,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-
+use App\Observers\SystemLogObserver;
 
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
+    protected static function boot()
+    {
+        parent::boot();
+        self::observe(SystemLogObserver::class);
+    }
 
     /**
      * The attributes that are mass assignable.

@@ -263,10 +263,44 @@ Route::group(['prefix' => '/'], function () {
         Route::group(['prefix' => 'settings', 'middleware' => 'role:admin'], function () {
             Route::get('/', [SettingsController::class, 'index'])->name('index.settings');
             Route::get('/ota-operators', [OtaOperatorsController::class, 'index'])->name('index.otaoperators');
-            Route::get('/credit-card-types', [CreditCardTypesController::class, 'index'])->name('index.creditcardtypes');
-            Route::get('/default-payment-banks', [DefaultPaymentBanksController::class, 'index'])->name('index.defaultpaymentbanks');
             Route::get('/currency-exchange-settings', [CurrencyExchangeSettingsController::class, 'index'])->name('index.currencyexchangesettings');
             Route::get('/price-types', [PriceTypesController::class, 'index'])->name('index.pricetypes');
+
+            Route::group(['prefix' => 'default-payment-banks', 'middleware' => 'role:admin'], function () {
+                Route::get('/', [DefaultPaymentBanksController::class, 'index'])->name('index.defaultpaymentbanks');
+                Route::get('/fetch-default-payment-banks', [DefaultPaymentBanksController::class, 'fetchDefaultPaymentBanks'])->name('defaultpaymentbanks.fetchdefaultpaymentbanks');
+                Route::get('/{pro_id}/edit-default-payment-bank', [DefaultPaymentBanksController::class, 'editDefaultPaymentBank'])->name('defaultpaymentbanks.editdefaultpaymentbank');
+                Route::post('/add-new-default-payment-bank', [DefaultPaymentBanksController::class, 'addDefaultPaymentBank'])->name('defaultpaymentbanks.adddefaultpaymentbank');
+                Route::post('/{pro_id}/update-default-payment-bank', [DefaultPaymentBanksController::class, 'updateDefaultPaymentBank'])->name('defaultpaymentbanks.updatedefaultpaymentbank');
+                Route::post('/{pro_id}/delete-default-payment-bank', [DefaultPaymentBanksController::class, 'deleteDefaultPaymentBank'])->name('defaultpaymentbanks.deletedefaultpaymentbank');
+            });
+
+            Route::group(['prefix' => 'set-employee-ot-factor', 'middleware' => 'role:admin'], function () {
+                Route::get('/', [SetEmployeeOtFactorController::class, 'index'])->name('index.setemployeeotfactor');
+                Route::get('/fetch-set-employee-ot-factor', [SetEmployeeOtFactorController::class, 'fetchSetEmployeeOtFactor'])->name('setemployeeotfactor.fetchsetemployeeotfactor');
+                Route::get('/{pro_id}/edit-set-employee-ot-factor', [SetEmployeeOtFactorController::class, 'editSetEmployeeOtFactor'])->name('setemployeeotfactor.editsetemployeeotfactor');
+                Route::post('/add-new-set-employee-ot-factor', [SetEmployeeOtFactorController::class, 'addSetEmployeeOtFactor'])->name('setemployeeotfactor.addsetemployeeotfactor');
+                Route::post('/{pro_id}/update-set-employee-ot-factor', [SetEmployeeOtFactorController::class, 'updateSetEmployeeOtFactor'])->name('setemployeeotfactor.updatesetemployeeotfactor');
+                Route::post('/{pro_id}/delete-set-employee-ot-factor', [SetEmployeeOtFactorController::class, 'deleteSetEmployeeOtFactor'])->name('setemployeeotfactor.deletesetemployeeotfactor');
+            });
+
+            Route::group(['prefix' => 'territories', 'middleware' => 'role:admin'], function () {
+                Route::get('/', [TerritoriesController::class, 'index'])->name('index.territories');
+                Route::get('/fetch-territories', [TerritoriesController::class, 'fetchTerritories'])->name('territories.fetchterritories');
+                Route::get('/{pro_id}/edit-territory', [TerritoriesController::class, 'editTerritory'])->name('territories.editterritory');
+                Route::post('/add-new-territory', [TerritoriesController::class, 'addTerritory'])->name('territories.addterritory');
+                Route::post('/{pro_id}/update-territory', [TerritoriesController::class, 'updateTerritory'])->name('territories.updateterritory');
+                Route::post('/{pro_id}/delete-territory', [TerritoriesController::class, 'deleteTerritory'])->name('territories.deleteterritory');
+            });
+
+            Route::group(['prefix' => 'credit-card-types', 'middleware' => 'role:admin'], function () {
+                Route::get('/', [CreditCardTypesController::class, 'index'])->name('index.creditcardtypes');
+                Route::get('/fetch-credit-card-types', [CreditCardTypesController::class, 'fetchproCreditCardTypes'])->name('creditcardtypes.fetchcreditcardtypes');
+                Route::get('/{pro_id}/edit-credit-card-type', [CreditCardTypesController::class, 'editCreditCardTypesy'])->name('creditcardtypes.editcreditcardtypes');
+                Route::post('/add-credit-card-type', [CreditCardTypesController::class, 'addCreditCardTypes'])->name('creditcardtypes.addcreditcardtypes');
+                Route::post('/{pro_id}/update-credit-card-type', [CreditCardTypesController::class, 'updateCreditCardTypes'])->name('creditcardtypes.updatecreditcardtypes');
+                Route::post('/{pro_id}/delete-credit-card-type', [CreditCardTypesController::class, 'deleteCreditCardTypes'])->name('creditcardtypes.deletecreditcardtypes');
+            });
 
             Route::group(['prefix' => 'collection-bureaus', 'middleware' => 'role:admin'], function () {
                 Route::get('/', [CollectionBureausController::class, 'index'])->name('index.collectionbureaus');
@@ -367,9 +401,6 @@ Route::group(['prefix' => '/'], function () {
                     Route::post('/user-import-privilege', [SettingUsersController::class, 'userImportPrivilege'])->name('privileges.import');
                 });
             });
-
-            Route::get('/territories', [TerritoriesController::class, 'index'])->name('index.territories');
-            Route::get('/set-employee-ot-factor', [SetEmployeeOtFactorController::class, 'index'])->name('index.setemployeeotfactor');
         });
 
         Route::group(['prefix' => 'profile'], function () {

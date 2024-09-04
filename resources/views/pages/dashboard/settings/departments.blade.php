@@ -157,13 +157,13 @@
                 </div>
                 <div class="modal-footer d-block">
                 <div class="row">
-                    <div class="col-md-6 p-0">
+                    <div class="col-md-6 pl-0">
                         <div class="form-group">
                             <button type="button" class="btn btn-default form-control" data-bs-dismiss="modal">Cancel</button>
                             <input type="hidden" id="department_id" name="department_id" />
                         </div>
                     </div>
-                    <div class="col-md-6 p-0">
+                    <div class="col-md-6 pr-0">
                         <div class="form-group">
                             <button type="submit" name="submit" class="btn btn-primary form-control">Save</button>
                         </div>
@@ -215,13 +215,13 @@
                 </div>
                 <div class="modal-footer d-block">
                 <div class="row">
-                    <div class="col-md-6 p-0">
+                    <div class="col-md-6 pl-0">
                         <div class="form-group">
                             <button type="button" class="btn btn-default form-control w-100" data-bs-dismiss="modal">Cancel</button>
                             <input type="hidden" id="hod_id" name="hod_id" />
                         </div>
                     </div>
-                    <div class="col-md-6 p-0">
+                    <div class="col-md-6 pr-0">
                         <div class="form-group">
                             <button type="submit" name="submit" class="btn btn-primary form-control w-100">Save</button>
                         </div>
@@ -264,13 +264,13 @@
                 </div>
                 <div class="modal-footer d-block">
                 <div class="row">
-                    <div class="col-md-6 p-0">
+                    <div class="col-md-6 pl-0">
                         <div class="form-group">
                             <button type="button" class="btn btn-default form-control" data-bs-dismiss="modal">Cancel</button>
                             <input type="hidden" id="hod_department_id" name="hod_department_id" />
                         </div>
                     </div>
-                    <div class="col-md-6 p-0">
+                    <div class="col-md-6 pr-0">
                         <div class="form-group">
                             <button type="submit" name="submit" class="btn btn-primary form-control">Save</button>
                         </div>

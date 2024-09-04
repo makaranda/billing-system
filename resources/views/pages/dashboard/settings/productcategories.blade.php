@@ -166,13 +166,13 @@
                 </div>
                 <div class="modal-footer d-block">
                 <div class="row">
-                    <div class="col-md-6 p-0">
+                    <div class="col-md-6 pl-0">
                         <div class="form-group">
                             <button type="button" class="btn btn-default form-control" data-bs-dismiss="modal">Cancel</button>
                             <input type="hidden" id="category_id" name="category_id" />
                         </div>
                     </div>
-                    <div class="col-md-6 p-0">
+                    <div class="col-md-6 pr-0">
                         <div class="form-group">
                             <button type="submit" name="submit" class="btn btn-primary form-control">Save</button>
                         </div>

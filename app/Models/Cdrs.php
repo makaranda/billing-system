@@ -4,9 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Observers\SystemLogObserver;
 
 class Cdrs extends Model
 {
+    protected static function boot()
+    {
+        parent::boot();
+        self::observe(SystemLogObserver::class);
+    }
     use HasFactory;
 
     protected $fillable = [
