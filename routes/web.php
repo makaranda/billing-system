@@ -262,9 +262,25 @@ Route::group(['prefix' => '/'], function () {
 
         Route::group(['prefix' => 'settings', 'middleware' => 'role:admin'], function () {
             Route::get('/', [SettingsController::class, 'index'])->name('index.settings');
-            Route::get('/ota-operators', [OtaOperatorsController::class, 'index'])->name('index.otaoperators');
             Route::get('/currency-exchange-settings', [CurrencyExchangeSettingsController::class, 'index'])->name('index.currencyexchangesettings');
-            Route::get('/price-types', [PriceTypesController::class, 'index'])->name('index.pricetypes');
+
+            Route::group(['prefix' => 'price-types', 'middleware' => 'role:admin'], function () {
+                Route::get('/', [PriceTypesController::class, 'index'])->name('index.pricetypes');
+                Route::get('/fetch-price-types', [PriceTypesController::class, 'fetchPriceTypes'])->name('pricetypes.fetchpricetypes');
+                Route::get('/{pro_id}/edit-price-type', [PriceTypesController::class, 'editPriceType'])->name('pricetypes.editpricetype');
+                Route::post('/add-new-price-type', [PriceTypesController::class, 'addPriceType'])->name('pricetypes.addpricetype');
+                Route::post('/{pro_id}/update-price-type', [PriceTypesController::class, 'updatePriceType'])->name('pricetypes.updatepricetype');
+                Route::post('/{pro_id}/delete-price-type', [PriceTypesController::class, 'deletePriceType'])->name('pricetypes.deletepricetype');
+            });
+
+            Route::group(['prefix' => 'ota-operators', 'middleware' => 'role:admin'], function () {
+                Route::get('/', [OtaOperatorsController::class, 'index'])->name('index.otaoperators');
+                Route::get('/fetch-ota-operators', [OtaOperatorsController::class, 'fetchOtaOperators'])->name('otaoperators.fetchotaoperators');
+                Route::get('/{pro_id}/edit-ota-operator', [OtaOperatorsController::class, 'editOtaOperator'])->name('otaoperators.editotaoperator');
+                Route::post('/add-new-ota-operator', [OtaOperatorsController::class, 'addOtaOperator'])->name('otaoperators.addotaoperator');
+                Route::post('/{pro_id}/update-ota-operator', [OtaOperatorsController::class, 'updateOtaOperator'])->name('otaoperators.updateotaoperator');
+                Route::post('/{pro_id}/delete-ota-operator', [OtaOperatorsController::class, 'deleteOtaOperator'])->name('otaoperators.deleteotaoperator');
+            });
 
             Route::group(['prefix' => 'default-payment-banks', 'middleware' => 'role:admin'], function () {
                 Route::get('/', [DefaultPaymentBanksController::class, 'index'])->name('index.defaultpaymentbanks');

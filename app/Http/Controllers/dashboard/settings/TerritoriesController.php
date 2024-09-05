@@ -90,8 +90,6 @@ class TerritoriesController extends Controller
     }
 
 
-
-
     public function addTerritory(Request $request){
         $messageType = '';
         $message = '';
