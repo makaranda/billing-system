@@ -250,14 +250,40 @@ Route::group(['prefix' => '/'], function () {
 
         Route::group(['prefix' => 'accounting', 'middleware' => 'role:admin'], function () {
             Route::get('/', [AccountingController::class, 'index'])->name('index.accounting');
-            Route::get('/nominal-categories', [NominalCategoriesController::class, 'index'])->name('index.nominalcategories');
-            Route::get('/nominal-subcategories', [NominalSubCategoriesController::class, 'index'])->name('index.nominalsubcategories');
-            Route::get('/nominal-accounts', [NominalAccountsController::class, 'index'])->name('index.nominalaccounts');
             Route::get('/banks', [BanksController::class, 'index'])->name('index.banks');
             Route::get('/bank-accounts', [BankAccountsController::class, 'index'])->name('index.bankaccounts');
             Route::get('/bank-transfer', [BankTransferController::class, 'index'])->name('index.banktransfer');
             Route::get('/bank-reconciliations', [BankReconciliationsController::class, 'index'])->name('index.bankreconciliations');
             Route::get('/bank-deposit-types', [BankdePosittypesController::class, 'index'])->name('index.bankdeposittypes');
+
+            Route::group(['prefix' => 'nominal-accounts', 'middleware' => 'role:admin'], function () {
+                Route::get('/', [NominalAccountsController::class, 'index'])->name('index.nominalaccounts');
+                Route::get('/fetch-nominal-accounts', [NominalAccountsController::class, 'fetchNominalAccounts'])->name('nominalaccounts.fetchnominalaccounts');
+                Route::get('/{pro_id}/edit-nominal-account', [NominalAccountsController::class, 'editNominalAccount'])->name('nominalaccounts.editnominalaccount');
+                Route::post('/add-new-nominal-account', [NominalAccountsController::class, 'addNominalAccount'])->name('nominalaccounts.addnominalaccount');
+                Route::post('/{pro_id}/update-nominal-account', [NominalAccountsController::class, 'updateNominalAccount'])->name('nominalaccounts.updatenominalaccount');
+                Route::post('/{pro_id}/delete-nominal-account', [NominalAccountsController::class, 'deleteNominalAccount'])->name('nominalaccounts.deletenominalaccount');
+                Route::post('/{pro_id}/disable-nominal-account', [NominalAccountsController::class, 'disableNominalAccount'])->name('nominalaccounts.disablenominalaccount');
+                Route::get('/{pro_id}/get-subcategories', [NominalAccountsController::class, 'getSubCategories'])->name('nominalaccounts.getsubcategories');
+            });
+
+            Route::group(['prefix' => 'nominal-subcategories', 'middleware' => 'role:admin'], function () {
+                Route::get('/', [NominalSubCategoriesController::class, 'index'])->name('index.nominalsubcategories');
+                Route::get('/fetch-nominal-subcategories', [NominalSubCategoriesController::class, 'fetchNominalSubCategories'])->name('nominalsubcategories.fetchnominalsubcategories');
+                Route::get('/{pro_id}/edit-nominal-category', [NominalSubCategoriesController::class, 'editNominalSubCategory'])->name('nominalsubcategories.editnominalsubcategory');
+                Route::post('/add-new-nominal-category', [NominalSubCategoriesController::class, 'addNominalSubCategory'])->name('nominalsubcategories.addnominalsubcategory');
+                Route::post('/{pro_id}/update-nominal-category', [NominalSubCategoriesController::class, 'updateNominalSubCategory'])->name('nominalsubcategories.updatenominalsubcategory');
+                Route::post('/{pro_id}/delete-nominal-category', [NominalSubCategoriesController::class, 'deleteNominalSubCategory'])->name('nominalsubcategories.deletenominalsubcategory');
+            });
+
+            Route::group(['prefix' => 'nominal-categories', 'middleware' => 'role:admin'], function () {
+                Route::get('/', [NominalCategoriesController::class, 'index'])->name('index.nominalcategories');
+                Route::get('/fetch-nominal-categories', [NominalCategoriesController::class, 'fetchNominalCategories'])->name('nominalcategories.fetchnominalcategories');
+                Route::get('/{pro_id}/edit-nominal-category', [NominalCategoriesController::class, 'editNominalCategory'])->name('nominalcategories.editnominalcategory');
+                Route::post('/add-new-nominal-category', [NominalCategoriesController::class, 'addNominalCategory'])->name('nominalcategories.addnominalcategory');
+                Route::post('/{pro_id}/update-nominal-category', [NominalCategoriesController::class, 'updateNominalCategory'])->name('nominalcategories.updatenominalcategory');
+                Route::post('/{pro_id}/delete-nominal-category', [NominalCategoriesController::class, 'deleteNominalCategory'])->name('nominalcategories.deletenominalcategory');
+            });
         });
 
         Route::group(['prefix' => 'settings', 'middleware' => 'role:admin'], function () {

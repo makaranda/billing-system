@@ -9,6 +9,9 @@
     .modal-dialog {
         max-width: 600px !important;
     }
+    .modal-dialog.modal-lg{
+        max-width: 900px !important;
+    }
 }
 
 @media screen and (max-width: 1400px) {
@@ -20,6 +23,9 @@
     }
     .modal-dialog {
         max-width: 600px !important;
+    }
+    .modal-dialog.modal-lg{
+        max-width: 900px !important;
     }
 }
 
@@ -33,6 +39,9 @@
     .modal-dialog {
         max-width: 600px !important;
     }
+    .modal-dialog.modal-lg{
+        max-width: 900px !important;
+    }
 }
 
 @media screen and (max-width: 720px) {
@@ -45,6 +54,9 @@
     .modal-dialog {
         max-width: 600px !important;
     }
+    .modal-dialog.modal-lg{
+        max-width: 900px !important;
+    }
 }
 
 @media screen and (max-width: 576px) {
@@ -56,6 +68,9 @@
     }
     .modal-dialog {
         max-width: 600px !important;
+    }
+    .modal-dialog.modal-lg{
+        max-width: 900px !important;
     }
 }
 

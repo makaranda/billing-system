@@ -223,3 +223,6 @@ input:focus {
     transform: none;
     box-shadow: 0px 0px 20px 3px #000;
 }
+.datepicker_field span {
+    padding: 3px;
+}

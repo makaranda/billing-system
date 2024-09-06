@@ -17,6 +17,7 @@
 
 {{-- <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" /> --}}
 <link href="{{ url('public/assets/css/select2.min.css') }}" rel="stylesheet" />
+<link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet">
 {{-- <link href="{{ url('public/assets/css/nice.select.css') }}" rel="stylesheet" /> --}}
 
 <link rel="stylesheet" href="{{ url('public/assets/css/mystyle.css') }}?v={{ date('is') }}"/>
