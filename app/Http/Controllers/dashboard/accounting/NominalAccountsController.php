@@ -387,6 +387,7 @@ class NominalAccountsController extends Controller
                 $canEdit = $getAllRoutePermisssions->contains(function ($permission) use ($currentRoute, $parentRoute) {
                     return $permission->permission_type == 'update' && ($permission->route == $currentRoute || $permission->route == $parentRoute);
                 });
+
                 $disablebtn = '';
                 $disableRoutePath = 'nominalaccounts.disablenominalaccount';
                 if ($canDisable) {

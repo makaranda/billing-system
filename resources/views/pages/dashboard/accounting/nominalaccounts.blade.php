@@ -470,6 +470,7 @@
             });
     });
 
+    /* add Edit record */
     $('#frm_add_account').parsley();
     $('#frm_add_account').on('submit', function(event){
         event.preventDefault();
