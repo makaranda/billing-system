@@ -515,7 +515,7 @@
 
     });
 
-
+    /* disable record */
     function disableRecord(id,route_path,type){
         $('#deleteModal').modal('show');
 
