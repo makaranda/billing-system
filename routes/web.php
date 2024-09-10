@@ -250,11 +250,27 @@ Route::group(['prefix' => '/'], function () {
 
         Route::group(['prefix' => 'accounting', 'middleware' => 'role:admin'], function () {
             Route::get('/', [AccountingController::class, 'index'])->name('index.accounting');
-            Route::get('/banks', [BanksController::class, 'index'])->name('index.banks');
-            Route::get('/bank-accounts', [BankAccountsController::class, 'index'])->name('index.bankaccounts');
             Route::get('/bank-transfer', [BankTransferController::class, 'index'])->name('index.banktransfer');
             Route::get('/bank-reconciliations', [BankReconciliationsController::class, 'index'])->name('index.bankreconciliations');
             Route::get('/bank-deposit-types', [BankdePosittypesController::class, 'index'])->name('index.bankdeposittypes');
+
+            Route::group(['prefix' => 'bank-accounts', 'middleware' => 'role:admin'], function () {
+                Route::get('/', [BankAccountsController::class, 'index'])->name('index.bankaccounts');
+                Route::get('/fetch-bank-accounts', [BankAccountsController::class, 'fetchBankAccounts'])->name('bankaccounts.fetchbankaccounts');
+                Route::get('/{pro_id}/edit-bank-account', [BankAccountsController::class, 'editBankAccount'])->name('bankaccounts.editbankaccount');
+                Route::post('/add-new-bank-account', [BankAccountsController::class, 'addBankAccount'])->name('bankaccounts.addbankaccount');
+                Route::post('/{pro_id}/update-bank-account', [BankAccountsController::class, 'updateBankAccount'])->name('bankaccounts.updatebankaccount');
+                Route::post('/{pro_id}/delete-bank-account', [BankAccountsController::class, 'deleteBankAccount'])->name('bankaccounts.deletebankaccount');
+            });
+
+            Route::group(['prefix' => 'banks', 'middleware' => 'role:admin'], function () {
+                Route::get('/', [BanksController::class, 'index'])->name('index.banks');
+                Route::get('/fetch-banks', [BanksController::class, 'fetchBanks'])->name('banks.fetchbanks');
+                Route::get('/{pro_id}/edit-bank', [BanksController::class, 'editBank'])->name('banks.editbank');
+                Route::post('/add-new-bank', [BanksController::class, 'addBank'])->name('banks.addbank');
+                Route::post('/{pro_id}/update-bank', [BanksController::class, 'updateBank'])->name('banks.updatebank');
+                Route::post('/{pro_id}/delete-bank', [BanksController::class, 'deleteBank'])->name('banks.deletebank');
+            });
 
             Route::group(['prefix' => 'nominal-accounts', 'middleware' => 'role:admin'], function () {
                 Route::get('/', [NominalAccountsController::class, 'index'])->name('index.nominalaccounts');

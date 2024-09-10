@@ -199,7 +199,7 @@ input:focus {
 }
 
 .form-group {
-    padding: 0px;
+    padding: 15px 0;
 }
 .row>* {
     padding-right: 15px;
@@ -225,4 +225,7 @@ input:focus {
 }
 .datepicker_field span {
     padding: 3px;
+}
+.modal-body.deleteModelDesctiption {
+    padding: 35px 15px;
 }

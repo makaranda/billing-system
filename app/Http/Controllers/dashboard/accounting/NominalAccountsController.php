@@ -19,6 +19,7 @@ use App\Models\AcAccountCategories;
 use App\Models\AcAccountSubCategories;
 use App\Models\CustomerTransactions;
 use App\Models\AcAccounts;
+use App\Models\Currencies;
 
 class NominalAccountsController extends Controller
 {
