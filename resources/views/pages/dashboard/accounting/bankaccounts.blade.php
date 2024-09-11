@@ -397,7 +397,7 @@
             var delete_record_id = $('#delete_record_id').val();
             var form_type = $('#delete_record_form').val();
 
-            let updateUrl = ($('#delete_record_form').val() == 'nominalaccounts.deletenominalaccount')?'{{ route("nominalaccounts.deletenominalaccount", ":id") }}':'{{ route("nominalaccounts.disablenominalaccount", ":id") }}';
+            let updateUrl = ($('#delete_record_form').val() == 'bankaccounts.deletebankaccount')?'{{ route("bankaccounts.deletebankaccount", ":id") }}':'{{ route("bankaccounts.deletebankaccount", ":id") }}';
             updateUrl = updateUrl.replace(':id', delete_record_id);
 
             console.log('URL: '+updateUrl);

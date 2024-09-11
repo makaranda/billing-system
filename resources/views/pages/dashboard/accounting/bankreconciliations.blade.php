@@ -65,9 +65,110 @@
                                             @endif
                                       @endif
                                 </div>
-
-
                             </div>
+
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <span class="text-uppercase">Bank Reconcilliations Information</span>
+                                        </div>
+                                        <div class="panel panel-default p-3">
+                                            <div class="panel-body">
+                                                <div class="row">
+                                                    <div class="col-md-3">
+                                                        <div class="form-group">
+                                                            <div class="input-group datepicker_field" id="datepicker1">
+                                                                <input type='text' class="form-control" id="from_date" name="from_date" placeholder="Transactions From" />
+                                                                <span class="input-group-addon">
+                                                                <span class="glyphicon glyphicon-calendar"></span>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <div class="form-group">
+                                                            <div class="input-group datepicker_field" id="datepicker2">
+                                                                <input type='text' class="form-control" id="to_date" name="to_date" placeholder="Transactions To" />
+                                                                <span class="input-group-addon">
+                                                                <span class="glyphicon glyphicon-calendar"></span>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <div class="form-group">
+                                                            <input type="text" class="form-control" name="receipt_no" id="receipt_no" placeholder="Receipt No." />
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <div class="form-group">
+                                                            <input type="text" class="form-control" name="reference" id="reference" placeholder="Reference" />
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <div class="form-group">
+                                                            <select class="form-control" id="payment_method" name="payment_method">
+                                                                <option value="">- Select Method -</option>
+                                                                <option value="Cash">Cash</option>
+                                                                <option value="Card">Card</option>
+                                                                <option value="Cheque">Cheque</option>
+                                                                <option value="Bank">Bank Transfer</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="form-group">
+                                                            <select class="searchable form-control" id="bank_account_id" name="bank_account_id">
+                                                                <option value="">- Select Bank Account -</option>
+                                                                @foreach ($bankAccountsDetails as $bankAccountsDetail)
+                                                                    <option value="{{ $bankAccountsDetail->id }}">{{ $bankAccountsDetail->account_name.' - '.$bankAccountsDetail->account_code }}</option>
+                                                                @endforeach
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <div class="form-group">
+                                                            <select class="form-control" id="reconcile_status" name="reconcile_status">
+                                                                <option value="">- Status -</option>
+                                                                <option value="1">Reconciled</option>
+                                                                <option value="0">To be Reconciled</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <div class="form-group">
+                                                            <select class="searchable form-control" id="reconciled_by" name="reconciled_by">
+                                                                <option value="">- Reconciled By -</option>
+                                                                @foreach ($systemUsersDetails as $systemUsersDetail)
+                                                                    <option value="{{ $systemUsersDetail->id }}">{{ $systemUsersDetail->full_name }}</option>
+                                                                @endforeach
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <div class="form-group">
+                                                            <button type="button" id="s_search" class="btn btn-primary form-control">
+                                                                <span class="glyphicon glyphicon-serach"></span> Search</button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-1">
+                                                        <div class="form-group">
+                                                            <button type="button" id="s_reset" class="btn btn-default form-control">
+                                                                <span class="glyphicon glyphicon-refresh"></span>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row"><div class="col-md-12"><span id="table_list"></span></div></div>
+                                    </div>
+                                </div>
+                            </div>
+
+
                         </div>
 
                     </div>
@@ -85,16 +186,23 @@
 @endsection
 
 @push('css')
+    <link rel="stylesheet" href="{{ url('public/assets/css/paging.css') }}">
     <style>
 
     </style>
 @endpush
 
 @push('scripts')
+    <script src="{{ url('public/assets/js/paging.js') }}"></script>
     <script>
     $(function () {
-        $("#datepicker").datepicker({
-            autoclose: true
+        $("#from_date").datepicker({
+            autoclose: true,
+            orientation: "bottom"
+        });
+        $("#to_date").datepicker({
+            autoclose: true,
+            orientation: "bottom"
         });
     });
 
@@ -110,6 +218,34 @@
         titleFormat: "MM yyyy" /* Leverages same syntax as 'format' */,
         weekStart: 0,
     };
+
+    listTableDatas();
+
+    function listTableDatas(category_id=null, sub_category_id=null, code=null, name=null, status=null, filter_param=null) {
+        //alert();
+        //console.log("THIS");
+        $('#overlay').show();
+        $.ajax({
+                url : "{{ route('bankreconciliations.fetchbankreconciliations') }}",
+                cache: false,
+                data: { _token: '{{ csrf_token() }}','category_id':category_id,'sub_category_id':sub_category_id,'code':code,'name':name,'status':status,
+                'filter_param':filter_param,'order':'ASC'},
+                type: 'GET',
+                success : function(data) {
+                    //console.log('Success: '+data);
+                    $('#overlay').hide();
+                    $('#table_list').html(data);
+                    $("#table_list").paging({
+                        number_of_items: 4,
+                        number_of_page_buttons: 2
+                    });
+                },
+                error: function(xhr, status, error) {
+                    //console.log("Error getting Categories ! \n", xhr, status, error);
+                    $('#overlay').hide();
+                }
+        });
+    }
     </script>
 @endpush
 

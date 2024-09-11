@@ -288,7 +288,19 @@ class BankAccountsController extends Controller
             return response()->json(['error' => 'Datas are not found'], 404);
         }
         // update the data
-        $getDatas->delete();
+        //$getDatas->delete();
+        if($request->delete_record_type == 'inactive'){
+            $actveData = 0;
+        }else{
+            $actveData = 1;
+        }
+
+        $proData = [
+            'status' => $actveData,
+        ];
+
+        // update the data
+        $getDatas->update($proData);
 
         //$getTaxes->delete();
         $messageType = 'success';
@@ -393,7 +405,7 @@ class BankAccountsController extends Controller
                 });
 
                 $disablebtn = '';
-                $disableRoutePath = 'nominalaccounts.disablenominalaccount';
+                $disableRoutePath = 'bankaccounts.deletebankaccount';
                 if ($canDisable) {
                     $acInType = $fetchDetail->status == 1 ? 'inactive' : 'active';
                     $actitleType = $fetchDetail->status == 1 ? 'Click to Disable' : 'Click to Enable';
@@ -404,10 +416,10 @@ class BankAccountsController extends Controller
                 }
 
                 $deletebtn = '';
-                $deleteRoutePath = 'nominalaccounts.deletenominalaccount';
+                $deleteRoutePath = 'bankaccounts.deletebankaccount';
                 if ($canDelete) {
-                    $acInType = $fetchDetail->status == 1 ? 'Delete' : 'Delete';
-                    $acInColor = $fetchDetail->status == 1 ? 'danger' : 'danger';
+                    $acInType = $fetchDetail->status == 1 ? 'inactive' : 'active';
+                    $acInColor = $fetchDetail->status == 1 ? 'danger' : 'success';
 
                     $deletebtn = '<button type="button" class="btn btn-xs btn-'.$acInColor.' deleteRecordButton" onclick="deleteRecord(' . $fetchDetail->id . ', \'' . $deleteRoutePath . '\', \'' . $acInType . '\');" data-id="' . $fetchDetail->id . '" title="'.$acInType.'"><i class="glyphicon glyphicon-trash"></i> </button>';
                 }

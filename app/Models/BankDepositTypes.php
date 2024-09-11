@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Observers\SystemLogObserver;
 
-class Banks extends Model
+class BankDepositTypes extends Model
 {
     use HasFactory;
     protected static function boot()
@@ -15,10 +15,11 @@ class Banks extends Model
         self::observe(SystemLogObserver::class);
     }
     public $timestamps = false;
-    protected $table = 'banks';
+    protected $table = 'bank_deposit_types';
     protected $fillable = [
-        'code',
-        'name',
+        'category',
+        'deposit_type',
         'status',
+        'created_by',
     ];
 }

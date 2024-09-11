@@ -250,9 +250,26 @@ Route::group(['prefix' => '/'], function () {
 
         Route::group(['prefix' => 'accounting', 'middleware' => 'role:admin'], function () {
             Route::get('/', [AccountingController::class, 'index'])->name('index.accounting');
+
             Route::get('/bank-transfer', [BankTransferController::class, 'index'])->name('index.banktransfer');
-            Route::get('/bank-reconciliations', [BankReconciliationsController::class, 'index'])->name('index.bankreconciliations');
-            Route::get('/bank-deposit-types', [BankdePosittypesController::class, 'index'])->name('index.bankdeposittypes');
+
+            Route::group(['prefix' => 'bank-reconciliations', 'middleware' => 'role:admin'], function () {
+                Route::get('/', [BankReconciliationsController::class, 'index'])->name('index.bankreconciliations');
+                Route::get('/fetch-bank-reconciliation', [BankReconciliationsController::class, 'fetchBankReconciliations'])->name('bankreconciliations.fetchbankreconciliations');
+                Route::get('/{pro_id}/edit-bank-reconciliation', [BankReconciliationsController::class, 'editBankReconciliation'])->name('bankreconciliations.editbankreconciliation');
+                Route::post('/add-new-bank-reconciliation', [BankReconciliationsController::class, 'addBankReconciliation'])->name('bankreconciliations.addbankreconciliation');
+                Route::post('/{pro_id}/update-bank-reconciliation', [BankReconciliationsController::class, 'updateBankReconciliation'])->name('bankreconciliations.updatebankreconciliation');
+                Route::post('/{pro_id}/delete-bank-reconciliation', [BankReconciliationsController::class, 'deleteBankReconciliation'])->name('bankreconciliations.deletebankreconciliation');
+            });
+
+            Route::group(['prefix' => 'bank-deposit-types', 'middleware' => 'role:admin'], function () {
+                Route::get('/', [BankdePosittypesController::class, 'index'])->name('index.bankdeposittypes');
+                Route::get('/fetch-bank-deposit-types', [BankdePosittypesController::class, 'fetchBankDepositTypes'])->name('bankdeposittypes.fetchbankdeposittypes');
+                Route::get('/{pro_id}/edit-bank-deposit-type', [BankdePosittypesController::class, 'editBankDepositType'])->name('bankdeposittypes.editbankdeposittype');
+                Route::post('/add-new-bank-deposit-type', [BankdePosittypesController::class, 'addBankDepositType'])->name('bankdeposittypes.addbankdeposittype');
+                Route::post('/{pro_id}/update-bank-deposit-type', [BankdePosittypesController::class, 'updateBankDepositType'])->name('bankdeposittypes.updatebankdeposittype');
+                Route::post('/{pro_id}/delete-bank-deposit-type', [BankdePosittypesController::class, 'deleteBankDepositType'])->name('bankdeposittypes.deletebankdeposittype');
+            });
 
             Route::group(['prefix' => 'bank-accounts', 'middleware' => 'role:admin'], function () {
                 Route::get('/', [BankAccountsController::class, 'index'])->name('index.bankaccounts');
