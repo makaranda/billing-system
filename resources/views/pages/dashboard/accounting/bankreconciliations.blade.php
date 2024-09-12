@@ -193,7 +193,8 @@
 @endpush
 
 @push('scripts')
-    <script src="{{ url('public/assets/js/paging.js') }}"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/alfrcr/paginathing/dist/paginathing.min.js"
+></script>
     <script>
     $(function () {
         $("#from_date").datepicker({
@@ -219,33 +220,79 @@
         weekStart: 0,
     };
 
-    listTableDatas();
+    $('.addAccountButton').on('click',function(){
+        $('#frm_add_account').parsley().reset();
+        $('#frm_add_account')[0].reset();
 
-    function listTableDatas(category_id=null, sub_category_id=null, code=null, name=null, status=null, filter_param=null) {
-        //alert();
-        //console.log("THIS");
-        $('#overlay').show();
-        $.ajax({
-                url : "{{ route('bankreconciliations.fetchbankreconciliations') }}",
+        $('#edit_id').val('');
+        $('#form_type').val('nominalaccounts.addnominalaccount');
+    });
+
+    $('#s_reset').click(function(){
+        $('#from_date').val("");
+        $('#to_date').val("");
+        $('#receipt_no').val("");
+        $('#reference').val("");
+        $('#payment_method').val("").change();
+        $('#bank_account_id').val("").change();
+        $('#reconcile_status').val("").change();
+        $('#reconciled_by').val("").change();
+
+        listTableDatas();
+    });
+
+    $('#s_search').click(function(){
+        var from_date = $('#from_date').val();
+        var to_date = $('#to_date').val();
+        var bank_account_id = $('#bank_account_id').val();
+        var reconcile_status = $('#reconcile_status').val();
+        var payment_method = $('#payment_method').val();
+        var receipt_no = $('#receipt_no').val();
+        var reference = $('#reference').val();
+        var reconciled_by = $('#reconciled_by').val();
+
+        listTableDatas(1,from_date, to_date, bank_account_id, reconcile_status, receipt_no,
+        payment_method, reference, reconciled_by);
+    });
+
+        listTableDatas();
+
+        // Existing function with the `page` parameter for pagination
+        function listTableDatas(page=1, from_date=null, to_date=null, bank_account_id=0, status=null,receipt_no=null, payment_method=null, reference=null, reconciled_by=0) {
+            $('#overlay').show();
+            $.ajax({
+                url: "{{ route('bankreconciliations.fetchbankreconciliations') }}",
                 cache: false,
-                data: { _token: '{{ csrf_token() }}','category_id':category_id,'sub_category_id':sub_category_id,'code':code,'name':name,'status':status,
-                'filter_param':filter_param,'order':'ASC'},
-                type: 'GET',
-                success : function(data) {
-                    //console.log('Success: '+data);
-                    $('#overlay').hide();
-                    $('#table_list').html(data);
-                    $("#table_list").paging({
-                        number_of_items: 4,
-                        number_of_page_buttons: 2
-                    });
+                data: {
+                    _token: '{{ csrf_token() }}', 'page':page, 'from_date':from_date,'to_date':to_date,'bank_account_id':bank_account_id,
+		'status':status, 'receipt_no':receipt_no, 'payment_method':payment_method, 'reference':reference,
+		'reconciled_by':reconciled_by,'order':'is_reconciled ASC'
                 },
-                error: function(xhr, status, error) {
-                    //console.log("Error getting Categories ! \n", xhr, status, error);
+                type: 'GET',
+                success: function (response) {
+                    $('#overlay').hide();
+                    $('#table_list').html(response.html);
+                    // Re-bind the click event for pagination links after new content is loaded
+                    bindPaginationLinks();
+                },
+                error: function (xhr, status, error) {
+                    console.log("Error fetching data!", xhr, status, error);
                     $('#overlay').hide();
                 }
-        });
-    }
+            });
+        }
+
+        // Function to handle pagination link clicks
+        function bindPaginationLinks() {
+            $(document).on('click', '.pagination a', function (e) {
+                e.preventDefault();
+                var page = $(this).attr('href').split('page=')[1]; // Get the page number
+                listTableDatas(null, null, null, null, null, null, page); // Call the function with the page number
+            });
+        }
+
+        // Call the function initially
+        bindPaginationLinks();
     </script>
 @endpush
 

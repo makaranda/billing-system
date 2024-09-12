@@ -14,7 +14,7 @@ class Currencies extends Model
         parent::boot();
         self::observe(SystemLogObserver::class);
     }
-    protected $table = 'Currencies';
+    protected $table = 'currencies';
     protected $fillable = [
         'code',
         'symbol',

@@ -229,3 +229,17 @@ input:focus {
 .modal-body.deleteModelDesctiption {
     padding: 35px 15px;
 }
+.pagination {
+    display: block;
+    width: 100%;
+    nav[role="navigation"] {
+        background-color: #f8f9fa;
+        padding: 10px;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+
+        svg{
+            width: 20px;
+        }
+    }
+}
