@@ -22,6 +22,7 @@ use App\Models\CustomerTransactions;
 use App\Models\AcAccountSubCategories;
 use App\Models\AcAccounts;
 use App\Models\BankDepositTypes;
+use App\Models\BankRds;
 
 class BankReconciliationsController extends Controller
 {
@@ -108,6 +109,92 @@ class BankReconciliationsController extends Controller
         }
     }
 
+    public function updateBankReconciliation(Request $request,$pro_id){
+        //BankRds
+        //
+
+    }
+
+    public function disableBankReconciliation(Request $request,$pro_id){
+        //BankRds
+        //
+        $messageType = '';
+        $message = '';
+
+        $getDatas = CustomerTransactions::where('id', $request->id)->first();
+        $validator = Validator::make($request->all(), [
+            'id' => 'required',
+            'notes' => 'required',
+            'date' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            $messageType = 'error';
+            //$message = 'Errors: '.$validator->errors();
+            $message = 'All Fields are Required..!!';
+        }else{
+            //$getDatas = AcAccounts::find($request->id);
+
+            $rd_no = str_pad($request->id, 8, '0', STR_PAD_LEFT);
+            $proData = [
+                'rd_no' => $rd_no,
+                'date' => $request->date,
+                'notes' => $request->notes,
+                'bank_account_id' => $getDatas->bank_account_id,
+                'customer_id' => $getDatas->customer_id,
+                'payment_type' => $getDatas->transaction_type,
+                'payment_date' => $getDatas->effective_date,
+                'method' => $getDatas->payment_method,
+                'reference' => "RD-CHEQUES",
+                'bank_nominal_account_id' => $getDatas->nominal_account_id,
+                'currency_id' => $getDatas->currency_id,
+                'currency_value' => $getDatas->currency_value,
+                'payment_amount' => $getDatas->amount,
+                'payment_id' => $getDatas->source_reference,
+                'transaction_id' => '',
+                'created_by' => Auth::user()->id,
+                'receipt_no' => $getDatas->transaction_reference
+
+            ];
+
+            $addDatas = new BankRds();
+
+            $addDatas->fill($proData);
+            $addDatas->save();
+
+            $insert_id = $addDatas->id;
+
+            // if (!$getDatas) {
+            //     return response()->json(['error' => 'Datas are not found, 404']);
+            // }
+
+            // if($request->delete_record_type == 'inactive'){
+            //     $actveData = 0;
+            //     $message = 'You have successfully Deactivate this Nominal Account record..';
+            // }else{
+            //     $actveData = 1;
+            //     $message = 'You have successfully Activate this Nominal Account record..';
+            // }
+
+            // $proData = [
+            //     'status' => $actveData,
+            // ];
+
+            // // update the data
+            // $getDatas->update($proData);
+
+            //$getTaxes->delete();
+            $messageType = 'success';
+            $message = 'You have successfully Deactivate this Nominal Account record..';
+        }
+        $responseData = [
+            'message' => $message,
+            'messageType' => $messageType
+        ];
+        //echo $message;
+        return response()->json($responseData);
+    }
+
     public function fetchBankReconciliations(Request $request){
         $query = CustomerTransactions::query();
         //$getAllRoutePermisssions = AcAccounts::all();
@@ -138,7 +225,7 @@ class BankReconciliationsController extends Controller
         }
 
         $query->WHERE('status', 1);
-        $query->orderBy('id', 'asc'); // Default ordering
+        $query->orderBy('id', 'desc'); // Default ordering
 
         $fetchTableDetails = $query->get();
         //$fetchTableDetails = Currencies::all();

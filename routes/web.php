@@ -260,6 +260,7 @@ Route::group(['prefix' => '/'], function () {
                 Route::post('/add-new-bank-reconciliation', [BankReconciliationsController::class, 'addBankReconciliation'])->name('bankreconciliations.addbankreconciliation');
                 Route::post('/{pro_id}/update-bank-reconciliation', [BankReconciliationsController::class, 'updateBankReconciliation'])->name('bankreconciliations.updatebankreconciliation');
                 Route::post('/{pro_id}/delete-bank-reconciliation', [BankReconciliationsController::class, 'deleteBankReconciliation'])->name('bankreconciliations.deletebankreconciliation');
+                Route::post('/{pro_id}/disable-bank-reconciliation', [BankReconciliationsController::class, 'disableBankReconciliation'])->name('bankreconciliations.disablebankreconciliation');
             });
 
             Route::group(['prefix' => 'bank-deposit-types', 'middleware' => 'role:admin'], function () {

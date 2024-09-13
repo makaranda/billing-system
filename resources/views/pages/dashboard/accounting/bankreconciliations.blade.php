@@ -183,6 +183,134 @@
     </div>
 </div>
 
+
+
+
+<div class="modal fade" id="addReconciliationModal" role="dialog">
+    <div class="modal-dialog">
+      	<!-- Modal content-->
+      	<div class="modal-content">
+	        <div class="modal-header">
+                <h4 class="modal-title"><span class="glyphicon glyphicon-plus"></span> ADD RECONCILIATION DETAILS</h4>
+	            <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
+	        </div>
+	        <div class="modal-body">
+				<form id="frm_reconciliation_details" method="post">
+					<div class="row">
+						<div class="col-md-6">
+							<div class="form-group datepicker_field">
+								<label for="update_date">Update Date</label>
+						   		<div class="input-group" id="datepicker3">
+								    <input type='text' class="form-control" id="update_date" name="update_date" value="{{ date("Y-m-d") }}" required />
+								    <span class="input-group-addon">
+									<span class="glyphicon glyphicon-calendar"></span>
+								    </span>
+								</div>
+							</div>
+						</div>
+					</div>
+				   	<div class="row">
+				   		<div class="col-md-6">
+							<div class="form-group">
+								<label for="statement_no">Statement No.</label>
+						   		<input type="text" class="form-control" id="statement_no" name="statement_no" required >
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="update_amount">Amount Received</label>
+						   		<input type="text" class="form-control" id="update_amount" name="update_amount" required >
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-6">
+							<button type="button" class="btn btn-default form-control" data-bs-dismiss="modal">
+							CANCEL
+							</button>
+						</div>
+						<div class="col-md-6">
+							<button type="submit" class="btn btn-primary form-control" id="submit" name="submit">
+							<span class="glyphicon glyphicon-floppy-saved"></span> CONFIRM & SAVE
+							</button>
+							<input type="hidden" id="transaction_id" name="transaction_id" />
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+    </div>
+</div>
+
+
+  <!-- Cancel Bank Transaction Modal -->
+  <div class="modal fade" id="cancel_bank_transaction_modal" role="dialog">
+    <div class="modal-dialog">
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title"><span class="glyphicon glyphicon-list"></span> CANCEL BANK TRANSACTION</h4>
+            <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
+        </div>
+        <form id="frm_cancel_bank_transaction" name="frm_cancel_bank_transaction" method="post">
+        <div class="modal-body">
+        	<div class="row">
+        		<div class="col-md-8"><span id="cancel_customer"></span></div>
+        		<div class="col-md-4"><span id="cancel_receipt_no"></span></div>
+        	</div>
+        	<div class="row">
+        		<div class="col-md-8"><span id="cancel_amount"></span></div>
+        		<div class="col-md-4"><span id="cancel_payment_method"></span></div>
+        	</div>
+        	<div class="row">
+        		<div class="col-md-8"><span id="cancel_bank"></span></div>
+        		<div class="col-md-4"><span id="cancel_reference"></span></div>
+        	</div>
+        	<hr/>
+        	<div class="row">
+        		<div class="col-md-6">
+        			<div class="form-group datepicker_field">
+						<label class="control-label required">Cancellation Date</label>
+						<div class="input-group" id="datepicker3">
+						    <input type='text' class="form-control" id="cancel_date" name="cancel_date" value="" />
+						    <span class="input-group-addon">
+							<span class="glyphicon glyphicon-calendar"></span>
+						    </span>
+						</div>
+					</div>
+        		</div>
+        	</div>
+        	<div class="row">
+        		<div class="col-md-12">
+        			<div class="form-group">
+        				<label class="control-label required">Cancellation Notes</label>
+        				<input type="text" class="form-control" name="cancel_notes" id="cancel_notes" required="required" />
+        			</div>
+        		</div>
+        	</div>
+        </div>
+        <div class="modal-footer d-block">
+        	<div class="row">
+        		<div class="col-md-6 pl-0">
+        			<div class="form-group">
+        				<button type="button" class="btn btn-default form-control" data-bs-dismiss="modal">CLOSE</button>
+        			</div>
+        		</div>
+        		<div class="col-md-6 pr-0">
+        			<div class="form-group">
+        				<button type="submit" class="btn btn-primary form-control">SAVE</button>
+        				<input type="hidden" name="cancel_transaction_id" id="cancel_transaction_id">
+        			</div>
+        		</div>
+        	</div>
+        </div>
+    	</form>
+      </div>
+
+    </div>
+  </div>
+
+
 @endsection
 
 @push('css')
@@ -193,15 +321,24 @@
 @endpush
 
 @push('scripts')
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/alfrcr/paginathing/dist/paginathing.min.js"
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/alfrcr/paginathing/dist/paginathing.min.js"
 ></script>
-    <script>
+<script>
     $(function () {
         $("#from_date").datepicker({
             autoclose: true,
             orientation: "bottom"
         });
         $("#to_date").datepicker({
+            autoclose: true,
+            orientation: "bottom"
+        });
+        $("#cancel_date").datepicker({
+            autoclose: true,
+            orientation: "bottom"
+        });
+
+        $("#update_date").datepicker({
             autoclose: true,
             orientation: "bottom"
         });
@@ -255,44 +392,107 @@
         payment_method, reference, reconciled_by);
     });
 
-        listTableDatas();
+    function cancel_bank_transaction(id, customer, receipt_no, amount, payment_method, bank, reference){
+        // CLEAR OLD VALUES
+        $('#cancel_transaction_id').val("");
+        $('#cancel_customer').html("");
+        $('#cancel_receipt_no').html("");
+        $('#cancel_amount').html("");
+        $('#cancel_payment_method').html("");
+        $('#cancel_reference').html("");
 
-        // Existing function with the `page` parameter for pagination
-        function listTableDatas(page=1, from_date=null, to_date=null, bank_account_id=0, status=null,receipt_no=null, payment_method=null, reference=null, reconciled_by=0) {
-            $('#overlay').show();
-            $.ajax({
-                url: "{{ route('bankreconciliations.fetchbankreconciliations') }}",
-                cache: false,
-                data: {
-                    _token: '{{ csrf_token() }}', 'page':page, 'from_date':from_date,'to_date':to_date,'bank_account_id':bank_account_id,
-		'status':status, 'receipt_no':receipt_no, 'payment_method':payment_method, 'reference':reference,
-		'reconciled_by':reconciled_by,'order':'is_reconciled ASC'
-                },
-                type: 'GET',
-                success: function (response) {
-                    $('#overlay').hide();
-                    $('#table_list').html(response.html);
-                    // Re-bind the click event for pagination links after new content is loaded
-                    bindPaginationLinks();
-                },
-                error: function (xhr, status, error) {
-                    console.log("Error fetching data!", xhr, status, error);
-                    $('#overlay').hide();
-                }
-            });
-        }
+        // SET NEW VALUES
+        $('#cancel_transaction_id').val(id);
+        $('#cancel_customer').html("<strong>CUSTOMER: </strong>" + customer);
+        $('#cancel_receipt_no').html("<strong>RECEIPT NO: </strong>" + receipt_no);
+        $('#cancel_amount').html("<strong>AMOUNT: </strong>" + amount);
+        $('#cancel_payment_method').html("<strong>METHOD: </strong>" + payment_method);
+        $('#cancel_bank').html("<strong>BANK: </strong>" + bank);
+        $('#cancel_reference').html("<strong>REFERENCE: </strong>" + reference);
+        $('#cancel_bank_transaction_modal').modal('show');
+    }
 
-        // Function to handle pagination link clicks
-        function bindPaginationLinks() {
-            $(document).on('click', '.pagination a', function (e) {
-                e.preventDefault();
-                var page = $(this).attr('href').split('page=')[1]; // Get the page number
-                listTableDatas(null, null, null, null, null, null, page); // Call the function with the page number
-            });
-        }
+    function addReconciliation(id){
+        $('#addReconciliationModal #transaction_id').val(id);
+        $('#addReconciliationModal').modal('show');
+    }
 
-        // Call the function initially
-        bindPaginationLinks();
-    </script>
+    $('#frm_cancel_bank_transaction').parsley();
+    $('#frm_cancel_bank_transaction').on('submit',function(event){
+        event.preventDefault();
+        $('#overlay').show();
+        var id = $('#cancel_transaction_id').val();
+        var date = $('#cancel_date').val();
+        var notes = $('#cancel_notes').val();
+        var form_type = '';
+        form_type = '{{ route("bankreconciliations.disablebankreconciliation", ":id") }}';
+        form_type = form_type.replace(':id', id);
+        $.ajax({
+            url : form_type,
+            cache: false,
+            data: {_token: '{{ csrf_token() }}','id':id,'date':date,'notes':notes},
+            type: 'POST',
+            dataType: 'json',
+            success : function(response) {
+                $('#cancel_bank_transaction_modal').modal('hide');
+                console.log(response);
+                $('#frm_cancel_bank_transaction').parsley().reset();
+                $('#frm_cancel_bank_transaction')[0].reset();
+                Swal.fire({
+                    position: "bottom-end",
+                    icon: response.messageType === 'success' ? "success" : "error",
+                    title: response.message != '' ? response.message : "",
+                    showConfirmButton: false,
+                    timer: response.messageType === 'success' ? 4000 : 2500
+                });
+                listTableDatas();
+                $('#overlay').hide();
+            },
+            error: function(xhr, status, error) {
+                console.log("Error getting Categories ! \n", xhr, status, error);
+                $('#overlay').hide();
+            }
+        });
+    });
+
+    listTableDatas();
+
+    // Existing function with the `page` parameter for pagination
+    function listTableDatas(page=1, from_date=null, to_date=null, bank_account_id=0, status=null,receipt_no=null, payment_method=null, reference=null, reconciled_by=0) {
+        $('#overlay').show();
+        $.ajax({
+            url: "{{ route('bankreconciliations.fetchbankreconciliations') }}",
+            cache: false,
+            data: {
+                _token: '{{ csrf_token() }}', 'page':page, 'from_date':from_date,'to_date':to_date,'bank_account_id':bank_account_id,
+    'status':status, 'receipt_no':receipt_no, 'payment_method':payment_method, 'reference':reference,
+    'reconciled_by':reconciled_by,'order':'is_reconciled ASC'
+            },
+            type: 'GET',
+            success: function (response) {
+                $('#overlay').hide();
+                $('#table_list').html(response.html);
+                // Re-bind the click event for pagination links after new content is loaded
+                bindPaginationLinks();
+            },
+            error: function (xhr, status, error) {
+                console.log("Error fetching data!", xhr, status, error);
+                $('#overlay').hide();
+            }
+        });
+    }
+
+    // Function to handle pagination link clicks
+    function bindPaginationLinks() {
+        $(document).on('click', '.pagination a', function (e) {
+            e.preventDefault();
+            var page = $(this).attr('href').split('page=')[1]; // Get the page number
+            listTableDatas(page,null, null, 0, null, null, null, null,0); // Call the function with the page number
+        });
+    }
+
+    // Call the function initially
+    bindPaginationLinks();
+</script>
 @endpush
 

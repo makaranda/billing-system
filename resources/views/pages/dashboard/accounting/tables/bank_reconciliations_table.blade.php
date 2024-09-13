@@ -13,7 +13,7 @@
                         <td align="left"><strong>Transaction Amount</strong></td>
                         <td align="left"><strong>Reconciled By</strong></td>
                         <td align="left"><strong>Reconciled Amount</strong></td>
-                        <td align="right"><strong>Action</strong></td>
+                        <td align="center"><strong>Action</strong></td>
                     </tr>
                 </tr>
             </thead>
@@ -39,6 +39,7 @@
                         $getAllCustomers = \App\Models\Customers::where('id', $fetchDetail->customer_id)->first();
                         $getAllBankAccount = \App\Models\BankAccounts::where('id', $fetchDetail->bank_account_id)->first();
                         $getAllSystemUsers = \App\Models\SystemUsers::where('id', $fetchDetail->reconciled_by)->first();
+                        $getAllCurrencySymbol = \App\Models\Currencies::where('is_base', 1)->where('status', 1)->first();
 
 
                         $currentRoute = request()->route()->getName();
@@ -60,10 +61,6 @@
                                 return $permission->permission_type == 'delete' && ($permission->route == $currentRoute || $permission->route == $parentRoute);
                             });
 
-                            $canDisable = $getAllRoutePermisssions->contains(function ($permission) use ($currentRoute, $parentRoute) {
-                                return $permission->permission_type == 'disable' && ($permission->route == $currentRoute || $permission->route == $parentRoute);
-                            });
-
                             $canPrivilege = $getAllRoutePermisssions->contains(function ($permission) use ($currentRoute, $parentRoute) {
                                 return $permission->permission_type == 'privilege' && ($permission->route == $currentRoute || $permission->route == $parentRoute);
                             });
@@ -72,32 +69,39 @@
                                 return $permission->permission_type == 'update' && ($permission->route == $currentRoute || $permission->route == $parentRoute);
                             });
 
+                            $deleteRoutePath = 'bankreconciliations.deletebankreconciliation';
+                            $updateRoutePath = 'bankreconciliations.updatebankreconciliation';
 
-                            $disablebtn = '';
-                            $disableRoutePath = 'nominalaccounts.disablenominalaccount';
-                            if ($canDisable) {
-                                $acInType = $fetchDetail->status == 1 ? 'inactive' : 'active';
-                                $actitleType = $fetchDetail->status == 1 ? 'Click to Disable' : 'Click to Enable';
-                                $acInColor = $fetchDetail->status == 1 ? 'warning' : 'success';
-                                $acInIcon = $fetchDetail->status == 1 ? 'x' : 'arrow-repeat';
-
-                                $disablebtn = '<button type="button" class="btn btn-xs btn-'.$acInColor.' disableRecordButton" onclick="disableRecord(' . $fetchDetail->id . ', \'' . $disableRoutePath . '\', \'' . $acInType . '\');" data-id="' . $fetchDetail->id . '" title="'.$actitleType.'"><i class="bi bi-'.$acInIcon.'"></i> </button>';
-                            }
-
-                            $deleteRoutePath = 'nominalaccounts.deletenominalaccount';
                             $deletebtn = '';
                             if ($canDelete) {
-                                $acInType = $fetchDetail->status == 1 ? 'Delete' : 'Delete';
-                                $acInColor = $fetchDetail->status == 1 ? 'danger' : 'danger';
+                                if($fetchDetail->is_rd == 1 || $fetchDetail->transaction_type=='rd'){
+                                    $deletebtn .= '<button type="button" class="btn btn-xs btn-warning disabled" title="Cancel bank transaction">
+                                                <span class="glyphicon glyphicon-retweet"></span> RD
+                                            </button></div>';
+                                }else{
+                                    if($fetchDetail->amount > 0){
+                                        $bank_account_name = isset($getAllBankAccount) ? ($getAllBankAccount->account_code ?? '') . ' - ' . ($getAllBankAccount->account_name ?? '') : '';
+                                        $deletebtn = '<button type="button" class="btn btn-xs btn-warning cancelRecordButton" onclick="cancel_bank_transaction(' . $fetchDetail->id . ', \'' . $getAllCustomers->code.' - '.$getAllCustomers->company . '\', \'' . $fetchDetail->transaction_reference . '\', \'' .$getAllCurrencySymbol->symbol.' '.number_format($fetchDetail->amount,2) . '\', \'' . $fetchDetail->payment_method . '\', \'' . $bank_account_name . '\', \'' . $fetchDetail->reference . '\', \'' . $updateRoutePath . '\');" data-id="' . $fetchDetail->id . '" title="Cancel bank transaction"><span class="glyphicon glyphicon-retweet"></span> RD </button>';
+                                    }else{
+                                        $deletebtn .= '<button type="button" class="btn btn-xs btn-warning disabled" title="Cancel bank transaction">
+                                                <span class="glyphicon glyphicon-retweet"></span> RD
+                                            </button></div>';
+                                    }
+                                }
 
-                                $deletebtn = '<button type="button" class="btn btn-xs btn-'.$acInColor.' deleteRecordButton" onclick="deleteRecord(' . $fetchDetail->id . ', \'' . $deleteRoutePath . '\', \'' . $acInType . '\');" data-id="' . $fetchDetail->id . '" title="'.$acInType.'"><i class="glyphicon glyphicon-trash"></i> </button>';
                             }
 
                             $editButton = '';
                             if ($canEdit) {
-                                $editButton = '<button type="button" class="btn btn-xs btn-info" onclick="editRecord('.$fetchDetail->id.');">
-                                                            <i class="bi bi-pen"></i>
+                                if($fetchDetail->is_rd == 1 || $fetchDetail->transaction_type=='rd'){
+                                    $deletebtn .= '<div class="btn-group"><button type="button" class="btn btn-xs btn-success disabled" title="Reconcile bank transaction">
+                                                        <span class="glyphicon glyphicon-ok"></span> Recon
+                                                    </button>';
+                                }else{
+                                    $editButton = '<button type="button" class="btn btn-xs btn-success" onclick="addReconciliation('.$fetchDetail->id.');" title="Reconcile bank transaction">
+                                                            <span class="glyphicon glyphicon-ok"></span> Recon
                                                         </button>';
+                                }
                             }
 
                             $amount_total += $fetchDetail->amount;
@@ -111,11 +115,13 @@
                         <td>{{ $fetchDetail->transaction_reference}}<br/><small>{{ $fetchDetail->transaction_type}}</small></td>
                         <td>{{ $fetchDetail->payment_method}}<br/><small>{{$fetchDetail->reference}}</small></td>
                         <td>{{ isset($getAllBankAccount) ? ($getAllBankAccount->account_code ?? '') . ' - ' . ($getAllBankAccount->account_name ?? '') : '' }}</td>
-                        <td>{{ number_format($fetchDetail->amount,2) }}</td>
+                        <td>{{ $getAllCurrencySymbol->symbol.' '.number_format($fetchDetail->amount,2) }}</td>
                         <td>{{ isset($getAllSystemUsers->full_name) ? $getAllSystemUsers->full_name : '' }}<br/><small>{{$fetchDetail->reconciled_at}} </small></td>
-                        <td>{{ number_format($fetchDetail->amount_received,2) }}</td>
+                        <td>{{ $getAllCurrencySymbol->symbol.' '.number_format($fetchDetail->amount_received,2) }}</td>
                         <td>
-                            @php echo ''.$editButton.' '.$disablebtn.' '.$deletebtn.''; @endphp
+                            <div class="btn-group bank_recon">
+                                @php echo ''.$editButton.' '.$deletebtn.''; @endphp
+                            </div>
                         </td>
                     </tr>
                 @endforeach
@@ -143,3 +149,10 @@
 @else
     <h4>No Data found in the system!</h4>
 @endif
+
+
+@push('scripts')
+<script>
+
+</script>
+@endpush

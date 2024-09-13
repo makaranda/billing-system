@@ -323,6 +323,16 @@
             autoclose: true,
             orientation: "bottom"
         });
+
+        $("#cancel_date").datepicker({
+            autoclose: true,
+            orientation: "bottom"
+        });
+
+        $("#update_date").datepicker({
+            autoclose: true,
+            orientation: "bottom"
+        });
     });
 
     $.fn.datepicker.dates["en"] = {
