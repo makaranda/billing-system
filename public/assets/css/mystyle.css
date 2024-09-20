@@ -278,3 +278,14 @@ hr {
     box-shadow: none;
     opacity: .45;
 }
+
+.btn {
+    font-size: 12px;
+}
+.tb-w-100{width: 106px;}
+.tb-w-150{width: 150px;}
+.tb-w-200{width: 200px;}
+.tb-w-250{width: 250px;}
+.tb-w-300{width: 300px;}
+
+.tbl-bg-color1 td{background-color: #b1b1b1;}

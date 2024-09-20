@@ -5,15 +5,15 @@
                 <tr>
                     <tr>
                         <td align="left"><strong>#</strong></td>
-                        <td align="left"><strong>Date</strong></td>
-                        <td align="left"><strong>Customer</strong></td>
-                        <td align="left"><strong>Receipt No.</strong></td>
-                        <td align="left"><strong>Pay Method</strong></td>
-                        <td align="left"><strong>Bank Account</strong></td>
-                        <td align="left"><strong>Transaction Amount</strong></td>
-                        <td align="left"><strong>Reconciled By</strong></td>
-                        <td align="left"><strong>Reconciled Amount</strong></td>
-                        <td align="center"><strong>Action</strong></td>
+                        <td align="left"><strong>Code</strong></td>
+                        <td align="left"><strong>Name</strong></td>
+                        <td align="left"><strong>Group</strong></td>
+                        <td align="left"><strong>Collection B</strong></td>
+                        <td align="left"><strong>Territory</strong></td>
+                        <td align="left"><strong>Status</strong></td>
+                        <td align="left"><strong>Credit Limit</strong></td>
+                        <td align="left"><strong>Balance</strong></td>
+                        <td align="center" colspan="4"><strong>Action</strong></td>
                     </tr>
                 </tr>
             </thead>
@@ -25,15 +25,15 @@
                 @foreach ($fetchTableDetails as $key => $fetchDetail)
                     @php
                         //bank_account_id
+                        $getTerritories = \App\Models\Territories::where('id', $fetchDetail->territory_id)->first();
+                        $getProductCategories = \App\Models\ProductCategories::where('product_category_id', $fetchDetail->group_id)->first();
+                        $getCollectionBureaus = \App\Models\CollectionBureaus::where('id', $fetchDetail->collection_bureau_id)->first();
                         $getAllRoutePermisssions = \App\Models\RoutesPermissions::where('user_id', Auth::user()->id)->get();
                         $getAccountSubCategories = \App\Models\AcAccountSubCategories::where('id', $fetchDetail->sub_category_id)->first();
                         $getCustomerTransactions = \App\Models\CustomerTransactions::where('status', 1)
-                                                ->where('nominal_account_id', $fetchDetail->id)
-                                                ->selectRaw('
-                                                    SUM(debits * currency_value) AS total_debits,
-                                                    SUM(credits * currency_value) AS total_credits,
-                                                    (SUM(debits * currency_value) - SUM(credits * currency_value)) AS balance
-                                                ')
+                                                ->where('customer_id',$fetchDetail->id)
+                                                ->where('nominal_account_id', 1100)
+                                                ->selectRaw('SUM(amount*currency_value) AS balance')
                                                 ->first();
 
                         $getAllCustomers = \App\Models\Customers::where('id', $fetchDetail->customer_id)->first();
@@ -69,60 +69,71 @@
                                 return $permission->permission_type == 'update' && ($permission->route == $currentRoute || $permission->route == $parentRoute);
                             });
 
-                            $deleteRoutePath = 'bankreconciliations.deletebankreconciliation';
-                            $updateRoutePath = 'bankreconciliations.updatebankreconciliation';
+                            $canView = $getAllRoutePermisssions->contains(function ($permission) use ($currentRoute, $parentRoute) {
+                                return $permission->permission_type == 'read' && ($permission->route == $currentRoute || $permission->route == $parentRoute);
+                            });
+
+                            $deleteRoutePath = 'cuscustomers.deletecustomer';
+                            $updateRoutePath = 'cuscustomers.updatecustomer';
 
                             $deletebtn = '';
+                            $activebtn = '';
                             if ($canDelete) {
-                                if($fetchDetail->is_rd == 1 || $fetchDetail->transaction_type=='rd'){
-                                    $deletebtn .= '<button type="button" class="btn btn-xs btn-warning disabled" title="Cancel bank transaction">
-                                                <span class="glyphicon glyphicon-retweet"></span> RD
-                                            </button></div>';
-                                }else{
-                                    if($fetchDetail->amount > 0){
-                                        $bank_account_name = isset($getAllBankAccount) ? ($getAllBankAccount->account_code ?? '') . ' - ' . ($getAllBankAccount->account_name ?? '') : '';
-                                        $deletebtn = '<button type="button" class="btn btn-xs btn-warning cancelRecordButton" onclick="cancel_bank_transaction(' . $fetchDetail->id . ', \'' . $getAllCustomers->code.' - '.$getAllCustomers->company . '\', \'' . $fetchDetail->transaction_reference . '\', \'' .$getAllCurrencySymbol->symbol.' '.number_format($fetchDetail->amount,2) . '\', \'' . $fetchDetail->payment_method . '\', \'' . $bank_account_name . '\', \'' . $fetchDetail->reference . '\', \'' . $updateRoutePath . '\');" data-id="' . $fetchDetail->id . '" title="Cancel bank transaction"><span class="glyphicon glyphicon-retweet"></span> RD </button>';
-                                    }else{
-                                        $deletebtn .= '<button type="button" class="btn btn-xs btn-warning disabled" title="Cancel bank transaction">
-                                                <span class="glyphicon glyphicon-retweet"></span> RD
-                                            </button></div>';
-                                    }
-                                }
 
+                                $acInType = $fetchDetail->active == 1 ? 'Disable' : 'Enable';
+                                $acInColor = $fetchDetail->active == 1 ? 'warning' : 'success';
+                                $acInIcon = $fetchDetail->active == 0 ? 'refresh' : 'remove';
+                                $deleteType = $fetchDetail->status == 1 ? 'Delete' : '';
+
+                                if($fetchDetail->id > 0){
+                                    $activebtn .= '<button type="button" class="btn btn-xs btn-'.$acInColor.'" onclick="enable_disable_delete_customer(' . $fetchDetail->id . ', \'' . $deleteRoutePath . '\', \'' . $acInType . '\');" data-id="' . $fetchDetail->id . '" title="'.$acInType.'"><span class="glyphicon glyphicon-'.$acInIcon.'"></span> </button>';
+
+
+                                    $deletebtn .= '<button type="button" class="btn btn-xs btn-danger" onClick="enable_disable_delete_customer(' . $fetchDetail->id . ', \'' . $deleteRoutePath . '\', \'' . $deleteType . '\');" title="Delete"><span class="glyphicon glyphicon-trash"></span></button>';
+                                }
+                            }
+
+                            $viewButton = '';
+                            if ($canView) {
+                                if($fetchDetail->id > 0){
+                                    $viewButton .= '<button type="button" class="btn btn-xs btn-info mt-2" onClick="viewCustomerStatement('.$fetchDetail->id.',\''.$fetchDetail->email.'\');" title="View Statement"><span class="glyphicon glyphicon-time"></span> Statment
+                                                    </button>
+                                                    <button type="button" class="btn btn-xs btn-success mt-2" onClick="viewActivity('.$fetchDetail->id.');" title="View activity"><span class="glyphicon glyphicon-time"></span> Activity
+                                                    </button>';
+                                }
                             }
 
                             $editButton = '';
                             if ($canEdit) {
-                                if($fetchDetail->is_rd == 1 || $fetchDetail->transaction_type=='rd'){
-                                    $editButton .= '<div class="btn-group"><button type="button" class="btn btn-xs btn-success disabled" title="Reconcile bank transaction">
-                                                        <span class="glyphicon glyphicon-ok"></span> Recon
-                                                    </button>';
-                                }else{
-                                    $editButton = '<button type="button" class="btn btn-xs btn-success" onclick="addReconciliation('.$fetchDetail->id.');" title="Reconcile bank transaction">
-                                                            <span class="glyphicon glyphicon-ok"></span> Recon
-                                                        </button>';
+                                if($fetchDetail->id > 0){
+                                    $editButton .= '<button type="button" class="btn btn-xs btn-info" onClick="editCustomer('.$fetchDetail->id.');" title="Edit"><span class="glyphicon glyphicon-edit"></span></button>';
                                 }
                             }
 
                             $amount_total += $fetchDetail->amount;
                             $reconciled_total += $fetchDetail->amount_received;
+
+                            $tblbgcolor = ($fetchDetail->active == 0) ? 'tbl-bg-color1':''
                     @endphp
 
-                    <tr>
+                    <tr class="{{ $tblbgcolor }}">
                         <td>{{ $key + 1 }}</td>
-                        <td>{{ $fetchDetail->transaction_date }}</td>
-                        <td><small>{{ $getAllCustomers->code.' - '.$getAllCustomers->company }}</small></td>
-                        <td>{{ $fetchDetail->transaction_reference}}<br/><small>{{ $fetchDetail->transaction_type}}</small></td>
-                        <td>{{ $fetchDetail->payment_method}}<br/><small>{{$fetchDetail->reference}}</small></td>
-                        <td>{{ isset($getAllBankAccount) ? ($getAllBankAccount->account_code ?? '') . ' - ' . ($getAllBankAccount->account_name ?? '') : '' }}</td>
-                        <td>{{ $getAllCurrencySymbol->symbol.' '.number_format($fetchDetail->amount,2) }}</td>
-                        <td>{{ isset($getAllSystemUsers->full_name) ? $getAllSystemUsers->full_name : '' }}<br/><small>{{$fetchDetail->reconciled_at}} </small></td>
-                        <td>{{ $getAllCurrencySymbol->symbol.' '.number_format($fetchDetail->amount_received,2) }}</td>
                         <td>
-                            <div class="btn-group bank_recon">
-                                @php echo ''.$editButton.' '.$deletebtn.''; @endphp
-                            </div>
+                            <a class="btn btn-link" onclick="showCustomerProfile('{{ $fetchDetail->id }}')">
+                                {{ $fetchDetail->code }}
+                            </a>
                         </td>
+                        <td>{{ $fetchDetail->company ?? '' }}</td>
+                        <td>{{ $getProductCategories->name ?? '' }}</td>
+                        <td>{{ $getCollectionBureaus->name ?? '' }}</td>
+                        <td>{{ $getTerritories->name ?? '' }}</td>
+                        <td>{{ $fetchDetail->active == 1 ? 'Active' : 'Inactive' }}</td>
+                        <td>{{ number_format($getTerritories->credit_limit,2) ?? '' }}</td>
+                        <td>{{ number_format($getCustomerTransactions->balance,2)}}</td>
+                        <td class="tb-w-100">{!! $viewButton !!}</td>
+                        <td>{!! $editButton !!}</td>
+                        <td>{!! $activebtn !!}</td>
+                        <td>{!! $deletebtn !!}</td>
                     </tr>
                 @endforeach
 

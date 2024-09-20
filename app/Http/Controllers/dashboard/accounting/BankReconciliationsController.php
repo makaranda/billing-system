@@ -23,6 +23,8 @@ use App\Models\AcAccountSubCategories;
 use App\Models\AcAccounts;
 use App\Models\BankDepositTypes;
 use App\Models\BankRds;
+use App\Models\CustomerPayments;
+use App\Models\CustomerPaymentAllocations;
 
 class BankReconciliationsController extends Controller
 {
@@ -112,7 +114,47 @@ class BankReconciliationsController extends Controller
     public function updateBankReconciliation(Request $request,$pro_id){
         //BankRds
         //
+        $messageType = '';
+        $message = '';
+        try {
+            $getDatas = CustomerTransactions::where('id', $request->id)->first();
+            $validator = Validator::make($request->all(), [
+                'id' => 'required',
+                'update_date' => 'required',
+                'statement_no' => 'required',
+                'update_amount' => 'required',
+            ]);
+            if ($validator->fails()) {
+                $messageType = 'error';
+                //$message = 'Errors: '.$validator->errors();
+                $message = 'All Fields are Required..!!';
+            }else{
+                $proData = [
+                    'update_date' => $request->update_date,
+                    'amount_received' => $request->update_amount,
+                    'statement_no' => $request->statement_no,
+                    'reconciled_by' => Auth::user()->id,
+                    'reconciled_at' => date("Y-m-d H:i:s"),
+                    'is_reconciled' => 1,
+                ];
+                // update the data
+                $getDatas->update($proData);
+                $messageType = 'success';
+                $message = 'Reconciliation details successfully saved..';
+            }
 
+        } catch (\Exception $e) {
+            // Catch any exception and return a response
+            $messageType = 'error';
+            $message = 'Failed to save reconciliation details .'.$e->getMessage();
+
+        }
+        $responseData = [
+            'message' => $message,
+            'messageType' => $messageType
+        ];
+        //echo $message;
+        return response()->json($responseData);
     }
 
     public function disableBankReconciliation(Request $request,$pro_id){
@@ -122,6 +164,15 @@ class BankReconciliationsController extends Controller
         $message = '';
 
         $getDatas = CustomerTransactions::where('id', $request->id)->first();
+
+        //$getupdateData = CustomerTransactions::where('id', $request->id)-first();
+
+        $updateproData = [
+            'is_rd' => 1,
+        ];
+        $getDatas->update($updateproData);
+        //CustomerTransactions::where('id', $request->id)->update(['is_rd' => 1]);
+
         $validator = Validator::make($request->all(), [
             'id' => 'required',
             'notes' => 'required',
@@ -164,28 +215,129 @@ class BankReconciliationsController extends Controller
 
             $insert_id = $addDatas->id;
 
-            // if (!$getDatas) {
-            //     return response()->json(['error' => 'Datas are not found, 404']);
-            // }
+            $getCustomerPayments = CustomerPayments::find($getDatas->source_reference);
 
-            // if($request->delete_record_type == 'inactive'){
-            //     $actveData = 0;
-            //     $message = 'You have successfully Deactivate this Nominal Account record..';
-            // }else{
-            //     $actveData = 1;
-            //     $message = 'You have successfully Activate this Nominal Account record..';
-            // }
+            if ($getCustomerPayments) {
+                $updateDatas = [
+                    'status' => 2,
+                    'recon_bank_account_id' => 1,
+                    'statement_no' => $insert_id,
+                    'reconciled_by' => Auth::user()->id,
+                    'is_reconciled' => 1,
+                    'reconciled_at' => now()
+                ];
 
-            // $proData = [
-            //     'status' => $actveData,
-            // ];
+                $getCustomerPayments->update($updateDatas);
+            }
 
-            // // update the data
-            // $getDatas->update($proData);
+            if($insert_id >0){
 
-            //$getTaxes->delete();
+                $getAccountBalanceDatas = CustomerTransactions::where('bank_account_id', $getDatas->bank_account_id)->where('status',1)->first();
+                $cumalative_balance = $getAccountBalanceDatas->balance;
+                $payment_amount = $getDatas->amount;
+
+                $proDataCusTras = [
+                    'customer_id' => $getDatas->customer_id,
+                    'transaction_type' => 'rd',
+                    'transaction_reference' => $rd_no,
+                    'payment_method' => $getDatas->payment_method,
+                    'reference' => $request->notes,
+                    'source_reference' => $insert_id,
+                    'bank_account_id' => $getDatas->bank_account_id,
+                    'nominal_account_id' => $getDatas->nominal_account_id,
+                    'transaction_date' => $request->date,
+                    'effective_date' => $getDatas->effective_date,
+                    'currency_id' => $getDatas->currency_id,
+                    'currency_value' => $getDatas->currency_value,
+                    'amount' => $payment_amount * (-1),
+                    'credits' => 0,
+                    'debits' => $payment_amount,
+                    'balance' => $cumalative_balance - $payment_amount,
+                    'customer_balance' => 0,
+                    'created_by' => Auth::user()->id
+                ];
+
+                $addCustTraDatas = new CustomerTransactions();
+                $addCustTraDatas->fill($proDataCusTras);
+                $addCustTraDatas->save();
+
+                $getCustomerCumalativeBalanceDatas = CustomerTransactions::where('customer_id', $getDatas->customer_id)->where('status',1)->first();
+                $customer_cumalative_balance = $getCustomerCumalativeBalanceDatas->balance;
+                $payment_currency_value = $getDatas->currency_value;
+
+                $getNominalBalanceDatas = CustomerTransactions::where('bank_account_id', $getDatas->bank_account_id)->where('status',1)->first();
+                $cumalative_balance_nominal = $getNominalBalanceDatas->balance;
+
+                $proDataCusTras2 = [
+                    'customer_id' => $getDatas->customer_id,
+                    'transaction_type' => 'rd',
+                    'transaction_reference' => $rd_no,
+                    'payment_method' => $getDatas->payment_method,
+                    'reference' => $request->notes,
+                    'source_reference' => $insert_id,
+                    'bank_account_id' => 0,
+                    'nominal_account_id' => $getDatas->nominal_account_id,
+                    'transaction_date' => $request->date,
+                    'effective_date' => $getDatas->effective_date,
+                    'currency_id' => $getDatas->currency_id,
+                    'currency_value' => $getDatas->currency_value,
+                    'amount' => ($payment_amount*$payment_currency_value),
+                    'credits' => 0,
+                    'debits' =>  $payment_amount*$payment_currency_value,
+                    'balance' => ($cumalative_balance_nominal+($payment_amount*$payment_currency_value)),
+                    'customer_balance' => ($customer_cumalative_balance+($payment_amount*$payment_currency_value)),
+                    'created_by' => Auth::user()->id
+                ];
+
+                $addCustTraDatas2 = new CustomerTransactions();
+                $addCustTraDatas2->fill($proDataCusTras2);
+                $addCustTraDatas2->save();
+
+                $getCustomerPaymentsAllocations = CustomerPaymentAllocations::where('payment_id', $getDatas->source_reference)->get();
+
+                if(count($getCustomerPaymentsAllocations) > 0){
+                    foreach ($getCustomerPaymentsAllocations as $paymentsAllocation) {
+                        $getInvoice = Invoices::where('id', $paymentsAllocation->source_id)->first();
+
+                        if($getInvoice && count($getInvoice)){
+                            $allocated_customer_id = $getInvoice->customer_id;
+                            $allocated_invoice_id = $getInvoice->id;
+                            $allocated_invoice_no = $getInvoice->invoice_no;
+                            $allocated_amount = $paymentsAllocation->allocated_amount;
+
+                            // Update `customer_payment_allocations` table - set `status = 0`
+                            CustomerPaymentAllocations::where('id', $paymentsAllocation->id)
+                                        ->update(['status' => 0]);
+
+                            // Update `invoices` table
+                            $getInvoice->update([
+                            'total_receipts' => $getInvoice->total_receipts - $allocated_amount,
+                            'payments_due' => $getInvoice->payments_due + $allocated_amount,
+                            'is_paid' => 0
+                            ]);
+
+                            // Log the audit trail
+                            $logData = [
+                            'Receipt_no' => $receipt_no,
+                            'Invoice_no' => $allocated_invoice_no,
+                            'Amount' => $allocated_amount,
+                            ];
+
+                            // Assuming you're using Laravel's built-in logging system
+                            // \Log::info('RD Payment Allocation', [
+                            // 'user_id' => auth()->id(),
+                            // 'data' => json_encode($logData),
+                            // 'customer_id' => $allocated_customer_id,
+                            // 'invoice_no' => $allocated_invoice_no
+                            // ]);
+                        }
+                    }
+                }
+
+            }
+
             $messageType = 'success';
-            $message = 'You have successfully Deactivate this Nominal Account record..';
+            $message = 'You have successfully cancelled this Selected transaction..!';
         }
         $responseData = [
             'message' => $message,

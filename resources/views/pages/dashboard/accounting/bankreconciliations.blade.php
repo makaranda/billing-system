@@ -416,6 +416,48 @@
         $('#addReconciliationModal #transaction_id').val(id);
         $('#addReconciliationModal').modal('show');
     }
+    $('#frm_reconciliation_details').parsley();
+    $('#frm_reconciliation_details').on('submit',function(event){
+        event.preventDefault();
+
+        var id = $('#addReconciliationModal #transaction_id').val();
+        var update_date = $('#addReconciliationModal #update_date').val();
+        var statement_no = $('#addReconciliationModal #statement_no').val();
+        var update_amount = $('#addReconciliationModal #update_amount').val();
+
+        form_type = '{{ route("bankreconciliations.updatebankreconciliation", ":id") }}';
+        form_type = form_type.replace(':id', id);
+
+        $.ajax({
+            url : form_type,
+            cache: false,
+            data: {_token: '{{ csrf_token() }}','id':id,'update_date':update_date,'statement_no':statement_no,
+			'update_amount':update_amount},
+            type: 'POST',
+            dataType: 'json',
+            success : function(response) {
+                $('#addReconciliationModal').modal('hide');
+                //console.log(response);
+                $('#frm_cancel_bank_transaction').parsley().reset();
+                $('#frm_cancel_bank_transaction')[0].reset();
+
+                Swal.fire({
+                    position: "bottom-end",
+                    icon: response.messageType === 'success' ? "success" : "error",
+                    title: response.message != '' ? response.message : "",
+                    showConfirmButton: false,
+                    timer: response.messageType === 'success' ? 4000 : 2500
+                });
+
+                listTableDatas();
+                $('#overlay').hide();
+            },
+            error: function(xhr, status, error) {
+                console.log("Error getting Categories ! \n", xhr, status, error);
+                $('#overlay').hide();
+            }
+        });
+    });
 
     $('#frm_cancel_bank_transaction').parsley();
     $('#frm_cancel_bank_transaction').on('submit',function(event){
@@ -454,7 +496,7 @@
             }
         });
     });
-
+    //cuscustomers.fetchcustomers
     listTableDatas();
 
     // Existing function with the `page` parameter for pagination

@@ -162,7 +162,7 @@
           <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
         </div>
 		<form name="frm_add_account" id="frm_add_account" method="post">
-        <input type="hidden" name="form_type" id="form_type" value="creditcardtypes.addcreditcardtypes">
+        <input type="hidden" name="form_type" id="form_type" value="cusaddcustomergroups.addcustomergroup">
         <input type="hidden" name="sub_cat_id" id="sub_cat_id" value="">
 	    <div class="modal-body">
 	        <div class="row">
@@ -348,6 +348,64 @@
         weekStart: 0,
     };
 
+    function open_account_activity(account_id){
+        $('#hidden_account_id').val(account_id);
+        $('#account_activity_information').html("");
+        $('#account_activity_modal').modal('show');
+
+        get_account_activities(1,account_id);
+    }
+
+    $('#btn_search').click(function(){
+        var account_id = $('#hidden_account_id').val();
+        var from_date = $('#s_from_date').val();
+        var to_date = $('#s_to_date').val();
+        var reference = $('#s_reference').val();
+
+        get_account_activities(1,account_id,from_date,to_date, reference);
+    });
+
+    $('#btn_refresh').click(function(){
+        var account_id = $('#hidden_account_id').val();
+        $('#s_from_date').val("");
+        $('#s_to_date').val("");
+        $('#s_reference').val("");
+
+        get_account_activities(1,account_id);
+    });
+
+    function get_account_activities(page=1,account_id,from_date='',to_date='', reference=''){
+        $.ajax({
+            url : "{{ route('nominalaccounts.fetchaccountsactivities') }}",
+            cache: false,
+            data: {  _token: '{{ csrf_token() }}','page':page,'account_id':account_id,'from_date':from_date,'to_date':to_date,
+            'reference':reference,'order':'customer_transactions.id DESC' },
+            type: 'GET',
+            success : function(data) {
+                //console.log('Showing.....');
+                $('#overlay').hide();
+                $('#account_activity_information').html(data.html);
+                // Re-bind the click event for pagination links after new content is loaded
+                bindPaginationLinks();
+            },
+            error: function (xhr, status, error) {
+                console.log("Error fetching data!", xhr, status, error);
+                $('#overlay').hide();
+            }
+        });
+    }
+
+    // Function to handle pagination link clicks
+    function bindPaginationLinks() {
+        $(document).on('click', '.pagination a', function (e) {
+            e.preventDefault();
+            var page = $(this).attr('href').split('page=')[1]; // Get the page number
+            get_account_activities(page,0, null, null, null); // Call the function with the page number
+        });
+    }
+
+    // Call the function initially
+    bindPaginationLinks();
 
 
     function category_change(category_id, selectedSubcategoryId, callback = null) {
@@ -402,18 +460,6 @@
         category_change(categoryId,subCatId,'');
     });
 
-    function open_account_activity(account_id){
-        $('#hidden_account_id').val(account_id);
-        $('#account_activity_information').html("");
-        $('#account_activity_modal').modal('show');
-
-        get_account_activities(1,account_id);
-    }
-
-
-    function get_account_activities(page=1,account_id,from_date='',to_date='', reference=''){
-
-    }
 
     $('.addAccountButton').on('click',function(){
         $('#frm_add_account').parsley().reset();

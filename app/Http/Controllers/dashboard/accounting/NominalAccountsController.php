@@ -285,6 +285,83 @@ class NominalAccountsController extends Controller
         return response()->json($responseData);
     }
 
+    public function fetchAccountsActivities(Request $request){
+        $query = CustomerTransactions::query()
+        ->leftJoin('customers', 'customers.id', '=', 'customer_transactions.customer_id')
+        ->select(
+            'customer_transactions.*',
+            'customers.code as customer_code',
+            'customers.company as customer_company'
+        );
+
+        // Apply the filters
+        if ($request->has('customer_id') && $request->customer_id > 0) {
+            $query->where('customer_transactions.customer_id', '=', $request->customer_id);
+        }
+        if ($request->has('bank_account_id') && $request->bank_account_id > 0) {
+            $query->where('customer_transactions.bank_account_id', '=', $request->bank_account_id);
+        }
+        if ($request->has('account_id') && $request->account_id > 0) {
+            $query->where('customer_transactions.nominal_account_id', '=', $request->account_id);
+        }
+        if ($request->has('recon_status') && $request->recon_status != '' && $request->recon_status >= 0) {
+            $query->where('customer_transactions.is_reconciled', '=', $request->recon_status);
+        }
+        if ($request->has('reconciled_by') && $request->reconciled_by > 0) {
+            $query->where('customer_transactions.reconciled_by', '=', $request->reconciled_by);
+        }
+        if ($request->has('payment_method') && $request->payment_method != '') {
+            $query->where('customer_transactions.payment_method', '=', $request->payment_method);
+        }
+        if ($request->has('reference') && $request->reference != '') {
+            $query->where('customer_transactions.transaction_reference', 'LIKE', '%'.$request->reference.'%');
+        }
+        if ($request->has('receipt_no') && $request->receipt_no != '') {
+            $query->where('customer_transactions.transaction_reference', 'LIKE', '%'.$request->receipt_no.'%');
+        }
+        if ($request->has('from_date') && $request->from_date != '') {
+            $query->where('customer_transactions.transaction_date', '>=', $request->from_date);
+        }
+        if ($request->has('to_date') && $request->to_date != '') {
+            $query->where('customer_transactions.transaction_date', '<=', $request->to_date);
+        }
+
+        // Status filter
+        $query->where('customer_transactions.status', 1);
+
+        // Handle ordering if specified
+        if ($request->has('order') && $request->order != '') {
+            $query->orderByRaw($request->order);
+        } else {
+            $query->orderBy('customer_transactions.id', 'desc'); // Default ordering
+        }
+
+        // Handle limiting if specified
+        if ($request->has('limit') && $request->limit != '') {
+            $query->limit($request->limit);
+        }
+
+        // Fetch sum totals
+        $sumQuery = clone $query;
+        $sumResult = $sumQuery->selectRaw('
+            SUM(customer_transactions.debits * currency_value) AS debit_total,
+            SUM(customer_transactions.credits * currency_value) AS credit_total
+        ')->first();
+
+        // Paginate the main query
+        $fetchTableDetails = $query->paginate(10);
+
+        // Render the view
+        $responses = view('pages.dashboard.accounting.tables.account_activities_table', compact('fetchTableDetails'))->render();
+
+        // Return JSON response with data and sum totals
+        return response()->json([
+            'html' => $responses,
+            'debit_total' => $sumResult->debit_total,
+            'credit_total' => $sumResult->credit_total,
+        ]);
+    }
+
     public function fetchNominalAccounts(Request $request){
         //$acAccountCategoriesDetails = AcAccountCategories::all();
         //$acAccountSubCategoriesDetails = AcAccountSubCategories::all();

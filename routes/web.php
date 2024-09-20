@@ -183,8 +183,6 @@ Route::group(['prefix' => '/'], function () {
 
         Route::group(['prefix' => 'customers', 'middleware' => 'role:admin'], function () {
             Route::get('/', [CustomersController::class, 'index'])->name('index.customers');
-            Route::get('/customers', [CusCustomersController::class, 'index'])->name('index.cuscustomers');
-            Route::get('/add-customer-groups', [CusAddCustomerGroupsController::class, 'index'])->name('index.cusaddcustomergroups');
             Route::get('/attachements', [CusAttachementsController::class, 'index'])->name('index.cusattachements');
             Route::get('/debtors', [CusDebtorsController::class, 'index'])->name('index.cusdebtors');
             Route::get('/customer-receipts', [CusCustomerReceiptsController::class, 'index'])->name('index.cuscustomerreceipts');
@@ -195,6 +193,26 @@ Route::group(['prefix' => '/'], function () {
             Route::get('/vas', [CusVasController::class, 'index'])->name('index.cusvas');
             Route::get('/wht-cetificates', [CusWhtCetificatesController::class, 'index'])->name('index.cuswhtcetificates');
             Route::get('/fiscal-receipt-upload', [CusWhtCetificatesController::class, 'index'])->name('index.fiscalreceiptupload');
+
+            Route::group(['prefix' => 'customers', 'middleware' => 'role:admin'], function () {
+                Route::get('/', [CusCustomersController::class, 'index'])->name('index.cuscustomers');
+                Route::get('/fetch-customers', [CusCustomersController::class, 'fetchCustomers'])->name('cuscustomers.fetchcustomers');
+                Route::get('/{pro_id}/edit-customer', [CusCustomersController::class, 'editCustomer'])->name('cuscustomers.editcustomer');
+                Route::post('/add-new-customer', [CusCustomersController::class, 'addCustomer'])->name('cuscustomers.addcustomer');
+                Route::post('/{pro_id}/update-customer', [CusCustomersController::class, 'updateCustomer'])->name('cuscustomers.updatecustomer');
+                Route::post('/{pro_id}/delete-customer', [CusCustomersController::class, 'deleteCustomer'])->name('cuscustomers.deletecustomer');
+            });
+
+            Route::group(['prefix' => 'add-customer-groups', 'middleware' => 'role:admin'], function () {
+                Route::get('/', [CusAddCustomerGroupsController::class, 'index'])->name('index.cusaddcustomergroups');
+                Route::get('/fetch-add-customer-group', [CusAddCustomerGroupsController::class, 'fetchAddCustomerGroups'])->name('cusaddcustomergroups.fetchaddcustomergroups');
+                Route::get('/{pro_id}/edit-add-customer-group', [CusAddCustomerGroupsController::class, 'editCustomerGroup'])->name('cusaddcustomergroups.editcustomergroup');
+                Route::post('/add-new-customer-group', [CusAddCustomerGroupsController::class, 'addCustomerGroup'])->name('cusaddcustomergroups.addcustomergroup');
+                Route::post('/{pro_id}/update-add-customer-group', [CusAddCustomerGroupsController::class, 'updateCustomerGroup'])->name('cusaddcustomergroups.updatecustomergroup');
+                Route::post('/{pro_id}/delete-add-customer-group', [CusAddCustomerGroupsController::class, 'deleteCustomerGroup'])->name('cusaddcustomergroups.deletecustomergroup');
+                Route::get('/customer-group-pdf', [CusAddCustomerGroupsController::class, 'generateCusGroupPDF'])->name('cusaddcustomergroups.pdf');
+                Route::get('/export-customer-group', [CusAddCustomerGroupsController::class, 'generateCusGroupExcel'])->name('cusaddcustomergroups.excel');
+            });
         });
 
         Route::group(['prefix' => 'documents', 'middleware' => 'role:admin'], function () {
@@ -208,6 +226,15 @@ Route::group(['prefix' => '/'], function () {
             Route::get('/add-archive', [AddArchiveController::class, 'index'])->name('index.addarchive');
             Route::get('/add-email-formats', [AddEmailFormatsController::class, 'index'])->name('index.addemailformats');
             Route::get('/send-emails', [SendEmailsController::class, 'index'])->name('index.sendemails');
+
+            Route::group(['prefix' => 'archive-categories', 'middleware' => 'role:admin'], function () {
+                Route::get('/', [DocArchiveCategoriesController::class, 'index'])->name('index.docarchivecategories');
+                Route::get('/fetch-archive-categories', [DocArchiveCategoriesController::class, 'fetchArchiveCategories'])->name('docarchivecategories.fetcharchivecategories');
+                Route::get('/{pro_id}/edit-archive-category', [DocArchiveCategoriesController::class, 'editArchiveCategory'])->name('docarchivecategories.editarchivecategory');
+                Route::post('/add-new-archive-category', [DocArchiveCategoriesController::class, 'addArchiveCategory'])->name('docarchivecategories.addarchivecategory');
+                Route::post('/{pro_id}/update-archive-category', [DocArchiveCategoriesController::class, 'updateArchiveCategory'])->name('docarchivecategories.updatearchivecategory');
+                Route::post('/{pro_id}/delete-archive-category', [DocArchiveCategoriesController::class, 'deleteArchiveCategory'])->name('docarchivecategories.deletearchivecategory');
+            });
         });
 
         Route::group(['prefix' => 'pay-online', 'middleware' => 'role:admin'], function () {
@@ -266,7 +293,7 @@ Route::group(['prefix' => '/'], function () {
             Route::group(['prefix' => 'bank-deposit-types', 'middleware' => 'role:admin'], function () {
                 Route::get('/', [BankdePosittypesController::class, 'index'])->name('index.bankdeposittypes');
                 Route::get('/fetch-bank-deposit-types', [BankdePosittypesController::class, 'fetchBankDepositTypes'])->name('bankdeposittypes.fetchbankdeposittypes');
-                Route::get('/{pro_id}/edit-bank-deposit-type', [BankdePosittypesController::class, 'editBankDepositType'])->name('bankdeposittypes.editbankdeposittype');
+                Route::get('/{pro_id}/edit-bank-deposit-type', [BankdePosittypesController::class, 'editBankDepositType'])->name('cuscustomers.editcustomer');
                 Route::post('/add-new-bank-deposit-type', [BankdePosittypesController::class, 'addBankDepositType'])->name('bankdeposittypes.addbankdeposittype');
                 Route::post('/{pro_id}/update-bank-deposit-type', [BankdePosittypesController::class, 'updateBankDepositType'])->name('bankdeposittypes.updatebankdeposittype');
                 Route::post('/{pro_id}/delete-bank-deposit-type', [BankdePosittypesController::class, 'deleteBankDepositType'])->name('bankdeposittypes.deletebankdeposittype');
@@ -293,6 +320,7 @@ Route::group(['prefix' => '/'], function () {
             Route::group(['prefix' => 'nominal-accounts', 'middleware' => 'role:admin'], function () {
                 Route::get('/', [NominalAccountsController::class, 'index'])->name('index.nominalaccounts');
                 Route::get('/fetch-nominal-accounts', [NominalAccountsController::class, 'fetchNominalAccounts'])->name('nominalaccounts.fetchnominalaccounts');
+                Route::get('/fetch-accounts-activities', [NominalAccountsController::class, 'fetchAccountsActivities'])->name('nominalaccounts.fetchaccountsactivities');
                 Route::get('/{pro_id}/edit-nominal-account', [NominalAccountsController::class, 'editNominalAccount'])->name('nominalaccounts.editnominalaccount');
                 Route::post('/add-new-nominal-account', [NominalAccountsController::class, 'addNominalAccount'])->name('nominalaccounts.addnominalaccount');
                 Route::post('/{pro_id}/update-nominal-account', [NominalAccountsController::class, 'updateNominalAccount'])->name('nominalaccounts.updatenominalaccount');
