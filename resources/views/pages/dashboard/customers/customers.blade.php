@@ -753,12 +753,15 @@
 @push('scripts')
     <script src="{{ url('public/vendors/ckeditor/ckeditor.js') }}"></script>
     <script>
+
     $(function () {
         $("#datepicker").datepicker({
             autoclose: true
         });
     });
+
     CKEDITOR.replace( 'email_body' );
+    
     $.fn.datepicker.dates["en"] = {
         days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
         daysShort: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
@@ -780,6 +783,7 @@
         $('#form_type').val('cuscustomers.addcustomer');
         //toggleAudio();
     });
+
     $(document).ready(function() {
         $("#statement_type").on('change',function() {
             if($(this).val() == 'daterange'){
