@@ -870,47 +870,47 @@
 
 
     $('#deleteRecordForm').parsley();
-        $('#deleteRecordForm').on('submit', function(event){
-            event.preventDefault();
-            $('#overlay').show();
-            var delete_record_id = $('#delete_record_id').val();
-            var form_type = $('#delete_record_form').val();
+    $('#deleteRecordForm').on('submit', function(event){
+        event.preventDefault();
+        $('#overlay').show();
+        var delete_record_id = $('#delete_record_id').val();
+        var form_type = $('#delete_record_form').val();
 
-            let updateUrl = '{{ route("cuscustomers.deletecustomer", ":id") }}';
-            updateUrl = updateUrl.replace(':id', delete_record_id);
+        let updateUrl = '{{ route("cuscustomers.deletecustomer", ":id") }}';
+        updateUrl = updateUrl.replace(':id', delete_record_id);
 
-            console.log('URL: '+updateUrl);
-            $.ajax({
-                url : updateUrl,
-                cache: false,
-                data: $(this).serialize() + '&_token={{ csrf_token() }}',
-                type: 'POST',
-                dataType: 'json',
-                success : function(response) {
-                    $('#deleteModal').modal('hide');
-                    //console.log(response);
-                    //var arr = data.split("|");
-                    $('#deleteRecordForm').parsley().reset();
-                    $('#deleteRecordForm')[0].reset();
-
-
-                    Swal.fire({
-                        position: "bottom-end",
-                        icon: response.messageType === 'success' ? "success" : "error",
-                        title: response.message,
-                        showConfirmButton: false,
-                        timer: response.messageType === 'success' ? 4000 : 2500
-                    });
+        console.log('URL: '+updateUrl);
+        $.ajax({
+            url : updateUrl,
+            cache: false,
+            data: $(this).serialize() + '&_token={{ csrf_token() }}',
+            type: 'POST',
+            dataType: 'json',
+            success : function(response) {
+                $('#deleteModal').modal('hide');
+                //console.log(response);
+                //var arr = data.split("|");
+                $('#deleteRecordForm').parsley().reset();
+                $('#deleteRecordForm')[0].reset();
 
 
-                    listTableDatas();
-                    $('#overlay').hide();
-                },
-                error: function(xhr, status, error) {
-                    //console.log("Error getting Categories ! \n", xhr, status, error);
-                    $('#overlay').hide();
-                }
-            });
+                Swal.fire({
+                    position: "bottom-end",
+                    icon: response.messageType === 'success' ? "success" : "error",
+                    title: response.message,
+                    showConfirmButton: false,
+                    timer: response.messageType === 'success' ? 4000 : 2500
+                });
+
+
+                listTableDatas();
+                $('#overlay').hide();
+            },
+            error: function(xhr, status, error) {
+                //console.log("Error getting Categories ! \n", xhr, status, error);
+                $('#overlay').hide();
+            }
+        });
     });
 
     $('#frm_add_customer').parsley();
