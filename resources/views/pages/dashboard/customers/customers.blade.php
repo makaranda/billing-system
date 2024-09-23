@@ -761,7 +761,7 @@
     });
 
     CKEDITOR.replace( 'email_body' );
-    
+
     $.fn.datepicker.dates["en"] = {
         days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
         daysShort: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
@@ -817,6 +817,7 @@
 
 
     function showCustomerProfile(id){
+
         $('#customerProfileModal').modal('show');
 
     }
