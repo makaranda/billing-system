@@ -23,6 +23,8 @@ use App\Models\Branches;
 use App\Models\CustomerGroup;
 use App\Models\Currencies;
 use App\Models\Territories;
+use App\Models\CustomerTransactions;
+use App\Models\AcAccounts;
 
 class CusCustomersController extends Controller
 {
@@ -295,6 +297,10 @@ class CusCustomersController extends Controller
         return response()->json($responseData);
     }
 
+    // public function getEmailDetailsCustomer(Request $request){
+
+    // }
+
     public function editCustomer(Request $request,$cat_id){
         //ProductCategories MiniPosConfigurations AcAccounts
         $getDatas = Customers::find($request->id);
@@ -354,6 +360,114 @@ class CusCustomersController extends Controller
         ];
         //echo $message;
         return response()->json($responseData);
+    }
+
+    public function fetchStatementCustomer(Request $request,$cus_id){
+        $getCurrencies = Currencies::where('is_base',1)
+                                    ->where('status',1)
+                                    ->first();
+
+        $getCustomers = Customers::where('id', $cus_id)
+                                ->where('status', 1)
+                                ->first();
+
+        $getAccounts = AcAccounts::where('control_type','debtors_control')
+                                ->where('status', 1)
+                                ->first();
+
+        $getCustomerTransactions = CustomerTransactions::where('customer_id', $cus_id)
+                                ->where('status', 1)
+                                ->where('nominal_account_id',$getAccounts->id)
+                                ->get();
+        $responses = '';
+        $responses .= '<table class="table table-hover" width="100%">
+		    <tr>
+				<td colspan="3"><strong>CUSTOMER: </strong>'.strtoupper($getCustomers->code." - ".$getCustomers->company).'</td>
+		    	<td align="right" colspan="3"><strong>CREDIT LIMIT: </strong>'.$getCurrencies->symbol." ".number_format($getCustomers->credit_limit,2).'</td>
+		    </tr>
+		    <tr>
+		    	<td colspan="6"><strong>ADDRESS: </strong>'.strtoupper($getCustomers->address).'</td>
+		    </tr>
+		    <tr>
+		    	<td colspan="3"><strong>TELEPHONE: </strong>'.strtoupper($getCustomers->telephone).'</td>
+		    	<td colspan="3"><strong>EMAIL: </strong>'.strtolower($getCustomers->email).''.$getAccounts->id.'</td>
+		    </tr>
+		    <tr>
+		    	<td colspan="6">&nbsp;</td>
+		    </tr>
+			<tr>
+			<td width="20%"><strong>DATE</strong></td>
+			<td width="15%"><strong>TRANSACTION</strong></td>
+			<td width="15%"><strong>REFERENCE</strong></td>
+			<td width="15%" align="right"><strong>DEBITS</strong></td>
+			<td width="15%" align="right"><strong>CREDITS</strong></td>
+			<td width="20%" align="right"><strong>BALANCE</strong></td>';
+
+        $refLink = '';
+        if ($getCustomerTransactions->count() > 0) {
+
+            foreach ($getCustomerTransactions as $key => $customerTransaction) {
+
+                $getAllRoutePermisssions = RoutesPermissions::where('user_id', Auth::user()->id)->get();
+
+                $currentRoute = request()->route()->getName();
+                $parentRoute = 'index.'.explode('.', $currentRoute)[0].'';
+
+                $canReport = $getAllRoutePermisssions->contains(function ($permission) use ($currentRoute, $parentRoute) {
+                    return $permission->permission_type == 'print' && ($permission->route == $currentRoute || $permission->route == $parentRoute);
+                });
+
+                if ($customerTransaction->created_by > 0 && $canReport == 1) {
+                    $link = '#';
+
+                    if (in_array($customerTransaction->transaction_type, ['invoice', 'cash_sale', 'proforma'])) {
+                        if ($customerTransaction->source_reference > 0) {
+                            $link = route('cuscustomers.getcustomersreports', ['billing', 'invoice', $customerTransaction->source_reference]);
+                        }
+                    } elseif ($customerTransaction->transaction_type == 'advanced_payment') {
+                        // Handle advanced payment if needed
+                    } elseif ($customerTransaction->transaction_type == 'customer_receipt') {
+                        $link = route('cuscustomers.getcustomersreports', ['customers', 'customer-receipt', $customerTransaction->source_reference]);
+                    } elseif ($customerTransaction->transaction_type == 'credit_note') {
+                        $link = route('cuscustomers.getcustomersreports', ['customers', 'customer-credit-note', $customerTransaction->source_reference]);
+                    } elseif ($customerTransaction->transaction_type == 'debit_note') {
+                        $link = route('cuscustomers.getcustomersreports', ['customers', 'customer-debit-note', $customerTransaction->source_reference]);
+                    } elseif ($customerTransaction->transaction_type == 'cash_refund') {
+                        $link = route('cuscustomers.getcustomersreports', ['customers', 'customer-receipt', $customerTransaction->source_reference]);
+                    }
+
+                    // Ensure that $refLink is initialized before concatenating
+                    if (!isset($refLink)) {
+                        $refLink = '';
+                    }
+
+                    if ($link != '#') {
+                        $refLink .= '<a href="' . $link . '" target="_blank">' . str_pad($customerTransaction->transaction_reference, 6, '0', STR_PAD_LEFT) . '</a>';
+                    } else {
+                        $refLink .= str_pad($customerTransaction->transaction_reference, 6, '0', STR_PAD_LEFT);
+                    }
+                } else {
+                    if (!isset($refLink)) {
+                        $refLink = '';
+                    }
+                    $refLink .= str_pad($customerTransaction->transaction_reference, 6, '0', STR_PAD_LEFT);
+                }
+
+
+                $responses .= '<tr>
+                                <td>'.$customerTransaction->transaction_date.' | '. $customerTransaction->effective_date.'</td>
+                                <td>'.strtoupper($customerTransaction->transaction_type).'</td>
+                                <td>'.$refLink.'</td>
+                                <td align="right">'.number_format($customerTransaction->debits,2).'</td>
+                                <td align="right">'.number_format($customerTransaction->credits,2).'</td>
+                                <td align="right">'.number_format($customerTransaction->customer_balance,2).'</td>
+                            </tr>';
+
+                echo $responses;
+            }
+        }else{
+                echo '<h4>No Datas found in the system !</h4>';
+        }
     }
 
     public function fetchCustomers(Request $request){

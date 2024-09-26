@@ -117,6 +117,8 @@ use App\Http\Controllers\dashboard\settings\CollectionBureausController;
 use App\Http\Controllers\dashboard\settings\TerritoriesController;
 use App\Http\Controllers\dashboard\settings\SetEmployeeOtFactorController;
 
+use App\Http\Controllers\dashboard\ReportsController;
+
 use App\Http\Controllers\dashboard\MenusController;
 
 /*
@@ -185,7 +187,6 @@ Route::group(['prefix' => '/'], function () {
             Route::get('/', [CustomersController::class, 'index'])->name('index.customers');
             Route::get('/attachements', [CusAttachementsController::class, 'index'])->name('index.cusattachements');
             Route::get('/debtors', [CusDebtorsController::class, 'index'])->name('index.cusdebtors');
-            Route::get('/customer-receipts', [CusCustomerReceiptsController::class, 'index'])->name('index.cuscustomerreceipts');
             Route::get('/creditnotes', [CusCreditNotesController::class, 'index'])->name('index.cuscreditnotes');
             Route::get('/allocate-customer-receipt', [CusAllocateCustomerReceiptController::class, 'index'])->name('index.cusallocatecustomerreceipt');
             Route::get('/corrections', [CusCorrectionsController::class, 'index'])->name('index.cuscorrections');
@@ -194,9 +195,21 @@ Route::group(['prefix' => '/'], function () {
             Route::get('/wht-cetificates', [CusWhtCetificatesController::class, 'index'])->name('index.cuswhtcetificates');
             Route::get('/fiscal-receipt-upload', [CusWhtCetificatesController::class, 'index'])->name('index.fiscalreceiptupload');
 
+            Route::group(['prefix' => 'customer-receipts', 'middleware' => 'role:admin'], function () {
+                Route::get('/', [CusCustomerReceiptsController::class, 'index'])->name('index.cuscustomerreceipts');
+                Route::get('/fetch-customer-receipts', [CusCustomerReceiptsController::class, 'fetchCustomerReceipts'])->name('cuscustomerreceipts.fetchcustomerreceipts');
+                Route::get('/{pro_id}/edit-customer-receipt', [CusCustomerReceiptsController::class, 'editCustomerReceipt'])->name('cuscustomerreceipts.editcustomerreceipt');
+                Route::post('/add-new-customer-receipt', [CusCustomerReceiptsController::class, 'addCustomerReceipt'])->name('cuscustomerreceipts.addcustomerreceipt');
+                Route::post('/{pro_id}/update-customer-receipt', [CusCustomerReceiptsController::class, 'updateCustomerReceipt'])->name('cuscustomerreceipts.updatecustomerreceipt');
+                Route::post('/{pro_id}/delete-customer-receipt', [CusCustomerReceiptsController::class, 'deleteCustomerReceipt'])->name('cuscustomerreceipts.deletecustomerreceipt');
+            });
+
             Route::group(['prefix' => 'customers', 'middleware' => 'role:admin'], function () {
                 Route::get('/', [CusCustomersController::class, 'index'])->name('index.cuscustomers');
                 Route::get('/fetch-customers', [CusCustomersController::class, 'fetchCustomers'])->name('cuscustomers.fetchcustomers');
+                Route::get('/reports/{report_type}/{report_name}/{ref_id}', [ReportsController::class, 'getCustomersReport'])->name('cuscustomers.getcustomersreports');
+                Route::get('/{cus_id}/fetch-customer-statement', [CusCustomersController::class, 'fetchStatementCustomer'])->name('cuscustomers.fetchstatementcustomer');
+                Route::get('/get-email-details', [SettingsController::class, 'getEmailDetails'])->name('cuscustomers.getemaildetailscustomer');
                 Route::get('/{pro_id}/edit-customer', [CusCustomersController::class, 'editCustomer'])->name('cuscustomers.editcustomer');
                 Route::post('/add-new-customer', [CusCustomersController::class, 'addCustomer'])->name('cuscustomers.addcustomer');
                 Route::post('/{pro_id}/update-customer', [CusCustomersController::class, 'updateCustomer'])->name('cuscustomers.updatecustomer');
@@ -293,7 +306,7 @@ Route::group(['prefix' => '/'], function () {
             Route::group(['prefix' => 'bank-deposit-types', 'middleware' => 'role:admin'], function () {
                 Route::get('/', [BankdePosittypesController::class, 'index'])->name('index.bankdeposittypes');
                 Route::get('/fetch-bank-deposit-types', [BankdePosittypesController::class, 'fetchBankDepositTypes'])->name('bankdeposittypes.fetchbankdeposittypes');
-                Route::get('/{pro_id}/edit-bank-deposit-type', [BankdePosittypesController::class, 'editBankDepositType'])->name('cuscustomers.editcustomer');
+                Route::get('/{pro_id}/edit-bank-deposit-type', [BankdePosittypesController::class, 'editBankDepositType'])->name('bankdeposittypes.editbankdeposittype');
                 Route::post('/add-new-bank-deposit-type', [BankdePosittypesController::class, 'addBankDepositType'])->name('bankdeposittypes.addbankdeposittype');
                 Route::post('/{pro_id}/update-bank-deposit-type', [BankdePosittypesController::class, 'updateBankDepositType'])->name('bankdeposittypes.updatebankdeposittype');
                 Route::post('/{pro_id}/delete-bank-deposit-type', [BankdePosittypesController::class, 'deleteBankDepositType'])->name('bankdeposittypes.deletebankdeposittype');

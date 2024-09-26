@@ -719,13 +719,13 @@
               <input type="hidden" id="format_id" name="format_id" />
               <input type="hidden" id="format_type" name="format_type" />
               <input type="hidden" name="file_name" id="file_name">
-                <input type="hidden" name="customer_id" id="customer_id">
+              <input type="hidden" name="customer_id" id="customer_id">
             </div>
             <div class="modal-footer d-block">
                 <div class="row">
                     <div class="col-md-6 pl-0">
                         <div class="form-group">
-                            <button type="button" class="btn btn-default form-control" data-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-default form-control" data-bs-dismiss="modal">Cancel</button>
 
                         </div>
                     </div>
@@ -814,12 +814,36 @@
             audioElement.pause();
         }
     }
-
-
     function showCustomerProfile(id){
 
-        $('#customerProfileModal').modal('show');
+        $('#overlay').show();
 
+        let updateUrl = '{{ route("cuscustomers.fetchstatementcustomer", ":id") }}';
+        updateUrl = updateUrl.replace(':id', id);
+
+        $.ajax({
+                url : updateUrl,
+                cache: false,
+                data: { _token: '{{ csrf_token() }}','order':'ASC'},
+                type: 'GET',
+                success : function(data) {
+                    //console.log('Success: '+data);
+
+                    $('#overlay').hide();
+                    $('#customerProfileModal modal-body').html(data);
+
+                    $('#customerProfileModal').modal('show');
+                },
+                error: function(xhr, status, error) {
+                    //console.log("Error getting Categories ! \n", xhr, status, error);
+                    $('#overlay').hide();
+                }
+        });
+
+    }
+
+    function showCustomerProfile(id){
+        $('#customerProfileModal').modal('show');
     }
 
     function viewCustomerStatement(id = null, email = null){
@@ -829,7 +853,30 @@
     }
 
     function viewActivity(id){
-        $('#viewStatementModal').modal('show');
+
+        $('#overlay').show();
+
+        let updateUrl = '{{ route("cuscustomers.fetchstatementcustomer", ":id") }}';
+        updateUrl = updateUrl.replace(':id', id);
+
+        $.ajax({
+                url : updateUrl,
+                cache: false,
+                data: { _token: '{{ csrf_token() }}','order':'ASC'},
+                type: 'GET',
+                success : function(data) {
+                    //console.log('Success: '+data);
+
+                    $('#overlay').hide();
+                    $('#viewStatementModal .modal-body').html(data);
+
+                    $('#viewStatementModal').modal('show');
+                },
+                error: function(xhr, status, error) {
+                    //console.log("Error getting Categories ! \n", xhr, status, error);
+                    $('#overlay').hide();
+                }
+        });
     }
 
 
@@ -837,41 +884,51 @@
 		loadCustomerStatement();
 	});
 
-	$('#btn_statementemail').click(function(){
-		//$('#customerStatementEmailModal').modal('show');
+	$('#btn_statementemail').click(function() {
         $('#overlay').show();
         var customerId = $(this).attr('data-cus-id');
         var customerEmail = $(this).attr('data-email');
 
-        let updateUrl = '{{ route("cuscustomers.editcustomer", ":id") }}';
+        // Corrected route name
+        let updateUrl = '{{ route("cuscustomers.getemaildetailscustomer", ":id") }}';
         updateUrl = updateUrl.replace(':id', customerId);
 
         $.ajax({
-            url : updateUrl,
+            url: updateUrl,
             cache: false,
-            data: {' _token': '{{ csrf_token() }}','cus_id':customerId,'cus_email':customerEmail},
+            data: {
+                '_token': '{{ csrf_token() }}',
+                'type': 'send_statement',
+                'customer_id': customerId,
+                'cus_email': customerEmail
+            },
             type: 'GET',
             dataType: 'json',
-            success : function(response) {
-                //console.log("Error getting Product !"+response);
-                if(response.customers.id != ''){
+            success: function(response) {
+                //console.log(response.message_format);
+                 if (response.customers.id != '') {
+                     $('#customerStatementEmailModal #email_subject').val(response.email_message.name);
+                     $('#customerStatementEmailModal #to_email').val(response.customers.email);
+                     $('#customerStatementEmailModal #cc_email').val('');
+                     $('#customerStatementEmailModal #c_mobile').val('');
+                     CKEDITOR.instances.email_body.setData(response.email_message);
 
-                    $('#customerStatementEmailModal #email_subject').val(response.customers.code);
-                    $('#customerStatementEmailModal #to_email').val(response.customers.company);
-                    $('#customerStatementEmailModal #cc_email').val(response.customers.telephone);
-                    $('#customerStatementEmailModal #c_mobile').val(response.customers.mobile);
+                     $('#customerStatementEmailModal #format_id').val(response.message_format.id);
+                     $('#customerStatementEmailModal #format_type').val(response.message_format.type);
+                     $('#customerStatementEmailModal #file_name').val(response.message_format.name);
+                     $('#customerStatementEmailModal #customer_id').val(customerId);
 
-                    $('#customerStatementEmailModal').modal('show');
-                }
-
+                     $('#customerStatementEmailModal').modal('show');
+                 }
+                $('#customerStatementEmailModal').modal('show');
                 $('#overlay').hide();
             },
             error: function(response) {
-                //console.log("Error All ! \n"+response);
                 $('#overlay').hide();
             }
         });
-	});
+    });
+
 
 
     $('#deleteRecordForm').parsley();
@@ -1074,6 +1131,7 @@
             }
         });
     }
+
 
     listTableDatas();
 
