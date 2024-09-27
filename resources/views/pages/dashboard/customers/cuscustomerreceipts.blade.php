@@ -265,7 +265,7 @@
 										<div class="col-md-6">
 											<label for="payment_date">Receipt Date</label>
 											<div class="input-group" id="datepicker1">
-											    <input type="text" class="form-control" id="payment_date" name="payment_date" value="<?php echo $WORKING_DATE;?>" required />
+											    <input type="text" class="form-control" id="payment_date" name="payment_date" value="{{ WORKING_DATE }}" required />
 											    <span class="input-group-addon">
 												<span class="glyphicon glyphicon-calendar"></span>
 											    </span>
@@ -313,17 +313,9 @@
 												<label class="control-label">Account Holder's Bank</label>
 												<select name="account_holder_bank" id="account_holder_bank" class="form-control" required="required" disabled="disabled">
 												<option value="">- Select Bank -</option>
-												<?php
-												$datavalues = new dataValues();
-												$datavalues->status = 1;
-												$datavalues->order = " name ASC";
-												$banks = $bank_class->get_banks($datavalues);
-												if(isset($banks['result']) && $banks['result']==true){
-													foreach($banks['result'] as $bank){
-														echo '<option value="'.$bank['id'].'">'.$bank['name'].'</option>';
-													}
-												}
-												?>
+                                                @foreach ($getAllBanks as $bank)
+                                                    <option value="{{ $bank->id }}">{{ $bank->name }}</option>
+                                                @endforeach
 												</select>
 											</div>
 										</div>
@@ -334,15 +326,9 @@
 										<div class="col-md-6">
 											<label>Currency</label>
 											<select name="currency_id" id="currency_id" class="form-control" required="required">
-											<?php
-											$datavalues = new dataValues();
-											$datavalues->status = 1;
-											$datavalues->order = " is_base DESC";
-											$currencies = $currency_class->getCurrencies($datavalues);
-											foreach($currencies as $currency){
-												echo '<option value="'.$currency['id'].'">'.$currency['code'].'</option>';
-											}
-											?>
+                                                @foreach ($getAllcurrencies as $currency)
+                                                    <option value="{{ $currency->id }}">{{ $currency->code }}</option>
+                                                @endforeach
 											</select>
 										</div>
 										<div class="col-md-6">
@@ -350,7 +336,7 @@
 												<label>Exchange Value</label>
 												<div class="input-group">
 													<input type="text" class="form-control" name="exchange_value" id="exchange_value" required="required" readonly="readonly" value="1" aria-describedby="exchange-addon">
-													<span class="input-group-addon" id="exchange-addon" <?php if($can_delete==1) echo 'onclick="enable_exchange_value();"';?>><span class="glyphicon glyphicon-user"></span></span>
+													<span class="input-group-addon" id="exchange-addon" <?php //if($can_delete==1) echo 'onclick="enable_exchange_value();"';?>><span class="glyphicon glyphicon-user"></span></span>
 												</div>
 												</select>
 											</div>
@@ -365,7 +351,7 @@
 										</div>
 										<div class="col-md-6">
 											<div class="form-group">
-												<label>Effected Amount (<?php echo $CURRENCY_SYMBOL;?>)</label>
+												<label>Effected Amount ({{ $getCurrencySymbol }})</label>
 												<input type="text" class="form-control" name="effected_payment" id="effected_payment" required>
 											</div>
 										</div>
@@ -376,17 +362,9 @@
 												<label class="control-label required">Bank Account</label>
 												<select class="form-control" id="bank_account" name="bank_account" required="required">
 													<option value="">- Select Bank Account -</option>
-													<?php
-													$datavalues = new dataValues();
-													$datavalues->status = 1;
-													$datavalues->order = " account_name ASC";
-													$bank_accounts = $bank_account_class->getBankAccounts($datavalues);
-													if(isset($bank_accounts['result']) && $bank_accounts['result']){
-														foreach($bank_accounts['result'] as $bank_account){
-															echo '<option value="'.$bank_account['id'].'">'.$bank_account['account_name']." - ".$bank_account['account_code'].'</option>';
-														}
-													}
-													?>
+                                                    @foreach ($getAllBankAccounts as $bankAccount)
+                                                        <option value="{{ $bankAccount->id }}">{{ $bankAccount->account_name.' - '.$bankAccount->account_code }}</option>
+                                                    @endforeach
 												</select>
 											</div>
 										</div>

@@ -143,3 +143,6 @@ define('CONST_DELIVERY_SOURCES',[
 	'Other'=>'Other'
 ]);
 
+
+define('WORKING_DATE',''.date("Y-m-d").'');
+

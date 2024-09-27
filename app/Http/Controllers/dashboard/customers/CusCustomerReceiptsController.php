@@ -27,6 +27,7 @@ use App\Models\CustomerTransactions;
 use App\Models\AcAccounts;
 use App\Models\BankAccounts;
 use App\Models\CardTypes;
+use App\Models\Banks;
 
 class CusCustomerReceiptsController extends Controller
 {
@@ -77,6 +78,8 @@ class CusCustomerReceiptsController extends Controller
         $getAllterritories = Territories::where('status', 1)->get();
         $getAllBankAccounts = BankAccounts::where('status', 1)->get();
         $getAllCardTypes = CardTypes::where('status', 1)->get();
+        $getAllBanks = Banks::where('status', 1)->get();
+        $getCurrencySymbol = Currencies::where('status', 1)->where('is_base', 1)->get();
 
         $currentRoute = request()->route()->getName();
         $parentRoute = 'index.' . explode('.', $currentRoute)[0];
@@ -103,7 +106,7 @@ class CusCustomerReceiptsController extends Controller
         if($countCheckThisRoutes == 0){
             return redirect()->route('admin.dashboard')->with('error', 'You do not have permission to access this route.');
         }else{
-            return view('pages.dashboard.customers.cuscustomerreceipts', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','getAllRoutePermisssions','routepermissions','getAllBankAccounts','getAllCardTypes'));
+            return view('pages.dashboard.customers.cuscustomerreceipts', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','getAllRoutePermisssions','routepermissions','getAllBankAccounts','getAllCardTypes','getAllBanks','getAllcurrencies','getCurrencySymbol'));
         }
     }
 }
