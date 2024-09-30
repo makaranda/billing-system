@@ -21,6 +21,7 @@ use App\Models\Currencies;
 use App\Models\CustomerTransactions;
 use App\Models\AcAccountSubCategories;
 use App\Models\AcAccounts;
+use App\Models\DefaultPaymentBank;
 
 class BankAccountsController extends Controller
 {
@@ -103,6 +104,59 @@ class BankAccountsController extends Controller
         }
     }
 
+
+    public function getDefaultBankPaymentMethod(Request $request){
+        $query = DefaultPaymentBank::query()
+        ->join('currencies', 'currencies.id', '=', 'default_payment_banks.currency_id')
+        ->join('bank_accounts', 'bank_accounts.id', '=', 'default_payment_banks.bank_account_id')
+        ->leftJoin('card_types', 'card_types.id', '=', 'default_payment_banks.card_type_id')
+        ->select('default_payment_banks.*', 'currencies.name as currency_name',
+                 'bank_accounts.account_name', 'bank_accounts.account_no',
+                 'card_types.name as card_type_name');
+
+            // Apply filters
+            if ($request->filled('id')) {
+                $query->where('default_payment_banks.id', $request->id);
+            }
+
+            if ($request->filled('payment_method')) {
+                $query->where('default_payment_banks.payment_method', $request->payment_method);
+            }
+
+            if ($request->filled('currency_id')) {
+                $query->where('default_payment_banks.currency_id', $request->currency_id);
+            }
+
+            if ($request->filled('card_type_id')) {
+                $query->where('default_payment_banks.card_type_id', $request->card_type_id);
+            }
+
+            if ($request->filled('bank_account_id')) {
+                $query->where('default_payment_banks.bank_account_id', '>=', $request->bank_account_id);
+            }
+
+            // Get count before applying limit or ordering
+            $count = $query->count();
+
+            // Apply ordering
+            if ($request->filled('order')) {
+                $query->orderByRaw($request->order);
+            }
+
+            // Apply limit if specified
+            if ($request->filled('limit')) {
+                $query->limit($request->limit);
+            }
+
+            // Execute query
+            $result = $query->get();
+
+            // Return the data in JSON format
+            return response()->json([
+                'count' => $count,
+                'result' => $result
+            ]);
+    }
 
     public function addBankAccount(Request $request){
         $messageType = '';

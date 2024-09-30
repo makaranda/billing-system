@@ -16,6 +16,8 @@ if (!function_exists('isChecked')) {
 
 if (!function_exists('getUserIP')) {
     function getUserIP() {
+
+        //session(['url.intended' => url()->previous()]);
         // Check if user is behind a proxy
         if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
             // IP from shared internet
@@ -30,5 +32,12 @@ if (!function_exists('getUserIP')) {
         return $ip;
     }
 }
+
+// if (!function_exists('storeIntendedUrl')) {
+//     function storeIntendedUrl() {
+//         // Store the current URL in the session
+//         session(['url.intended' => url()->previous()]);
+//     }
+// }
 
 ?>

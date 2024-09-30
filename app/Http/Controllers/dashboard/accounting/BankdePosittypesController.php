@@ -258,17 +258,18 @@ class BankdePosittypesController extends Controller
         $responses = '';
 
         if ($fetchTableDetails->count() > 0) {
-            $responses .= '
-
-                            <small class="p-2"><table class="table table-stripped table-hover" width="100%"><thead>
-			                <tr>
-                                <td align="left"><strong>#</strong></td>
-                                <td align="left"><strong>Category</strong></td>
-                                <td align="left"><strong>Deposit Type</strong></td>
-                                <td align="left"><strong>Action</strong></td>
-                            </tr>
-                            </thead>
-		                    <tbody>';
+            $responses .= '	<table class="table">
+                                <tr>
+                                    <th><small>No.</small></th>
+                                    <th><small>Receipt No.</small></th>
+                                    <th><small>Date</small></th>
+                                    <th><small>Pay Method</small></th>
+                                    <th><small>Customer</small></th>
+                                    <th><small>Bank Account</small></th>
+                                    <th><small>Amount</small></th>
+                                    <th><small>Reference</small></th>
+                                    <th class="noprint"><small>Action</small></th>
+                                </tr>';
             $i=1;
             foreach ($fetchTableDetails as $key => $fetchDetail) {
                 //$userPrivileges = UserPrivileges::find($fetchDetail->privilege);

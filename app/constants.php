@@ -146,3 +146,4 @@ define('CONST_DELIVERY_SOURCES',[
 
 define('WORKING_DATE',''.date("Y-m-d").'');
 
+define('CURRENCY_ID',1);

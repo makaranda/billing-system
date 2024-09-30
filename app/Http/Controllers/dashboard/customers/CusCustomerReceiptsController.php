@@ -24,6 +24,7 @@ use App\Models\CustomerGroup;
 use App\Models\Currencies;
 use App\Models\Territories;
 use App\Models\CustomerTransactions;
+use App\Models\CustomerPayments;
 use App\Models\AcAccounts;
 use App\Models\BankAccounts;
 use App\Models\CardTypes;
@@ -109,4 +110,84 @@ class CusCustomerReceiptsController extends Controller
             return view('pages.dashboard.customers.cuscustomerreceipts', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','getAllRoutePermisssions','routepermissions','getAllBankAccounts','getAllCardTypes','getAllBanks','getAllcurrencies','getCurrencySymbol'));
         }
     }
+
+    public function getConvertedPaymentAmount(Request $request){
+
+    }
+
+    public function getCustomerReceiptsHistory(Request $request){
+
+    }
+
+    public function editCustomerReceipt(Request $request,$cus_id){
+
+        $getDatas = CustomerPayments::find($request->id);
+        //$departments = Departments::all();
+        //$departmentHeads = DepartmentHeads::all();
+
+        if (!$getDatas) {
+            return response()->json(['error' => 'Customers Payments are not found'], 404);
+        }
+        $responseData = [
+            'customer_payments' => $getDatas
+        ];
+
+        return response()->json($responseData);
+
+    }
+
+    public function fetchCustomerReceipts(Request $request){
+
+        $query = CustomerPayments::query();
+        //$getAllRoutePermisssions = AcAccounts::all();
+        //s_code s_name s_status s_type
+        if ($request->has('receipt_no') && $request->receipt_no != '') {
+            $query->where('receipt_no', 'LIKE', '%' . $request->receipt_no . '%');
+        }
+        if ($request->has('method') && $request->method != '') {
+            $query->where('method', '=', '' . $request->method . '');
+        }
+        if ($request->has('from_date') && $request->from_date != '') {
+            $query->where('date', '>=', '' . $request->from_date . '');
+        }
+        if ($request->has('to_date') && $request->to_date != '') {
+            $query->where('date', '<=', '' . $request->to_date . '');
+        }
+        if ($request->has('customer_id') && $request->customer_id != '') {
+            $query->where('customer_id', '=', '' . $request->customer_id . '');
+        }
+        if ($request->has('bank_account_id') && $request->bank_account_id != '') {
+            $query->where('bank_account_id', '=', '' . $request->bank_account_id . '');
+        }
+        if ($request->has('is_posted') && $request->is_posted == 1) {
+            $query->where('is_posted', '=', 1);
+        }else{
+            if($request->page > 1){
+                $query->where('is_posted', '=', 1);
+            }else{
+                $query->where('is_posted', '=', 0);
+            }
+        }
+        if ($request->has('is_allocated') && $request->is_allocated != '') {
+            $query->where('is_allocated', '=', '' . $request->is_allocated . '');
+        }
+
+        $query->WHERE('status', 1);
+        $query->orderBy('receipt_no', 'DESC'); // Default ordering receipt_no DESC
+
+        $fetchTableDetails = $query->get();
+        //$fetchTableDetails = Currencies::all();
+
+        $responses = '';
+
+        $debit_total = 0;
+        $credit_total = 0;
+
+        $fetchTableDetails = $query->paginate(100);
+        $responses = view('pages.dashboard.customers.tables.customers_receipt_table', compact('fetchTableDetails'))->render();
+
+        return response()->json(['html' => $responses,'is_posted' => $request->is_posted]);
+    }
+
+
 }

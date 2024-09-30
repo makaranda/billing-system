@@ -199,8 +199,17 @@ input:focus {
 }
 
 .form-group {
-    padding: 15px 0;
+    padding: 6px 0;
 }
+
+span.input-group-addon {
+    background-color: #fff;
+}
+
+.cursor-pointer{
+    cursor: pointer !important;
+}
+
 .row>* {
     padding-right: 15px;
     padding-left: 15px;
@@ -289,3 +298,7 @@ hr {
 .tb-w-300{width: 300px;}
 
 .tbl-bg-color1 td{background-color: #b1b1b1;}
+
+.tbl_row_width{
+    width: 40px !important;
+}

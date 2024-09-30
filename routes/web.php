@@ -197,7 +197,10 @@ Route::group(['prefix' => '/'], function () {
 
             Route::group(['prefix' => 'customer-receipts', 'middleware' => 'role:admin'], function () {
                 Route::get('/', [CusCustomerReceiptsController::class, 'index'])->name('index.cuscustomerreceipts');
-                Route::get('/fetch-customer-receipts', [CusCustomerReceiptsController::class, 'fetchCustomerReceipts'])->name('cuscustomerreceipts.fetchcustomerreceipts');
+                Route::get('/get-customer-receipts-history', [CusCustomerReceiptsController::class, 'fetchCustomerReceipts'])->name('cuscustomerreceipts.getcustomerreceiptshistory');
+                Route::get('/get-converted-payment-amount', [CusCustomerReceiptsController::class, 'getCustomerReceiptsHistory'])->name('cuscustomerreceipts.getconvertedpaymentamount');
+                Route::get('/get-converted-payment-amount', [CusCustomerReceiptsController::class, 'getConvertedPaymentAmount'])->name('cuscustomerreceipts.getconvertedpaymentamount');
+                Route::get('/get-default-bank-payment-method', [BankAccountsController::class, 'getDefaultBankPaymentMethod'])->name('cuscustomerreceipts.getdefaultbankpaymentmethod');
                 Route::get('/{pro_id}/edit-customer-receipt', [CusCustomerReceiptsController::class, 'editCustomerReceipt'])->name('cuscustomerreceipts.editcustomerreceipt');
                 Route::post('/add-new-customer-receipt', [CusCustomerReceiptsController::class, 'addCustomerReceipt'])->name('cuscustomerreceipts.addcustomerreceipt');
                 Route::post('/{pro_id}/update-customer-receipt', [CusCustomerReceiptsController::class, 'updateCustomerReceipt'])->name('cuscustomerreceipts.updatecustomerreceipt');

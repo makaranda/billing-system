@@ -236,8 +236,8 @@
       <div class="modal-body">
       	<div class="row">
 			<div class="col-md-12">
-				<div class="panel panel-default">
-					<div class="panel-heading">ADD RECEIPTS |
+				<div class="card">
+					<div class="card-header">ADD RECEIPTS |
 						<?php if(isset($customer_code)) echo $customer_code." - ";?>
 						<?php if(isset($customer_name)) echo $customer_name;?>
 
@@ -245,9 +245,9 @@
 							<button type="submit" class="btn btn-xs btn-danger" name="close_customer_receipts">Close</button>
 						</form>
 					</div>
-					<div class="panel-body">
-						<div class="panel panel-default">
-						<div class="panel-body">
+					<div class="card-body">
+						<div class="card">
+						<div class="card-body">
 							<form name="frm_add_payments" id="frm_add_payments" method="post">
 								<div class="row">
 									<div class="col-md-12">
@@ -264,7 +264,7 @@
 									<div class="row">
 										<div class="col-md-6">
 											<label for="payment_date">Receipt Date</label>
-											<div class="input-group" id="datepicker1">
+											<div class="input-group datepicker_field" id="datepicker1">
 											    <input type="text" class="form-control" id="payment_date" name="payment_date" value="{{ WORKING_DATE }}" required />
 											    <span class="input-group-addon">
 												<span class="glyphicon glyphicon-calendar"></span>
@@ -331,12 +331,21 @@
                                                 @endforeach
 											</select>
 										</div>
+                                        @if(isset($routepermissions['delete']) && $routepermissions['delete'] == 1)
+                                            @php
+                                                $exchange_addon = 'onclick="enable_exchange_value();"';
+                                            @endphp
+                                        @else
+                                            @php
+                                                $exchange_addon = '';
+                                            @endphp
+                                        @endif
 										<div class="col-md-6">
 											<div class="form-group">
 												<label>Exchange Value</label>
-												<div class="input-group">
+												<div class="input-group datepicker_field">
 													<input type="text" class="form-control" name="exchange_value" id="exchange_value" required="required" readonly="readonly" value="1" aria-describedby="exchange-addon">
-													<span class="input-group-addon" id="exchange-addon" <?php //if($can_delete==1) echo 'onclick="enable_exchange_value();"';?>><span class="glyphicon glyphicon-user"></span></span>
+													<span class="input-group-addon cursor-pointer"  id="exchange-addon" {!! $exchange_addon !!}><span class="glyphicon glyphicon-user"></span></span>
 												</div>
 												</select>
 											</div>
@@ -351,7 +360,7 @@
 										</div>
 										<div class="col-md-6">
 											<div class="form-group">
-												<label>Effected Amount ({{ $getCurrencySymbol }})</label>
+												<label>Effected Amount ({{ $getCurrencySymbol[0]['symbol']??$getCurrencySymbol[0]['symbol'] }})</label>
 												<input type="text" class="form-control" name="effected_payment" id="effected_payment" required>
 											</div>
 										</div>
@@ -507,6 +516,10 @@
 @push('scripts')
     <script>
     $(function () {
+        $("#payment_date").datepicker({
+            autoclose: true,
+            orientation: "bottom"
+        });
         $("#s_date_from").datepicker({
             autoclose: true,
             orientation: "bottom"
@@ -538,6 +551,306 @@
         titleFormat: "MM yyyy" /* Leverages same syntax as 'format' */,
         weekStart: 0,
     };
+
+//cuscustomerreceipts.fetchcustomerreceipts
+//cuscustomerreceipts.editcustomerreceipt
+//cuscustomerreceipts.addcustomerreceipt
+//cuscustomerreceipts.updatecustomerreceipt
+//cuscustomerreceipts.deletecustomerreceipt
+
+    function editCustomer(id){
+        $('#overlay').show();
+
+        $('#form_type').val('cuscustomerreceipts.editcustomerreceipt');
+        $('#edit_id').val(id);
+
+        let updateUrl = '{{ route("cuscustomerreceipts.editcustomerreceipt", ":id") }}';
+        updateUrl = updateUrl.replace(':id', id);
+
+        $.ajax({
+            url : updateUrl,
+            cache: false,
+            data: {' _token': '{{ csrf_token() }}','id':id},
+            type: 'GET',
+            dataType: 'json',
+            success : function(response) {
+                //console.log("Error getting Product !"+response);
+                $('#addReceiptModal').modal('show');
+                if(response.customer_payments.id != ''){
+
+                    $('#addCustomerModal #c_code').val(response.customer_payments.code);
+                    $('#addCustomerModal #c_company').val(response.customer_payments.company);
+                    $('#addCustomerModal #c_telephone').val(response.customer_payments.telephone);
+                    $('#addCustomerModal #c_mobile').val(response.customer_payments.mobile);
+                    $('#addCustomerModal #c_address').val(response.customer_payments.address);
+                    $('#addCustomerModal #c_email').val(response.customer_payments.email);
+                    $('#addCustomerModal #c_city').val(response.customer_payments.city);
+                    $('#addCustomerModal #c_postal_code').val(response.customer_payments.postal_code);
+                    $('#addCustomerModal #c_fax').val(response.customer_payments.fax);
+                    $('#addCustomerModal #c_territory_id').val(response.customer_payments.territory_id).change();
+                    $('#addCustomerModal #c_web').val(response.customer_payments.web_site);
+
+                }
+
+                listTableDatas();
+                $('#overlay').hide();
+            },
+            error: function(response) {
+                //console.log("Error All ! \n"+response);
+                $('#overlay').hide();
+            }
+        });
+    }
+
+
+    var selected_bank = "";
+
+$('#card_type').change(function(){
+	set_default_bank_selected();
+});
+
+var payment_method_handler = function(){
+	$('#auth_number').val("");
+	$('#reference').val("");
+	$('#reference_name').html("Reference");
+	$('#card_type').val("").change();
+	$('#account_holder_bank').val("").change();
+
+	$('#account_holder_bank').prop("disabled",true);
+	$('#auth_number').prop("disabled",true);
+	$('#card_type').prop("disabled",true);
+	$('#reference').prop("required",true);
+
+	var payment_method = $('#payment_method').val();
+	if(payment_method=='cash'){
+		$('#reference').prop("required",false);
+	}
+	else if(payment_method=='card'){
+		$('#auth_number').prop("disabled",false);
+		$('#card_type').prop("disabled",false);
+		$('#reference_name').html("Card No. <small> ( Last 4 Digits )</smal>");
+	}
+	else if(payment_method=='cheque'){
+		$('#account_holder_bank').prop("disabled",false);
+		$('#reference_name').html("Cheque No.");
+	}
+	else if( payment_method=='bank'){
+		$('#account_holder_bank').prop("disabled",false);
+		$('#reference_name').html("Holder's Account No.");
+	}
+	else if( payment_method=='WHT'){
+		$('#reference_name').html("WHT Certificate No.");
+	}
+	else if( payment_method=='LPO'){
+		$('#reference_name').html("LPO No.");
+	}
+
+	set_default_bank_selected();
+}
+$('#payment_method').bind("change",payment_method_handler);
+
+$('#currency_id').bind("change",currency_id_handler);
+
+
+$('#exchange_value, #payment_amount').bind ("keyup input propertychange", function (e) {
+	var exchange_value = $('#exchange_value').val();
+	var payment_amount = $('#payment_amount').val();
+
+	$('#effected_payment').val((parseFloat(0+exchange_value) * parseFloat(0+payment_amount)).toFixed(2));
+});
+
+$('#effected_payment').bind ("keyup input propertychange", function (e) {
+	var exchange_value = $('#exchange_value').val();
+	var effected_payment = $('#effected_payment').val();
+	if(exchange_value>0) {} else exchange_value = 1;
+
+	$('#payment_amount').val((parseFloat(0+effected_payment) / parseFloat(0+exchange_value)).toFixed(5));
+});
+
+function enable_exchange_value(){
+	$('#exchange_value').prop("readonly",!$('#exchange_value').prop("readonly"));
+}
+
+
+$('#btn_search').click(function(e){
+	var date_from = $('#s_date_from').val();
+	var date_to = $('#s_date_to').val();
+	var receipt_no = $('#s_receipt_no').val();
+	var pmethod = $('#s_pmethod').val();
+	var customer_id = $('#s_customer_id').val();
+	var bank_account_id = $('#s_bank_account_id').val();
+	var is_posted = $('#s_pposted').val();
+	var is_allocated = $('#s_pallocated').val();
+	var post_date_from = $('#s_post_date_from').val();
+	var post_date_to = $('#s_post_date_to').val();
+
+	listTableDatas(1, date_from, date_to, receipt_no, pmethod, customer_id, bank_account_id,is_posted,is_allocated, post_date_from, post_date_to);
+});
+
+$('#btn_reset').click(function(e){
+	$('#s_date_from').val("");
+	$('#s_date_to').val("");
+	$('#s_receipt_no').val("");
+	$('#s_pmethod').val("").change();
+	$('#s_customer_id').val("").change();
+	$('#s_bank_account_id').val("").change();
+	$('#s_type').val("").change();
+
+	listTableDatas();
+});
+
+$('#s_receipt_no').keyup(function(e){
+	if(e.keyCode == 13){
+		var date_from = $('#s_date_from').val();
+		var date_to = $('#s_date_to').val();
+		var receipt_no = $('#s_receipt_no').val();
+		var pmethod = $('#s_pmethod').val();
+		var customer_id = $('#s_customer_id').val();
+		var bank_account_id = $('#s_bank_account_id').val();
+		var is_posted = $('#s_pposted').val();
+		var is_allocated = $('#s_pallocated').val();
+		var post_date_from = $('#s_post_date_from').val();
+		var post_date_to = $('#s_post_date_to').val();
+
+		listTableDatas(1, date_from, date_to, receipt_no, pmethod, customer_id, bank_account_id,is_posted,is_allocated, post_date_from, post_date_to);
+	}
+});
+
+function clear_inputs(){
+	$("#btn_add_payment").html("ADD RECEIPT");
+	$('#edit_id').val("");
+	$('#payment_date').val("").change();
+	$('#payment_method').val("").change();
+	$('#reference').val("");
+	$('#card_type').val("").change();
+	$('#bank_account').val("").change();
+	$('#account_holder_bank').val("").change();
+	$('#auth_number').val("");
+	$('#payment_amount').val("0.00");
+	$('#effected_payment').val("0.00");
+	$('#exchange_value').val("1");
+	$('#currency_id').val($('#currency_id').find('option:first').val()).change();
+}
+
+
+var currency_id_handler = function(){
+	var currency_id = $('#currency_id').val();
+	var payment_amount = parseFloat(0+$('#payment_amount').val());
+	$.ajax({
+		url : "{{ route('cuscustomerreceipts.getconvertedpaymentamount') }}",
+		cache: false,
+		data: { 'currency_id':currency_id,'payment_amount':payment_amount },
+		type: 'POST',
+		success : function(data) {
+			// var json = JSON.parse(data);
+			// var converted_value = 0;
+			// var currency_value = 1;
+			// var currency_symbol = "*";
+
+			// if(json.converted_value && json.converted_value>0) converted_value = json.converted_value;
+			// if(json.currency_value && json.currency_value>0) currency_value = json.currency_value;
+			// if(json.currency_symbol) currency_symbol = json.currency_symbol;
+
+			if (currency_id == "{{ CURRENCY_ID ?? '' }}") {
+                // Uncomment and use the necessary lines based on your logic
+                // $('#payment_amount').val(converted_value.toFixed(2));
+                // $('#effected_payment').prop("readonly", true);
+                // $('#payment_amount').val(); // Note: If you're trying to set the value, this line might be unnecessary
+            } else {
+                // Uncomment and use the necessary lines based on your logic
+                // $('#payment_amount').val(converted_value.toFixed(5));
+                // $('#effected_payment').prop("readonly", false);
+            }
+
+			// $('#exchange_value').val(currency_value);
+			// $('#effected_payment').val((parseFloat(0+currency_value) * parseFloat(0+converted_value)).toFixed(2));
+			// $('#payment_currency_symbol').html("( "+currency_symbol+" )");
+		},
+		error: function(data) {
+			$('#errorMessage').html("Failed to get converted amount, Try again !");
+			$('#errorModal').modal();
+		}
+	});
+
+	set_default_bank_selected();
+}
+
+function set_default_bank_selected(){
+	var payment_method = $('#payment_method').val();
+	var currency_id = $('#currency_id').val();
+	var card_type = $('#card_type').val();
+
+	if(payment_method!="LPO" && payment_method!="lpo" && payment_method!="Lpo"){
+		if(currency_id!='' && currency_id!=null && currency_id>0){
+			$.ajax({
+				url : "{{ route('cuscustomerreceipts.getconvertedpaymentamount') }}",
+				cache: false,
+				data: { 'payment_method':payment_method,'currency_id':currency_id,'card_type':card_type },
+				type: 'POST',
+				success : function(data) {
+					// var json = JSON.parse(data);
+
+					// if(selected_bank && selected_bank>0) {
+					// 	$('#bank_account').val(selected_bank).change();
+					// 	selected_bank = "";
+					// }
+					// else {
+					// 	if(json.default_bank && json.default_bank>0) {
+					// 		$('#bank_account').val(json.default_bank).change();
+					// 	}
+					// 	else $('#bank_account').val("").change();
+					// }
+				},
+				error: function(data) {
+					$('#bank_account').val("").change();
+					$('#errorMessage').html(JSON.stringify(data));
+					$('#errorModal').modal();
+				}
+			});
+		}
+		else $('#bank_account').val("").change();
+	}
+	else $('#bank_account').val("").change();
+}
+    listTableDatas();
+
+    function listTableDatas(page=1, date_from=null, date_to=null, receipt_no=null, pmethod=null,customer_id=null, bank_account_id=null, is_posted=null, is_allocated=null, post_date_from=null, post_date_to=null) {
+        //alert();
+        //console.log("THIS");
+        $('#overlay').show();
+        $.ajax({
+                url : "{{ route('cuscustomerreceipts.fetchcustomerreceipts') }}",
+                cache: false,
+                data: { _token: '{{ csrf_token() }}','page':page, 'date_from':date_from, 'date_to':date_to, 'receipt_no':receipt_no,
+		'method':pmethod, 'customer_id':customer_id, 'bank_account_id':bank_account_id,'is_posted':is_posted, 'is_allocated':is_allocated,'post_date_from':post_date_from,'post_date_to':post_date_to,'order':'ASC'},
+                type: 'GET',
+                success : function(response) {
+                    //console.log('Success: '+data);
+                    $('#overlay').hide();
+                    $('#table_list').html(response.html);
+
+                    bindPaginationLinks();
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error getting data!", xhr, status, error);
+                    $('#overlay').hide();
+                }
+        });
+    }
+
+        // Function to handle pagination link clicks
+    function bindPaginationLinks() {
+        $(document).on('click', '.pagination a', function (e) {
+            e.preventDefault();
+            var page = $(this).attr('href').split('page=')[1]; // Get the page number
+            //listTableDatas(page,null, null, 0, null, 0, 0, 1,null,null,null);
+            listTableDatas(page);
+        });
+    }
+
+    // Call the function initially
+    bindPaginationLinks();
+
     </script>
 @endpush
 

@@ -55,6 +55,7 @@ class AdminLoginController extends Controller
 
                 if ($admin->status == 2 || $admin->status == 1) {
                     return redirect()->route('admin.dashboard');
+                    //return redirect()->intended(route('admin.dashboard'));
                 } else {
                     Auth::guard('admin')->logout();
                     return redirect()->route('login.index')->with('error', 'You are not Authorized to access user control area');
