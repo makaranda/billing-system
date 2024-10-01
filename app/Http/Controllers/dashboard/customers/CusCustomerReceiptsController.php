@@ -111,8 +111,146 @@ class CusCustomerReceiptsController extends Controller
         }
     }
 
+    public function addCustomerReceipt(Request $request){
+
+        $messageType = '';
+        $message = '';
+            // Validate the incoming request data payment_date payment_method  currency_id exchange_value payment_amount bank_account
+            $validator = Validator::make($request->all(), [
+                'payment_method' => 'required',
+                'currency_id' => 'required',
+                'payment_date' => 'required',
+                'exchange_value' => 'required',
+                'bank_account' => 'required',
+                'payment_amount' => 'required',
+            ]);
+
+        $getCurrenciesDatas = BankAccounts::where('id',$request->bank_account)->where('status',1)->first();
+
+        if($request->payment_method == 'wht'){
+            $getSequentialNumber = SequentialNumber::where('type','wht')->where('status',1)->first();
+        }else{
+            $getSequentialNumber = SequentialNumber::where('type','customer_receipt')->where('status',1)->first();
+        }
+
+        if(count($getSequentialNumber) == 0){
+            $last_number = 0;
+            $next_number = $getSequentialNumber->last_number + 1;
+
+            $proSequentialData = [
+                'prefix' => '',
+                'sufix' => '',
+                'last_number' => $next_number,
+                'numeric_length' => 8,
+                'type' => 'wht'
+            ];
+            $addSequentialDatas = new SequentialNumber();
+            $addSequentialDatas->fill($proSequentialData);
+            $addSequentialDatas->save();
+
+        }else{
+            $prefix = $getSequentialNumber->prefix;
+            $sufix = $getSequentialNumber->sufix;
+            $numeric_length = $getSequentialNumber->numeric_length;
+            $next_number = $getSequentialNumber->last_number;
+
+            $last_number = 0;
+            $next_number = $getSequentialNumber->last_number + 1;
+            $getSequentialData = SequentialNumber::where('type','=',''.$request->payment_method.'');
+
+            $proSequentialData = [
+                'prefix' => '',
+                'sufix' => '',
+                'last_number' => $next_number,
+                'numeric_length' => 8,
+                'type' => 'wht'
+            ];
+            $getSequentialData->update($proData);
+        }
+
+        $receipt_no = $prefix.str_pad($next_number,$numeric_length,'0',STR_PAD_LEFT).$sufix;
+
+        if ($validator->fails()) {
+            $messageType = 'error';
+            //$message = $validator->errors();
+            $message = 'All Fields are Required..!!';
+        }else{
+
+            $getCustomerPayments = CustomerPayments::where('type','wht')->where('status',1)->first();
+
+            if($getCurrenciesDatas->currency_id == $request->bank_account){
+                $proData = [
+                    'group_id' => $request->payment_method,
+                    'branch_id' => $request->currency_id,
+                    'code' => $request->payment_date,
+                    'category_id' => $request->card_type,
+                    'company' => $request->auth_number,
+                    'address' => $request->account_holder_bank,
+                    'postal_code' => $request->reference,
+                    'city' => $request->exchange_value,
+                    'telephone' => $request->bank_account,
+                    'mobile' => $request->payment_amount,
+                    'fax' => $request->effected_payment,
+                ];
+
+                // Assuming DepartmentHead is the model class for the table
+                $addDatas = new CustomerPayments();
+
+                // Save the data
+                $addDatas->fill($proData);
+                $addDatas->save();
+
+                $messageType = 'success';
+                $message = 'You have successfully Added the Customer datas successfully..!!';
+
+            }else{
+                $messageType = 'error';
+                $message ='unsuccess|Failed to process transaction with selected currency. Bank account doesn`t allow transactions with selected currency, Please try again !';
+            }
+        }
+        $responseData = [
+            'message' => $message,
+            'messageType' => $messageType
+        ];
+
+        //echo $message;
+        return response()->json($responseData);
+    }
+
     public function getConvertedPaymentAmount(Request $request){
 
+        $convertedValue = null;
+        $rate = null;
+        $symbol = null;
+
+        // Check if 'currency_id' is provided and greater than 0
+        if ($request->filled('currency_id') && $request->currency_id > 0) {
+            // Check if 'payment_amount' is provided and greater than or equal to 0
+            if ($request->filled('payment_amount') && $request->payment_amount >= 0) {
+                // Retrieve currency details
+                $currency = Currencies::find($request->currency_id); // Fetch currency using the model
+
+                // Check if currency exists and has a rate
+                if ($currency && isset($currency->rate)) {
+                    $rate = $currency->rate;
+                    $symbol = $currency->symbol;
+
+                    // Calculate the converted value
+                    $paymentAmount = floatval($request->payment_amount);
+                    $convertedValue = round($paymentAmount / $rate, 5);
+                }
+            }
+        }
+
+        // Prepare response data
+        $msg = [
+            "converted_value" => $convertedValue,
+            "currency_value" => $rate,
+            "currency_symbol" => $symbol,
+        ];
+
+        // Return response as JSON
+        return response()->json($msg);
     }
 
     public function getCustomerReceiptsHistory(Request $request){
@@ -122,6 +260,7 @@ class CusCustomerReceiptsController extends Controller
     public function editCustomerReceipt(Request $request,$cus_id){
 
         $getDatas = CustomerPayments::find($request->id);
+        $getCustomersDatas = Customers::where('id',$getDatas->customer_id)->where('status',1)->first();
         //$departments = Departments::all();
         //$departmentHeads = DepartmentHeads::all();
 
@@ -129,7 +268,8 @@ class CusCustomerReceiptsController extends Controller
             return response()->json(['error' => 'Customers Payments are not found'], 404);
         }
         $responseData = [
-            'customer_payments' => $getDatas
+            'customer_receipts' => $getDatas,
+            'customer_details' => $getCustomersDatas
         ];
 
         return response()->json($responseData);

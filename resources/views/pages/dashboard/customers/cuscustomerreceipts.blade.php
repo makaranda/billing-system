@@ -230,7 +230,7 @@
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title"><span class="glyphicon glyphicon-copy"></span> ADD RECEIPT </h4>
+        <h4 class="modal-title"><span class="glyphicon glyphicon-plus"></span> <span class="model-header-title">ADD RECEIPT</span> </h4>
         <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span> Close</button>
       </div>
       <div class="modal-body">
@@ -238,8 +238,6 @@
 			<div class="col-md-12">
 				<div class="card">
 					<div class="card-header">ADD RECEIPTS |
-						<?php if(isset($customer_code)) echo $customer_code." - ";?>
-						<?php if(isset($customer_name)) echo $customer_name;?>
 
 						<form method="post" class="text-right pull-right">
 							<button type="submit" class="btn btn-xs btn-danger" name="close_customer_receipts">Close</button>
@@ -263,55 +261,62 @@
 								<div class="col-md-6" style="background:#dfd;">
 									<div class="row">
 										<div class="col-md-6">
-											<label for="payment_date">Receipt Date</label>
-											<div class="input-group datepicker_field" id="datepicker1">
-											    <input type="text" class="form-control" id="payment_date" name="payment_date" value="{{ WORKING_DATE }}" required />
-											    <span class="input-group-addon">
-												<span class="glyphicon glyphicon-calendar"></span>
-											    </span>
-											</div>
+                                            <div class="form-group">
+                                                <label for="payment_date">Receipt Date</label>
+                                                <div class="input-group datepicker_field" id="datepicker1">
+                                                    <input type="text" class="form-control" id="payment_date" name="payment_date" value="{{ WORKING_DATE }}" required />
+                                                    <span class="input-group-addon">
+                                                    <span class="glyphicon glyphicon-calendar"></span>
+                                                    </span>
+                                                </div>
+                                            </div>
 										</div>
 										<div class="col-md-6">
 											<div class="form-group">
 												<label for="payment_method">Payment Method</label>
 												<select class="form-control" name="payment_method" id="payment_method" required>
 													<option value="">- SELECT -</option>
-													<option value="cash">Cash</option>
+                                                    @foreach (CONST_PAYMENT_METHODS_ALL as $key => $value)
+                                                        <option value="{{ $key }}">{{ $value }}</option>
+                                                    @endforeach
+													{{-- <option value="cash">Cash</option>
 													<option value="cheque">cheque</option>
 													<option value="card">Card</option>
 													<option value="bank">Bank Transfer</option>
-													<option value="WHT">WHT</option>
+													<option value="WHT">WHT</option> --}}
 												</select>
 											</div>
 										</div>
 									</div>
 									<div class="row">
 										<div class="col-md-6">
-											<label for="card_type">Card Type</label>
-											<select class="form-control" id="card_type" name="card_type" disabled required>
-											   	<option value="">- Credit Card Type -</option>
-                                                @foreach ($getAllCardTypes as $cardType)
-                                                    <option value="{{ $cardType->id }}">'.ucwords({{ $cardType->name }}).'</option>
-                                                @endforeach
+                                            <div class="form-group">
+                                                <label for="card_type">Card Type</label>
+                                                <select class="form-control" id="card_type" name="card_type" disabled>
+                                                    <option value="">- Credit Card Type -</option>
+                                                    @foreach ($getAllCardTypes as $cardType)
+                                                        <option value="{{ $cardType->id }}">{{ ucwords($cardType->name) }}</option>
+                                                    @endforeach
 
-											</select>
-										</div>
+                                                </select>
+                                            </div>
+                                        </div>
 										<div class="col-md-6">
 											<div class="form-group">
 												<label for="auth_number">Auth Number <span title="Auth number from credit card machine.">(?)</span></label>
-												<input type="text" class="form-control" name="auth_number" id="auth_number" disabled="disabled" required>
+												<input type="text" class="form-control" name="auth_number" id="auth_number" disabled="disabled">
 											</div>
 										</div>
 										<div class="col-md-6">
 											<div class="form-group">
 												<label for="reference"><span id="reference_name">Reference</span></label>
-												<input type="text" class="form-control" name="reference" id="reference" required>
+												<input type="text" class="form-control" name="reference" id="reference">
 											</div>
 										</div>
 										<div class="col-md-6">
 											<div class="form-group">
 												<label class="control-label">Account Holder's Bank</label>
-												<select name="account_holder_bank" id="account_holder_bank" class="form-control" required="required" disabled="disabled">
+												<select name="account_holder_bank" id="account_holder_bank" class="form-control" disabled="disabled">
 												<option value="">- Select Bank -</option>
                                                 @foreach ($getAllBanks as $bank)
                                                     <option value="{{ $bank->id }}">{{ $bank->name }}</option>
@@ -324,12 +329,14 @@
 								<div class="col-md-6" style="background:#ddf;">
 									<div class="row">
 										<div class="col-md-6">
-											<label>Currency</label>
-											<select name="currency_id" id="currency_id" class="form-control" required="required">
-                                                @foreach ($getAllcurrencies as $currency)
-                                                    <option value="{{ $currency->id }}">{{ $currency->code }}</option>
-                                                @endforeach
-											</select>
+                                            <div class="form-group">
+                                                <label>Currency</label>
+                                                <select name="currency_id" id="currency_id" class="form-control" required="required">
+                                                    @foreach ($getAllcurrencies as $currency)
+                                                        <option value="{{ $currency->id }}">{{ $currency->code }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
 										</div>
                                         @if(isset($routepermissions['delete']) && $routepermissions['delete'] == 1)
                                             @php
@@ -361,7 +368,7 @@
 										<div class="col-md-6">
 											<div class="form-group">
 												<label>Effected Amount ({{ $getCurrencySymbol[0]['symbol']??$getCurrencySymbol[0]['symbol'] }})</label>
-												<input type="text" class="form-control" name="effected_payment" id="effected_payment" required>
+												<input type="text" class="form-control" name="effected_payment" id="effected_payment">
 											</div>
 										</div>
 									</div>
@@ -386,7 +393,7 @@
 											<div class="row">
 												<div class="col-md-6">
 													<div class="form-group">
-														<button type="button" class="btn btn-default form-control" data-dismiss="modal" onclick="clear_inputs();"> CANCEL</button>
+														<button type="button" class="btn btn-default form-control" data-bs-dismiss="modal" onclick="clear_inputs();"> CANCEL</button>
 													</div>
 												</div>
 												<div class="col-md-6">
@@ -424,7 +431,7 @@
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span> Close</button>
+        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span> Close</button>
         <h4 class="modal-title"><span class="glyphicon glyphicon-copy"></span> ALLOCATE INVOICES</h4>
       </div>
       <div class="modal-body">
@@ -473,7 +480,7 @@
 			      			<div class="row">
 			      				<div class="col-md-6">
 					      			<div class="form-group">
-					      				<button type="button" class="btn btn-default form-control" data-dismiss="modal">CANCEL</button>
+					      				<button type="button" class="btn btn-default form-control" data-bs-dismiss="modal">CANCEL</button>
 					      			</div>
 					      		</div>
 					      		<div class="col-md-6">
@@ -558,7 +565,77 @@
 //cuscustomerreceipts.updatecustomerreceipt
 //cuscustomerreceipts.deletecustomerreceipt
 
-    function editCustomer(id){
+
+function deleteCustomerReceipt(id,route_path,type){
+        $('#deleteModal').modal('show');
+
+        $('#delete_record_id').val(id);
+        $('#delete_record_form').val(route_path);
+        $('#delete_record_type').val(type);
+
+        //console.log(id+'-'+route_path+'-'+type);
+
+        if(type == 'Delete'){
+            $('.deleteModelTopic').text('Deactive Record');
+            $('.deleteModelDesctiption').text('Are you sure to Delete this Record now...!!!');
+            $('.deleteModelBtn').text('Delete');
+            $('.deleteModelBtn').removeClass('btn-danger');
+            $('.deleteModelBtn').addClass('btn-danger');
+        }else{
+            $('.deleteModelTopic').text('Active Record');
+            $('.deleteModelDesctiption').text('Are you sure to active this Record now...!!!');
+            $('.deleteModelBtn').text('Active');
+            $('.deleteModelBtn').removeClass('btn-danger');
+            $('.deleteModelBtn').addClass('btn-success');
+        }
+    }
+
+$('#frm_add_payments').parsley();
+    $('#frm_add_payments').on('submit', function(event){
+        event.preventDefault();
+        $('#overlay').show();
+        var edit_id = ($('#edit_id').val())?$('#edit_id').val():'';
+        var form_type = '';
+
+        if($('#form_type').val() == 'cuscustomerreceipts.editcustomerreceipt'){
+            form_type = '{{ route("cuscustomerreceipts.updatecustomerreceipt", ":id") }}';
+            form_type = form_type.replace(':id', edit_id);
+        }else{
+            form_type = '{{ route("cuscustomerreceipts.addcustomerreceipt") }}';
+        }
+
+        //console.log(form_type);
+        $.ajax({
+            url : form_type,
+            cache: false,
+            data: $(this).serialize() + '&_token={{ csrf_token() }}',
+            type: 'POST',
+            dataType: 'json',
+            success : function(response) {
+                $('#addReceiptModal').modal('hide');
+                console.log(response);
+                //var arr = data.split("|");
+                $('#frm_add_payments').parsley().reset();
+                $('#frm_add_payments')[0].reset();
+                Swal.fire({
+                    position: "bottom-end",
+                    icon: response.messageType === 'success' ? "success" : "error",
+                    title: response.message,
+                    showConfirmButton: false,
+                    timer: response.messageType === 'success' ? 4000 : 2500
+                });
+                listTableDatas();
+                $('#overlay').hide();
+            },
+            error: function(xhr, status, error) {
+                console.log("Error getting Categories ! \n", xhr, status, error);
+                $('#overlay').hide();
+            }
+        });
+
+    });
+
+    function editCustomerReceipt(id){
         $('#overlay').show();
 
         $('#form_type').val('cuscustomerreceipts.editcustomerreceipt');
@@ -574,22 +651,37 @@
             type: 'GET',
             dataType: 'json',
             success : function(response) {
+                console.log(response);
                 //console.log("Error getting Product !"+response);
-                $('#addReceiptModal').modal('show');
-                if(response.customer_payments.id != ''){
 
-                    $('#addCustomerModal #c_code').val(response.customer_payments.code);
-                    $('#addCustomerModal #c_company').val(response.customer_payments.company);
-                    $('#addCustomerModal #c_telephone').val(response.customer_payments.telephone);
-                    $('#addCustomerModal #c_mobile').val(response.customer_payments.mobile);
-                    $('#addCustomerModal #c_address').val(response.customer_payments.address);
-                    $('#addCustomerModal #c_email').val(response.customer_payments.email);
-                    $('#addCustomerModal #c_city').val(response.customer_payments.city);
-                    $('#addCustomerModal #c_postal_code').val(response.customer_payments.postal_code);
-                    $('#addCustomerModal #c_fax').val(response.customer_payments.fax);
-                    $('#addCustomerModal #c_territory_id').val(response.customer_payments.territory_id).change();
-                    $('#addCustomerModal #c_web').val(response.customer_payments.web_site);
+                if(response.customer_receipts.id != ''){
+                    // `branch_id`, `receipt_no`, `mcs_id`, `customer_id`, `bank_account_id`, `date`, `currency_id`, `currency_value`, `payment_amount`, `payment`, `method`, `bank_id`, `card_number`, `reference`, `card_type`, `auth_number`, `added_date`, `added_user`, `is_posted`, `posted_by`, `posted_date`, `preceipt_printed`, `allocated_amount`, `is_allocated`, `is_refund`, `refund_amount`, `created_at`, `updated_at`, `status`, `update_date`, `update_amount`, `recon_bank_account_id`, `statement_no`, `reconciled_by`, `reconciled_at`, `is_reconciled`, `is_exported`, `exported_by`, `exported_at`, `transaction_id`, `private_note`, `is_deposit`, `deposit_id`, `deposit_date`
 
+                    // customer_name payment_date payment_method card_type auth_number reference  account_holder_bank
+                    // currency_id exchange_value payment_amount effected_payment  bank_account
+                    $('#addReceiptModal .model-header-title').text('ADD RECEIPT');
+
+                    $('#addReceiptModal #customer_name').val(response.customer_details.company);
+                    $('#addReceiptModal #payment_date').val(response.customer_receipts.date);
+                    $('#addReceiptModal #payment_method').val(response.customer_receipts.method).change();
+                    $('#addReceiptModal #card_type').val(response.customer_receipts.card_type).change();
+                    $('#addReceiptModal #auth_number').val(response.customer_receipts.auth_number);
+                    $('#addReceiptModal #reference').val(response.customer_receipts.reference);
+                    $('#addReceiptModal #account_holder_bank').val(response.customer_receipts.bank_id).change();
+
+                    $('#addReceiptModal #currency_id').val(response.customer_receipts.currency_id).change();
+                    $('#addReceiptModal #exchange_value').val(response.customer_receipts.currency_value);
+                    $('#addReceiptModal #payment_amount').val(response.customer_receipts.payment_amount);
+                    $('#addReceiptModal #effected_payment').val('');
+                    $('#addReceiptModal #bank_account').val(response.customer_receipts.bank_account_id).change();
+
+                    $("#addReceiptModal #effected_payment").attr('readonly',true);
+				    $("#addReceiptModal #payment_amount").attr('readonly',true);
+                    $("#btn_add_payment").html("SAVE PAYMENT");
+
+                    $('#addReceiptModal').modal('show');
+
+                    $('html, div').animate({ scrollTop: 0 }, 'slow');
                 }
 
                 listTableDatas();
@@ -638,7 +730,7 @@ var payment_method_handler = function(){
 		$('#account_holder_bank').prop("disabled",false);
 		$('#reference_name').html("Holder's Account No.");
 	}
-	else if( payment_method=='WHT'){
+	else if( payment_method=='wht'){
 		$('#reference_name').html("WHT Certificate No.");
 	}
 	else if( payment_method=='LPO'){
@@ -649,7 +741,7 @@ var payment_method_handler = function(){
 }
 $('#payment_method').bind("change",payment_method_handler);
 
-$('#currency_id').bind("change",currency_id_handler);
+//$('#currency_id').bind("change",currency_id_handler);
 
 
 $('#exchange_value, #payment_amount').bind ("keyup input propertychange", function (e) {
@@ -732,39 +824,53 @@ function clear_inputs(){
 	$('#currency_id').val($('#currency_id').find('option:first').val()).change();
 }
 
+$('#s_pmethod').on('change',function(){
+//var currency_id_handler = function(){
+    var currency_id = $('#currency_id').val();
+    var payment_amount = parseFloat($('#payment_amount').val());
 
-var currency_id_handler = function(){
-	var currency_id = $('#currency_id').val();
-	var payment_amount = parseFloat(0+$('#payment_amount').val());
+    // Handle NaN case for payment_amount
+    payment_amount = isNaN(payment_amount) ? 0 : payment_amount;
+
+    // Alert currency_id for debugging
+    //alert(currency_id);
+    console.log(currency_id+' - '+payment_amount);
 	$.ajax({
 		url : "{{ route('cuscustomerreceipts.getconvertedpaymentamount') }}",
 		cache: false,
-		data: { 'currency_id':currency_id,'payment_amount':payment_amount },
+		data: {  _token: '{{ csrf_token() }}','currency_id':currency_id,'payment_amount':payment_amount },
 		type: 'POST',
+        dataType: 'json',
 		success : function(data) {
-			// var json = JSON.parse(data);
-			// var converted_value = 0;
-			// var currency_value = 1;
-			// var currency_symbol = "*";
+            //
+            console.log(data);
 
-			// if(json.converted_value && json.converted_value>0) converted_value = json.converted_value;
-			// if(json.currency_value && json.currency_value>0) currency_value = json.currency_value;
-			// if(json.currency_symbol) currency_symbol = json.currency_symbol;
+            var converted_value = 0;
+            var currency_value = 1;
+            var currency_symbol = "*";
 
-			if (currency_id == "{{ CURRENCY_ID ?? '' }}") {
-                // Uncomment and use the necessary lines based on your logic
-                // $('#payment_amount').val(converted_value.toFixed(2));
-                // $('#effected_payment').prop("readonly", true);
-                // $('#payment_amount').val(); // Note: If you're trying to set the value, this line might be unnecessary
-            } else {
-                // Uncomment and use the necessary lines based on your logic
-                // $('#payment_amount').val(converted_value.toFixed(5));
-                // $('#effected_payment').prop("readonly", false);
+            if (data.converted_value && data.converted_value > 0) {
+                converted_value = data.converted_value;
+            }
+            if (data.currency_value && data.currency_value > 0) {
+                currency_value = data.currency_value;
+            }
+            if (data.currency_symbol) {
+                currency_symbol = data.currency_symbol;
             }
 
-			// $('#exchange_value').val(currency_value);
-			// $('#effected_payment').val((parseFloat(0+currency_value) * parseFloat(0+converted_value)).toFixed(2));
-			// $('#payment_currency_symbol').html("( "+currency_symbol+" )");
+            if (currency_id == "{{ CURRENCY_ID ?? '' }}") {
+                $('#payment_amount').val(converted_value.toFixed(2));
+                $('#effected_payment').prop("readonly", true);
+            } else {
+                $('#payment_amount').val(converted_value.toFixed(5));
+                $('#effected_payment').prop("readonly", false);
+            }
+
+            $('#exchange_value').val(currency_value);
+            $('#effected_payment').val((currency_value * converted_value).toFixed(2));
+            $('#payment_currency_symbol').html("( " + currency_symbol + " )");
+
 		},
 		error: function(data) {
 			$('#errorMessage').html("Failed to get converted amount, Try again !");
@@ -773,33 +879,47 @@ var currency_id_handler = function(){
 	});
 
 	set_default_bank_selected();
-}
+});
 
 function set_default_bank_selected(){
 	var payment_method = $('#payment_method').val();
 	var currency_id = $('#currency_id').val();
 	var card_type = $('#card_type').val();
 
+    console.log(payment_method+' - '+currency_id+' - '+card_type);
+
 	if(payment_method!="LPO" && payment_method!="lpo" && payment_method!="Lpo"){
 		if(currency_id!='' && currency_id!=null && currency_id>0){
 			$.ajax({
-				url : "{{ route('cuscustomerreceipts.getconvertedpaymentamount') }}",
+				url : "{{ route('cuscustomerreceipts.getdefaultbankpaymentmethod') }}",
 				cache: false,
-				data: { 'payment_method':payment_method,'currency_id':currency_id,'card_type':card_type },
+				data: {  _token: '{{ csrf_token() }}','payment_method':payment_method,'currency_id':currency_id,'card_type':card_type },
 				type: 'POST',
+                dataType: 'json',
 				success : function(data) {
-					// var json = JSON.parse(data);
+                    console.log(data);
+                    // Assuming there's only one item in the result array
+                    if (data.count > 0 && data.result.length > 0) {
+                            var result = data.result[0]; // Get the first item from the result array
 
-					// if(selected_bank && selected_bank>0) {
-					// 	$('#bank_account').val(selected_bank).change();
-					// 	selected_bank = "";
-					// }
-					// else {
-					// 	if(json.default_bank && json.default_bank>0) {
-					// 		$('#bank_account').val(json.default_bank).change();
-					// 	}
-					// 	else $('#bank_account').val("").change();
-					// }
+                            if (selected_bank && selected_bank > 0) {
+                                $('#bank_account').val(selected_bank).change();
+                                selected_bank = "";
+                            } else {
+                                if (result.bank_account_id && result.bank_account_id > 0) {
+                                    $('#bank_account').val(result.bank_account_id).change();
+                                } else {
+                                    $('#bank_account').val("").change();
+                                }
+                            }
+
+                            // Additional logging or actions
+                            //console.log(result.bank_account_id);
+                        } else {
+                            // Handle case where no results are returned
+                            $('#bank_account').val("").change();
+                            console.log("No results found");
+                        }
 				},
 				error: function(data) {
 					$('#bank_account').val("").change();

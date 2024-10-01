@@ -21,7 +21,9 @@ use App\Models\Currencies;
 use App\Models\CustomerTransactions;
 use App\Models\AcAccountSubCategories;
 use App\Models\AcAccounts;
-use App\Models\DefaultPaymentBank;
+use App\Models\DefaultPaymentBanks;
+
+use Illuminate\Support\Facades\Log;
 
 class BankAccountsController extends Controller
 {
@@ -106,7 +108,7 @@ class BankAccountsController extends Controller
 
 
     public function getDefaultBankPaymentMethod(Request $request){
-        $query = DefaultPaymentBank::query()
+        $query = DefaultPaymentBanks::query()
         ->join('currencies', 'currencies.id', '=', 'default_payment_banks.currency_id')
         ->join('bank_accounts', 'bank_accounts.id', '=', 'default_payment_banks.bank_account_id')
         ->leftJoin('card_types', 'card_types.id', '=', 'default_payment_banks.card_type_id')
@@ -115,23 +117,25 @@ class BankAccountsController extends Controller
                  'card_types.name as card_type_name');
 
             // Apply filters
-            if ($request->filled('id')) {
+            if ($request->has('id') && $request->id != '') {
                 $query->where('default_payment_banks.id', $request->id);
             }
 
-            if ($request->filled('payment_method')) {
-                $query->where('default_payment_banks.payment_method', $request->payment_method);
+            if ($request->has('payment_method') && $request->payment_method != '') {
+                $query->where('default_payment_banks.payment_method','LIKE', '%'.$request->payment_method.'%');
             }
 
-            if ($request->filled('currency_id')) {
-                $query->where('default_payment_banks.currency_id', $request->currency_id);
+            if ($request->has('currency_id') && $request->currency_id != '') {
+                $query->where('default_payment_banks.currency_id','=',$request->currency_id);
             }
 
-            if ($request->filled('card_type_id')) {
-                $query->where('default_payment_banks.card_type_id', $request->card_type_id);
+            if ($request->has('card_type_id') && $request->card_type_id != '') {
+                $query->where('default_payment_banks.card_type_id','=', $request->card_type_id);
+            }else{
+                $query->where('default_payment_banks.card_type_id','=', 0);
             }
 
-            if ($request->filled('bank_account_id')) {
+            if ($request->has('bank_account_id') && $request->bank_account_id != '') {
                 $query->where('default_payment_banks.bank_account_id', '>=', $request->bank_account_id);
             }
 
@@ -150,6 +154,10 @@ class BankAccountsController extends Controller
 
             // Execute query
             $result = $query->get();
+
+                // For debugging: Log the final SQL query
+            //\Log::info($query->toSql());
+            //\Log::info($query->getBindings());
 
             // Return the data in JSON format
             return response()->json([

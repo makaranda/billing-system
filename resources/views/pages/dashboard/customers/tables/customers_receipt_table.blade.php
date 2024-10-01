@@ -91,27 +91,14 @@
                                 $deleteType = $fetchDetail->status == 1 ? 'Delete' : '';
 
                                 if($fetchDetail->id > 0){
-                                    $activebtn .= '<button type="button" class="btn btn-xs btn-'.$acInColor.'" onclick="enable_disable_delete_customer(' . $fetchDetail->id . ', \'' . $deleteRoutePath . '\', \'' . $acInType . '\');" data-id="' . $fetchDetail->id . '" title="'.$acInType.'"><span class="glyphicon glyphicon-'.$acInIcon.'"></span> </button>';
-
-
-                                    $deletebtn .= '<button type="button" class="btn btn-xs btn-danger" onClick="enable_disable_delete_customer(' . $fetchDetail->id . ', \'' . $deleteRoutePath . '\', \'' . $deleteType . '\');" title="Delete"><span class="glyphicon glyphicon-trash"></span></button>';
-                                }
-                            }
-
-                            $viewButton = '';
-                            if ($canView) {
-                                if($fetchDetail->id > 0){
-                                    $viewButton .= '<button type="button" class="btn btn-xs btn-info mt-2" onClick="viewCustomerStatement('.$fetchDetail->id.',\''.$fetchDetail->email.'\');" title="View Statement"><span class="glyphicon glyphicon-time"></span> Statment
-                                                    </button>
-                                                    <button type="button" class="btn btn-xs btn-success mt-2" onClick="viewActivity('.$fetchDetail->id.');" title="View activity"><span class="glyphicon glyphicon-time"></span> Activity
-                                                    </button>';
+                                    $deletebtn .= '<button type="button" class="btn btn-xs btn-danger" onClick="deleteCustomerReceipt(' . $fetchDetail->id . ', \'' . $deleteRoutePath . '\', \'' . $deleteType . '\');" title="Delete"><span class="glyphicon glyphicon-trash"></span></button>';
                                 }
                             }
 
                             $editButton = '';
                             if ($canEdit) {
                                 if($fetchDetail->id > 0){
-                                    $editButton .= '<button type="button" class="btn btn-xs btn-info" onClick="editCustomer('.$fetchDetail->id.');" title="Edit"><span class="glyphicon glyphicon-edit"></span></button>';
+                                    $editButton .= '<button type="button" class="btn btn-xs btn-info" onClick="editCustomerReceipt('.$fetchDetail->id.');" title="Edit"><span class="glyphicon glyphicon-edit"></span></button>';
                                 }
                             }
 
