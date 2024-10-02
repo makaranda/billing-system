@@ -566,7 +566,7 @@
 //cuscustomerreceipts.deletecustomerreceipt
 
 
-function deleteCustomerReceipt(id,route_path,type){
+    function deleteCustomerReceipt(id,route_path,type){
         $('#deleteModal').modal('show');
 
         $('#delete_record_id').val(id);
@@ -589,6 +589,46 @@ function deleteCustomerReceipt(id,route_path,type){
             $('.deleteModelBtn').addClass('btn-success');
         }
     }
+
+    $('#deleteRecordForm').parsley();
+        $('#deleteRecordForm').on('submit', function(event){
+            event.preventDefault();
+            $('#overlay').show();
+            var delete_record_id = $('#delete_record_id').val();
+            var form_type = $('#delete_record_form').val();
+
+            let updateUrl = '{{ route("cuscustomerreceipts.deletecustomerreceipt", ":id") }}';
+            updateUrl = updateUrl.replace(':id', delete_record_id);
+
+            console.log('URL: '+updateUrl);
+            $.ajax({
+                url : updateUrl,
+                cache: false,
+                data: $(this).serialize() + '&_token={{ csrf_token() }}',
+                type: 'POST',
+                dataType: 'json',
+                success : function(response) {
+                    $('#deleteModal').modal('hide');
+                    //console.log(response);
+                    //var arr = data.split("|");
+                    $('#deleteRecordForm').parsley().reset();
+                    $('#deleteRecordForm')[0].reset();
+                    Swal.fire({
+                        position: "bottom-end",
+                        icon: response.messageType === 'success' ? "success" : "error",
+                        title: response.message,
+                        showConfirmButton: false,
+                        timer: response.messageType === 'success' ? 4000 : 2500
+                    });
+                    listTableDatas();
+                    $('#overlay').hide();
+                },
+                error: function(xhr, status, error) {
+                    //console.log("Error getting Categories ! \n", xhr, status, error);
+                    $('#overlay').hide();
+                }
+            });
+    });
 
 $('#frm_add_payments').parsley();
     $('#frm_add_payments').on('submit', function(event){
@@ -660,8 +700,8 @@ $('#frm_add_payments').parsley();
                     // customer_name payment_date payment_method card_type auth_number reference  account_holder_bank
                     // currency_id exchange_value payment_amount effected_payment  bank_account
                     $('#addReceiptModal .model-header-title').text('ADD RECEIPT');
-
-                    $('#addReceiptModal #customer_name').val(response.customer_details.company);
+                    let cus_detail_company = (response.customer_details && response.customer_details.company != null)? response.customer_details.company: '';
+                    $('#addReceiptModal #customer_name').val(cus_detail_company);
                     $('#addReceiptModal #payment_date').val(response.customer_receipts.date);
                     $('#addReceiptModal #payment_method').val(response.customer_receipts.method).change();
                     $('#addReceiptModal #card_type').val(response.customer_receipts.card_type).change();

@@ -42,6 +42,12 @@
                         $getAllCustomers = \App\Models\Customers::where('id', $fetchDetail->customer_id)
                                                                 ->where('status', 1)
                                                                 ->first();
+                        if(isset($getAllCustomers)){
+                            $getAllCustomers = $getAllCustomers;
+                        }else{
+                            $getAllCustomers = '*****';
+                        }
+
                         $getAllBankAccount = \App\Models\BankAccounts::where('id', $fetchDetail->bank_account_id)->first();
                         $getAllSystemUsers = \App\Models\SystemUsers::where('id', $fetchDetail->reconciled_by)->first();
                         $getAllCurrencySymbol = \App\Models\Currencies::where('is_base', 1)->where('status', 1)->first();
@@ -90,15 +96,19 @@
                                 $acInIcon = $fetchDetail->active == 0 ? 'refresh' : 'remove';
                                 $deleteType = $fetchDetail->status == 1 ? 'Delete' : '';
 
-                                if($fetchDetail->id > 0){
+                                if($fetchDetail->id > 0 && $fetchDetail->is_posted == 0){
                                     $deletebtn .= '<button type="button" class="btn btn-xs btn-danger" onClick="deleteCustomerReceipt(' . $fetchDetail->id . ', \'' . $deleteRoutePath . '\', \'' . $deleteType . '\');" title="Delete"><span class="glyphicon glyphicon-trash"></span></button>';
+                                }else{
+                                    $deletebtn .= '<button type="button" class="btn btn-xs btn-danger" title="Delete" disabled><span class="glyphicon glyphicon-trash"></span></button>';
                                 }
                             }
 
                             $editButton = '';
                             if ($canEdit) {
-                                if($fetchDetail->id > 0){
+                                if($fetchDetail->id > 0 && $fetchDetail->is_posted == 0){
                                     $editButton .= '<button type="button" class="btn btn-xs btn-info" onClick="editCustomerReceipt('.$fetchDetail->id.');" title="Edit"><span class="glyphicon glyphicon-edit"></span></button>';
+                                }else{
+                                    $editButton .= '<button type="button" class="btn btn-xs btn-info" title="Edit" disabled><span class="glyphicon glyphicon-edit"></span></button>';
                                 }
                             }
 
@@ -118,10 +128,15 @@
                                 <td>{{ $fetchDetail->date ?? '***' }}</td>
                                 <td>{{ $fetchDetail->method ?? '***' }}</td>
                                 <td>
-                                    {{ ($getAllCustomers && $getAllCustomers->code) ? $getAllCustomers->code . ' - ' . $getAllCustomers->company : '' }}
+
+                                    @if (isset($getAllCustomers,$getAllCustomers->code))
+                                        {{ $getAllCustomers->code . ' - ' . $getAllCustomers->company }}
+                                    @endif
+                                        {{ '****' }}
                                     @if(!empty($getRoomingList->title))
                                         <br/><strong>Guest: </strong>{{ $getRoomingList->title }}
                                     @endif
+
                                 </td>
                                 <td>
                                     {{ ($getAllBankAccount->account_code) ? $getAllBankAccount->account_code . ' - ' . $getAllBankAccount->account_name : '' }}
@@ -137,17 +152,31 @@
                 @endforeach
 
                 <tr>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td><strong>TOTALS</strong></td>
-                    <td align="left"><strong>{{ number_format($amount_total,2) }}</strong></td>
-                    <td align="left"></td>
-                    <td align="left"><strong>{{ number_format($reconciled_total,2) }}</strong></td>
-                    <td width="100" class="text-left"></td>
+                    <td><small></small></td>
+                    <td><small></small></td>
+                    <td><small><small></td>
+                    <td><small></small></td>
+                    <td><small></small></td>
+                    <td><small><strong>PAGE TOTAL</strong></small></td>
+                    <td align="right" colspan="2"><small><strong>{{ $currencySymbol->symbol }} {{ number_format($amount_total,2) }}</strong></small></td>
+                    <td><small></small></td>
+                    <td><small></small></td>
+                    <td class="noprint"><small></small></td>
                 </tr>
+
+                <tr>
+                    <td><small></small></td>
+                    <td><small></small></td>
+                    <td><small><small></td>
+                    <td><small></small></td>
+                    <td><small></small></td>
+                    <td><small><strong>REPORT TOTAL</strong></small></td>
+                    <td align="right" colspan="2"><small><strong>{{ $currencySymbol->symbol }} {{ number_format($totalPayment,2) }}</strong></small></td>
+                    <td><small></small></td>
+                    <td><small></small></td>
+                    <td class="noprint"><small></small></td>
+                </tr>
+
             </tbody>
         </table>
     </small>

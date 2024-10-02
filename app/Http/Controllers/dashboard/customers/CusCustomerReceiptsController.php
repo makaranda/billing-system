@@ -29,6 +29,7 @@ use App\Models\AcAccounts;
 use App\Models\BankAccounts;
 use App\Models\CardTypes;
 use App\Models\Banks;
+use App\Models\SequentialNumber;
 
 class CusCustomerReceiptsController extends Controller
 {
@@ -127,48 +128,37 @@ class CusCustomerReceiptsController extends Controller
 
         $getCurrenciesDatas = BankAccounts::where('id',$request->bank_account)->where('status',1)->first();
 
-        if($request->payment_method == 'wht'){
-            $getSequentialNumber = SequentialNumber::where('type','wht')->where('status',1)->first();
-        }else{
-            $getSequentialNumber = SequentialNumber::where('type','customer_receipt')->where('status',1)->first();
-        }
+        $sequentialType = $request->payment_method == 'wht' ? 'wht' : 'customer_receipt';
+        $getSequentialNumber = SequentialNumber::where('type', $sequentialType)->where('status', 1)->first();
 
-        if(count($getSequentialNumber) == 0){
-            $last_number = 0;
-            $next_number = $getSequentialNumber->last_number + 1;
+        // Initialize or update sequential number
+        if (!$getSequentialNumber) {
+            // Create new sequential number if none found
+            $next_number = 1;
+            $prefix = '';
+            $sufix = '';
+            $numeric_length = 8;
 
-            $proSequentialData = [
-                'prefix' => '',
-                'sufix' => '',
+            SequentialNumber::create([
+                'prefix' => $prefix,
+                'sufix' => $sufix,
                 'last_number' => $next_number,
-                'numeric_length' => 8,
-                'type' => 'wht'
-            ];
-            $addSequentialDatas = new SequentialNumber();
-            $addSequentialDatas->fill($proSequentialData);
-            $addSequentialDatas->save();
-
-        }else{
+                'numeric_length' => $numeric_length,
+                'type' => $sequentialType,
+                'status' => 1
+            ]);
+        } else {
+            // Update existing sequential number
             $prefix = $getSequentialNumber->prefix;
             $sufix = $getSequentialNumber->sufix;
             $numeric_length = $getSequentialNumber->numeric_length;
-            $next_number = $getSequentialNumber->last_number;
-
-            $last_number = 0;
             $next_number = $getSequentialNumber->last_number + 1;
-            $getSequentialData = SequentialNumber::where('type','=',''.$request->payment_method.'');
 
-            $proSequentialData = [
-                'prefix' => '',
-                'sufix' => '',
-                'last_number' => $next_number,
-                'numeric_length' => 8,
-                'type' => 'wht'
-            ];
-            $getSequentialData->update($proData);
+            $getSequentialNumber->update(['last_number' => $next_number]);
         }
 
-        $receipt_no = $prefix.str_pad($next_number,$numeric_length,'0',STR_PAD_LEFT).$sufix;
+        // Generate receipt number
+        $receipt_no = $prefix . str_pad($next_number, $numeric_length, '0', STR_PAD_LEFT) . $sufix;
 
         if ($validator->fails()) {
             $messageType = 'error';
@@ -176,43 +166,152 @@ class CusCustomerReceiptsController extends Controller
             $message = 'All Fields are Required..!!';
         }else{
 
-            $getCustomerPayments = CustomerPayments::where('type','wht')->where('status',1)->first();
+            //$getCustomerPayments = CustomerPayments::where('id','=',$request->edit_id)->where('status',1)->get();
 
-            if($getCurrenciesDatas->currency_id == $request->bank_account){
-                $proData = [
-                    'group_id' => $request->payment_method,
-                    'branch_id' => $request->currency_id,
-                    'code' => $request->payment_date,
-                    'category_id' => $request->card_type,
-                    'company' => $request->auth_number,
-                    'address' => $request->account_holder_bank,
-                    'postal_code' => $request->reference,
-                    'city' => $request->exchange_value,
-                    'telephone' => $request->bank_account,
-                    'mobile' => $request->payment_amount,
-                    'fax' => $request->effected_payment,
-                ];
+            if(isset($request->edit_id) && $request->edit_id > 0){
 
-                // Assuming DepartmentHead is the model class for the table
-                $addDatas = new CustomerPayments();
+                    $upquery = "";
+                    $data = $request->all(); // Replace as necessary if $data comes from a different source
 
-                // Save the data
-                $addDatas->fill($proData);
-                $addDatas->save();
+                    // Fetch the existing customer payment details
+                    $getCustomerPayments = CustomerPayments::where('id', $request->edit_id)
+                                                        ->where('status', 1)
+                                                        ->first();
+                if($getCustomerPayments->preceipt_printed == 0){
+                    // Initialize the changes array and ignored fields
+                    $changes = [];
+                    $ignore_fields = ["id", "created_by", "added_user", "added_date"];
 
-                $messageType = 'success';
-                $message = 'You have successfully Added the Customer datas successfully..!!';
+                    // Iterate over each field in $getCustomerPayments to compare with new $data
+                    foreach ($getCustomerPayments->toArray() as $key => $value) {
+                        // Skip ignored fields and check for changes
+                        if (!in_array($key, $ignore_fields) && isset($data[$key]) && $data[$key] != $value && $data[$key] !== "") {
+                            $changes[$key . "_new"] = $data[$key];
+                            $changes[$key . "_old"] = $value;
+                        }
+                    }
+                    // Check if any changes exist
+                    if (!empty($changes)) {
+                        // Update the record in the database
+                        //$getCustomerPayments->update($data);
 
-            }else{
-                $messageType = 'error';
-                $message ='unsuccess|Failed to process transaction with selected currency. Bank account doesn`t allow transactions with selected currency, Please try again !';
-            }
+                        // Log success message
+                        $messageType = 'success';
+                        $message = "Receipt details successfully saved!";
+                    } else {
+                        // If no changes are detected
+                        $messageType = 'error';
+                        $message = "Nothing has changed to update!";
+                    }
+                    // Assuming DepartmentHead is the model class for the table
+                    //$addDatas = new CustomerPayments();
+
+                    // Save the data
+                    //$addDatas->fill($proData);
+                    //$addDatas->save();
+                }else{
+                    $messageType = 'error';
+                    $message = 'Receipt has been already printed, You cannot change the information !';
+                }
+
+                //$messageType = 'error';
+                //$message = 'Failed to determine whether receipt has been printed or not, Please try again !';
+
+
+        }else{
+            //"INSERT INTO `customer_payments` (`branch_id`,`receipt_no`,`mcs_id`,`customer_id`, `bank_account_id`, `date`,`currency_id`, `currency_value`, `payment_amount`,`payment`, `method`, `bank_id`, `reference`, `card_type`,`auth_number`, `private_note`, `added_date`, `added_user`) VALUES
+
+            //customer_name payment_date payment_method card_type auth_number reference account_holder_bank currency_id exchange_value  payment_amount effected_payment bank_account
+            $getCustomerPayment = CustomerPayments::where('id', $request->edit_id)
+                                                        ->where('status', 1)
+                                                        ->first();
+
+            $branchId = '';
+            $receipt_no = '';
+            $mcs_id = '';
+            $customer_id = '';
+            $bank_account_id = '';
+            $branchId = '';
+            $branchId = '';
+            $branchId = '';
+            $branchId = '';
+            $branchId = '';
+            $branchId = '';
+
+            $proData = [
+                'branch_id' => '',
+                'receipt_no' => '',
+                'mcs_id' => '',
+                'customer_id' => $getCustomerPayment->customer_id,
+                'bank_account_id' => $request->bank_account,
+                'date' => $request->payment_date,
+                'currency_id' => $request->currency_id,
+                'currency_value' => $request->exchange_value,
+                'payment_amount' => $request->payment_amount,
+                'payment' => ($request->payment_amount*$request->exchange_value),
+                'method' => $request->payment_method,
+                'bank_id' => $request->account_holder_bank,
+                'reference' => $request->reference,
+                'card_type' => $request->card_type,
+                'auth_number' => $request->auth_number,
+                'private_note' => '',
+                'added_date' => '',
+                'added_user' => '',
+            ];
+
+            $addDatas = new CustomerPayments();
+            $addDatas->fill($proData);
+            $addDatas->save();
+
+
         }
+    }
         $responseData = [
             'message' => $message,
             'messageType' => $messageType
         ];
 
+        //echo $message;
+        return response()->json($responseData);
+}
+
+    public function deleteCustomerReceipt(Request $request,$cat_id){
+        $messageType = '';
+        $message = '';
+
+        $getDatas = CustomerPayments::where('id','=',$request->delete_record_id)->where('is_posted','=',0)->first();
+
+        if (!$getDatas) {
+            return response()->json(['error' => 'Failed to determine whether receipt has been posted or not, Please try again'], 404);
+        }
+        // update the data
+        //$getDatas->delete();
+        if($getDatas->is_posted == 0){
+            if($request->delete_record_type == 'Delete'){
+                $actveData = 0;
+            }else{
+                $actveData = 1;
+            }
+
+            $proData = [
+                'status' => $actveData,
+            ];
+
+            // update the data
+            $getDatas->update($proData);
+
+            //$getTaxes->delete();
+            $messageType = 'success';
+            $message = 'Customer payment successfully deleted..';
+        }else{
+            $messageType = 'error';
+            $message = 'Receipt has been already posted, You cannot delete this payment..';
+        }
+
+        $responseData = [
+            'message' => $message,
+            'messageType' => $messageType
+        ];
         //echo $message;
         return response()->json($responseData);
     }
@@ -279,6 +378,9 @@ class CusCustomerReceiptsController extends Controller
     public function fetchCustomerReceipts(Request $request){
 
         $query = CustomerPayments::query();
+        $querySum = CustomerPayments::query();
+        $currencySymbol = Currencies::where('is_base','=',1)->first();
+
         //$getAllRoutePermisssions = AcAccounts::all();
         //s_code s_name s_status s_type
         if ($request->has('receipt_no') && $request->receipt_no != '') {
@@ -301,16 +403,22 @@ class CusCustomerReceiptsController extends Controller
         }
         if ($request->has('is_posted') && $request->is_posted == 1) {
             $query->where('is_posted', '=', 1);
+            $querySum->where('is_posted', '=', 1);
         }else{
             if($request->page > 1){
                 $query->where('is_posted', '=', 1);
+                $querySum->where('is_posted', '=', 1);
             }else{
                 $query->where('is_posted', '=', 0);
+                $querySum->where('is_posted', '=', 0);
             }
         }
         if ($request->has('is_allocated') && $request->is_allocated != '') {
             $query->where('is_allocated', '=', '' . $request->is_allocated . '');
         }
+
+        $querySum->WHERE('status', 1);
+        $totalPayment = $querySum->sum('payment');
 
         $query->WHERE('status', 1);
         $query->orderBy('receipt_no', 'DESC'); // Default ordering receipt_no DESC
@@ -324,7 +432,7 @@ class CusCustomerReceiptsController extends Controller
         $credit_total = 0;
 
         $fetchTableDetails = $query->paginate(100);
-        $responses = view('pages.dashboard.customers.tables.customers_receipt_table', compact('fetchTableDetails'))->render();
+        $responses = view('pages.dashboard.customers.tables.customers_receipt_table', compact('fetchTableDetails','totalPayment','currencySymbol'))->render();
 
         return response()->json(['html' => $responses,'is_posted' => $request->is_posted]);
     }
