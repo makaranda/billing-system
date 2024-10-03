@@ -12,7 +12,7 @@
                         <td align="left"><strong>Bank Account</strong></td>
                         <td align="left"><strong>Amount</strong></td>
                         <td align="left"><strong>Reference</strong></td>
-                        <td align="center" colspan="2"><strong>Action</strong></td>
+                        <td align="center" colspan="3"><strong>Action</strong></td>
                     </tr>
                 </tr>
             </thead>
@@ -80,8 +80,8 @@
                                 return $permission->permission_type == 'update' && ($permission->route == $currentRoute || $permission->route == $parentRoute);
                             });
 
-                            $canView = $getAllRoutePermisssions->contains(function ($permission) use ($currentRoute, $parentRoute) {
-                                return $permission->permission_type == 'read' && ($permission->route == $currentRoute || $permission->route == $parentRoute);
+                            $canPost = $getAllRoutePermisssions->contains(function ($permission) use ($currentRoute, $parentRoute) {
+                                return $permission->permission_type == 'post' && ($permission->route == $currentRoute || $permission->route == $parentRoute);
                             });
 
                             $deleteRoutePath = 'cuscustomerreceipts.deletecustomerreceipt';
@@ -109,6 +109,14 @@
                                     $editButton .= '<button type="button" class="btn btn-xs btn-info" onClick="editCustomerReceipt('.$fetchDetail->id.');" title="Edit"><span class="glyphicon glyphicon-edit"></span></button>';
                                 }else{
                                     $editButton .= '<button type="button" class="btn btn-xs btn-info" title="Edit" disabled><span class="glyphicon glyphicon-edit"></span></button>';
+                                }
+                            }
+
+                            $postButton = '';
+                            if ($canPost) {
+                                if($fetchDetail->id > 0 && $fetchDetail->is_posted == 0){
+                                    $postButton .= '
+                                    <button type="button" class="btn btn-xs btn-warning" onclick="post_receipt('.$fetchDetail->id.');" title="Post Receipt" id="cr_post171834"><span class="glyphicon glyphicon-send"></span> Post</button>';
                                 }
                             }
 
@@ -145,6 +153,7 @@
                                 <td>
                                     {!! ($fetchDetail->reference) ? $fetchDetail->private_note : $fetchDetail->reference . '<br/>' . $fetchDetail->private_note !!}
                                 </td>
+                                <td class="tbl_row_width2">{!! $postButton !!}</td>
                                 <td class="tbl_row_width">{!! $editButton !!}</td>
                                 <td class="tbl_row_width">{!! $deletebtn !!}</td>
                             </tr>

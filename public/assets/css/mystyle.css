@@ -309,3 +309,15 @@ hr {
 .tbl_row_width{
     width: 40px !important;
 }
+.tbl_row_width2{
+    width: 80px !important;
+}
+.modal .modal-title {
+    font-size: 16px;
+}
+p {
+    font-size: 14px;
+    line-height: 1.82;
+    margin-bottom: 1rem;
+    word-break: break-word;
+}

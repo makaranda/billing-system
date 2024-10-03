@@ -211,13 +211,13 @@
 
 
 <!-- Confirm Modal -->
-<div class="modal fade" id="ConfirmModal" role="dialog">
+<div class="modal fade" id="ConfirmModal" tabindex="-1" role="dialog" data-backdrop="false">
     <div class="modal-dialog">
       <!-- Modal content-->
       <div class="modal-content">
         <div class="modal-header">
             <h4 class="modal-title"><span class="glyphicon glyphicon-exclamation-sign"></span> Confirm !</h4>
-            <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
+            <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">&times;</button>
         </div>
         <div class="modal-body"></div>
         <div class="modal-footer"></div>
@@ -564,7 +564,45 @@
 //cuscustomerreceipts.addcustomerreceipt
 //cuscustomerreceipts.updatecustomerreceipt
 //cuscustomerreceipts.deletecustomerreceipt
+    function post_receipt(cpayment_id){
+        var msg = '<p>Are you sure, You want to post this receipt ? <br/>You can\'t do any change after posted.</p>';
+        var btns = '<button type="button" class="btn btn-primary btn-sm" data-bs-dismiss="modal">No</button>';
+        btns += '<button type="button" class="btn btn-warning btn-sm" data-dismiss="modal" onclick="post_receipt_confirmed('+ cpayment_id +')">Yes</button>';
 
+        $('#ConfirmModal .modal-body').html(msg);
+        $('#ConfirmModal .modal-footer').html(btns);
+        $('#ConfirmModal').modal('show');
+    }
+
+    function post_receipt_confirmed(cpayment_id){
+        $('#ConfirmModal').modal('hide');
+        $('#overlay').show();
+        $.ajax({
+            url : "{{ route('cuscustomerreceipts.postcustomerreceipt') }}",
+            cache: false,
+            data: { 'cpayment_id':cpayment_id },
+            type: 'get',
+            success : function(data) {
+                $('#overlay').hide();
+                listTableDatas();
+                Swal.fire({
+                    position: "bottom-end",
+                    icon: response.messageType === 'success' ? "success" : "error",
+                    title: response.message,
+                    showConfirmButton: false,
+                    timer: response.messageType === 'success' ? 4000 : 2500
+                });
+
+
+                $('#btn_search').click();
+
+            },
+            error: function(xhr, status, error) {
+                //console.log("Error getting Categories ! \n", xhr, status, error);
+                $('#overlay').hide();
+            }
+        });
+    }
 
     function deleteCustomerReceipt(id,route_path,type){
         $('#deleteModal').modal('show');
@@ -708,6 +746,8 @@ $('#frm_add_payments').parsley();
                     $('#addReceiptModal #auth_number').val(response.customer_receipts.auth_number);
                     $('#addReceiptModal #reference').val(response.customer_receipts.reference);
                     $('#addReceiptModal #account_holder_bank').val(response.customer_receipts.bank_id).change();
+
+                    $('#addReceiptModal #customer_id').val(response.customer_details.id).change();
 
                     $('#addReceiptModal #currency_id').val(response.customer_receipts.currency_id).change();
                     $('#addReceiptModal #exchange_value').val(response.customer_receipts.currency_value);

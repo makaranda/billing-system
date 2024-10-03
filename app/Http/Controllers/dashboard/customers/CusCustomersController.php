@@ -127,7 +127,9 @@ class CusCustomersController extends Controller
         if ($validator->fails()) {
             $messageType = 'error';
             //$message = $validator->errors();
-            $message = 'All Fields are Required..!!';
+            $message = $validator->errors()->all();
+            $message = implode(', ', $message);
+            //$message = 'All Fields are Required..!!';
         }else{
             $proData = [
                 'group_id' => $request->c_group,

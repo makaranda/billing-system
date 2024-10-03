@@ -112,6 +112,139 @@ class CusCustomerReceiptsController extends Controller
         }
     }
 
+    public function postCustomerReceipt(Request $request){
+
+        if(isset($request->cpayment_id)){
+            $getCustomerPayments = CustomerPayments::where('id',$request->cpayment_id)->where('status',1)->first();
+
+            $getAcAccounts = AcAccounts::where('control_type','=','debtors_control')->where('status',1)->first();
+
+            $getBankAccounts = BankAccounts::where('id',$getCustomerPayments->bank_account_id)->where('status',1)->first();
+
+            $debtors_control_account = isset($getAcAccounts->id)?$getAcAccounts->id:0;
+
+            $nominal_account_id = isset($getBankAccounts->account_id) && $getBankAccounts->account_id ? $getBankAccounts->account_id : 0;
+
+
+            $getCustomerTransactionsCustomerCumulative = CustomerTransactions::where('customer_id', '=', $getCustomerPayments->customer_id)
+                                                                            ->where('nominal_account_id', '=', $debtors_control_account)
+                                                                            ->where('status', 1)
+                                                                            ->orderBy('id', 'desc')
+                                                                            ->limit(1)
+                                                                            ->first(['customer_balance as balance']);
+
+            $getCustomerTransactionsCumalative = CustomerTransactions::where('nominal_account_id', '=', $debtors_control_account)
+                                                                    ->where('status', 1)
+                                                                    ->orderBy('id', 'desc')
+                                                                    ->limit(1)
+                                                                    ->first(['customer_balance as balance']);
+
+                                                                        // Check if the record exists
+            $customer_cumalative_balance = $getCustomerTransactionsCumalative ? $getCustomerTransactionsCumalative->balance : 0;
+
+            $cumalative_balance = $getCustomerTransactionsCumalative->balance;
+
+
+            if(isset($getCustomerPayments) && $getCustomerPayments->id != ''){
+                if($getCustomerPayments->is_posted == 0){
+
+                    $proData = [
+                        'is_posted' => 1,
+                        'posted_date' => now()
+                    ];
+                    // update the data
+                    $getCustomerPayments->update($proData);
+
+                    $insertProData1 = [
+                        'customer_id' => $getCustomerPayments->customer_id,
+                        'transaction_type' => 'customer_receipt',
+                        'transaction_reference' => $getCustomerPayments->receipt_no,
+                        'source_reference' => $request->cpayment_id,
+                        'payment_method' => isset($getCustomerPayments->method) ? $getCustomerPayments->method : 0,
+                        'reference' => $getCustomerPayments->reference,
+                        'bank_account_id' => $getCustomerPayments->bank_account_id,
+                        'nominal_account_id' => $nominal_account_id,
+                        'transaction_date' => WORKING_DATE,
+                        'effective_date' => $getCustomerPayments->date,
+                        'currency_id' => $getCustomerPayments->currency_id,
+                        'currency_value' => $getCustomerPayments->currency_value,
+                        'amount' => $getCustomerPayments->payment_amount,
+                        'debits' => $getCustomerPayments->payment_amount,
+                        'credits' => 0,
+                        'balance' => $cumalative_balance + $getCustomerPayments->payment_amount,
+                        'customer_balance' => 0,
+                        'created_by' => Auth::user()->id
+                    ];
+
+
+                    $addDatas = new CustomerTransactions();
+                    $addDatas->fill($insertProData1);
+                    $addDatas->save();
+
+                    $getCustomerTransactionsCustomerCumulative = CustomerTransactions::where('customer_id', '=', $getCustomerPayments->customer_id)
+                                                                                    ->where('nominal_account_id', '=', $debtors_control_account)
+                                                                                    ->where('status', 1)
+                                                                                    ->orderBy('id', 'desc')
+                                                                                    ->limit(1)
+                                                                                    ->first(['customer_balance as balance']);
+
+                    $getCustomerTransactionsCumalative = CustomerTransactions::where('nominal_account_id', '=', $debtors_control_account)
+                                                                            ->where('status', 1)
+                                                                            ->orderBy('id', 'desc')
+                                                                            ->limit(1)
+                                                                            ->first(['customer_balance as balance']);
+
+                    $customer_cumalative_balance = $getCustomerTransactionsCustomerCumulative->balance;
+                    $cumalative_balance = $getCustomerTransactionsCumalative->balance;
+
+                    $insertProData2 = [
+                        'customer_id' => $getCustomerPayments->customer_id,
+                        'transaction_type' => 'customer_receipt',
+                        'transaction_reference' => $getCustomerPayments->receipt_no,
+                        'source_reference' => $request->cpayment_id,
+                        'payment_method' => $getCustomerPayments->method,
+                        'reference' => $getCustomerPayments->reference,
+                        'bank_account_id' => 0,
+                        'nominal_account_id' => $debtors_control_account,
+                        'transaction_date' => WORKING_DATE,
+                        'effective_date' => $getCustomerPayments->date,
+                        'currency_id' => $getCustomerPayments->currency_id,
+                        'currency_value' => $getCustomerPayments->currency_value,
+                        'amount' => $getCustomerPayments->payment_amount * -1,
+                        'debits' => 0,
+                        'credits' => $getCustomerPayments->payment_amount,
+                        'balance' => $cumalative_balance - $getCustomerPayments->payment_amount,
+                        'customer_balance' => $customer_cumalative_balance - $getCustomerPayments->payment_amount,
+                        'created_by' => Auth::user()->id
+                    ];
+
+                    $addDatas2 = new CustomerTransactions();
+                    $addDatas2->fill($insertProData2);
+                    $addDatas2->save();
+
+                    $message = 'Receipt successfully posted !';
+                    $messageType = 'success';
+                }else{
+                    $message = 'Receipt already posted for the payment !';
+                    $messageType = 'error';
+                }
+            }else{
+                $message = 'Customer receipt id not found in the request, Please try again !';
+                $messageType = 'error';
+            }
+        }else{
+            $message = 'Failed to get information for the selected receipt, Please try again !';
+            $messageType = 'error';
+        }
+
+        $responseData = [
+            'message' => $message,
+            'messageType' => $messageType
+        ];
+        //echo $message;
+        return response()->json($responseData);
+    }
+
     public function addCustomerReceipt(Request $request){
 
         $messageType = '';
@@ -225,23 +358,12 @@ class CusCustomerReceiptsController extends Controller
             $getCustomerPayment = CustomerPayments::where('id', $request->edit_id)
                                                         ->where('status', 1)
                                                         ->first();
-
-            $branchId = '';
-            $receipt_no = '';
-            $mcs_id = '';
-            $customer_id = '';
-            $bank_account_id = '';
-            $branchId = '';
-            $branchId = '';
-            $branchId = '';
-            $branchId = '';
-            $branchId = '';
-            $branchId = '';
+            if(isset($getCustomerPayment->mcs_id)) $mcs_id = $getCustomerPayment->mcs_id; else $mcs_id = 0;
 
             $proData = [
-                'branch_id' => '',
-                'receipt_no' => '',
-                'mcs_id' => '',
+                'branch_id' => Auth::user()->branch_id,
+                'receipt_no' => $receipt_no,
+                'mcs_id' => $mcs_id,
                 'customer_id' => $getCustomerPayment->customer_id,
                 'bank_account_id' => $request->bank_account,
                 'date' => $request->payment_date,
@@ -254,15 +376,14 @@ class CusCustomerReceiptsController extends Controller
                 'reference' => $request->reference,
                 'card_type' => $request->card_type,
                 'auth_number' => $request->auth_number,
-                'private_note' => '',
-                'added_date' => '',
-                'added_user' => '',
+                'private_note' => $getCustomerPayment->private_note,
+                'added_date' => WORKING_DATE,
+                'added_user' => Auth::user()->id,
             ];
 
             $addDatas = new CustomerPayments();
             $addDatas->fill($proData);
             $addDatas->save();
-
 
         }
     }

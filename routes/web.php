@@ -199,6 +199,7 @@ Route::group(['prefix' => '/'], function () {
                 Route::get('/', [CusCustomerReceiptsController::class, 'index'])->name('index.cuscustomerreceipts');
                 Route::get('/fetch-customer-receipts', [CusCustomerReceiptsController::class, 'fetchCustomerReceipts'])->name('cuscustomerreceipts.fetchcustomerreceipts');
                 Route::get('/get-customer-receipts-history', [CusCustomerReceiptsController::class, 'getCustomerReceiptsHistory'])->name('cuscustomerreceipts.getcustomerreceiptshistory');
+                Route::get('/post-customer-receipts', [CusCustomerReceiptsController::class, 'postCustomerReceipt'])->name('cuscustomerreceipts.postcustomerreceipt');
                 Route::post('/get-converted-payment-amount', [CusCustomerReceiptsController::class, 'getConvertedPaymentAmount'])->name('cuscustomerreceipts.getconvertedpaymentamount');
                 Route::post('/get-default-bank-payment-method', [BankAccountsController::class, 'getDefaultBankPaymentMethod'])->name('cuscustomerreceipts.getdefaultbankpaymentmethod');
                 Route::get('/{pro_id}/edit-customer-receipt', [CusCustomerReceiptsController::class, 'editCustomerReceipt'])->name('cuscustomerreceipts.editcustomerreceipt');
