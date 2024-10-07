@@ -45,6 +45,7 @@ use App\Http\Controllers\dashboard\customers\CusCorrectionsController;
 use App\Http\Controllers\dashboard\customers\CusDebtManagementController;
 use App\Http\Controllers\dashboard\customers\CusVasController;
 use App\Http\Controllers\dashboard\customers\CusWhtCetificatesController;
+use App\Http\Controllers\dashboard\customers\FiscalReceiptUploadController;
 
 use App\Http\Controllers\dashboard\DocumentsController;
 use App\Http\Controllers\dashboard\documents\QuotationFormatsController;
@@ -193,7 +194,16 @@ Route::group(['prefix' => '/'], function () {
             Route::get('/debt-management', [CusDebtManagementController::class, 'index'])->name('index.cusdebtmanagement');
             Route::get('/vas', [CusVasController::class, 'index'])->name('index.cusvas');
             Route::get('/wht-cetificates', [CusWhtCetificatesController::class, 'index'])->name('index.cuswhtcetificates');
-            Route::get('/fiscal-receipt-upload', [CusWhtCetificatesController::class, 'index'])->name('index.fiscalreceiptupload');
+            //Route::get('/fiscal-receipt-upload', [CusWhtCetificatesController::class, 'index'])->name('index.fiscalreceiptupload');
+
+            Route::group(['prefix' => 'fiscal-receipt-upload', 'middleware' => 'role:admin'], function () {
+                Route::get('/', [FiscalReceiptUploadController::class, 'index'])->name('index.fiscalreceiptupload');
+                Route::get('/fetch-fiscal-receipts', [FiscalReceiptUploadController::class, 'fetchFiscalReceipts'])->name('fiscalreceiptupload.fetchfiscalreceipts');
+                Route::get('/{pro_id}/edit-fiscal-receipt', [FiscalReceiptUploadController::class, 'editFiscalReceipt'])->name('fiscalreceiptupload.editfiscalreceipt');
+                Route::post('/add-new-fiscal-receipt', [FiscalReceiptUploadController::class, 'addFiscalReceipt'])->name('fiscalreceiptupload.addiscalreceipt');
+                Route::post('/{pro_id}/update-fiscal-receipt', [FiscalReceiptUploadController::class, 'updateFiscalReceipt'])->name('fiscalreceiptupload.updateiscalreceipt');
+                Route::post('/{pro_id}/delete-fiscal-receipt', [FiscalReceiptUploadController::class, 'deleteFiscalReceipt'])->name('fiscalreceiptupload.deleteiscalreceipt');
+            });
 
             Route::group(['prefix' => 'customer-receipts', 'middleware' => 'role:admin'], function () {
                 Route::get('/', [CusCustomerReceiptsController::class, 'index'])->name('index.cuscustomerreceipts');
