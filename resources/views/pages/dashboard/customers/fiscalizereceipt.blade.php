@@ -131,12 +131,12 @@
                                                                 </div>
                                                                 <div class="col-md-2">
                                                                     <div class="form-group">
-                                                                        <button class="btn btn-primary form-control" title="Search" id="btn_search">Serach</button>
+                                                                        <button class="btn btn-primary form-control" title="Search" id="btn_search" type="button">Serach</button>
                                                                     </div>
                                                                 </div>
                                                                 <div class="col-md-1">
                                                                     <div class="form-group">
-                                                                        <button class="btn btn-default form-control" id="btn_reset" title="Reset Search"><span class="glyphicon glyphicon-refresh"></span></button>
+                                                                        <button type="button" class="btn btn-default form-control" id="btn_reset" title="Reset Search"><span class="glyphicon glyphicon-refresh"></span></button>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -180,7 +180,9 @@
             <h4 class="modal-title"><span class="glyphicon glyphicon-plus"></span> ADD ATTACHMENTS</h4>
             <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
         </div>
-		<form id="frm_add_attachments" method="post" enctype='multipart/form-data'>
+		<form id="frm_add_attachments" method="post" enctype="multipart/form-data">
+            @csrf
+            <input type="hidden" name="form_type" id="form_type" value="fiscalreceiptupload.addfiscalreceipt">
 	        <div class="modal-body">
 				<div class="row">
 					<div class="col-md-12">
@@ -191,14 +193,14 @@
 					</div>
 				</div>
 	        </div>
-	        <div class="modal-footer">
+	        <div class="modal-footer d-block">
 				<div class="row">
-					<div class="col-md-6">
+					<div class="col-md-6 pl-0">
 						<div class="form-group">
 							<button type="button" class="btn btn-default form-control" data-bs-dismiss="modal">Cancel</button>
 						</div>
 					</div>
-					<div class="col-md-6">
+					<div class="col-md-6 pr-0">
 						<div class="form-group">
 							<button type="submit" name="submit" class="btn btn-primary form-control">Save</button>
 							<input type="hidden" name="attachment_id" id="attachment_id" />
@@ -229,13 +231,13 @@
       <div class="modal-body">
         <p>Do you want to close this booking window ?</p>
       </div>
-        <div class="modal-footer">
-		<div class="col-md-6">
+        <div class="modal-footer d-block">
+		<div class="col-md-6 pl-0">
 		<div class="form-group">
 			<button type="button" class="btn btn-default form-control" data-bs-dismiss="modal">No</button>
 		</div>
 		</div>
-		<div class="col-md-6">
+		<div class="col-md-6 pr-0">
 		<div class="form-group">
 			<button type="submit" name="close_booking" class="btn btn-primary form-control">Yes</button>
 		</div>
@@ -258,6 +260,7 @@
 @push('scripts')
     <script>
     $('.searchable').select2();
+
     $(function () {
         $("#from_date").datepicker({
             autoclose: true,
@@ -283,18 +286,169 @@
         weekStart: 0,
     };
 
+    function add_attachment(attachment_id, receipt_id,type){
+        $('#attachment_id').val(attachment_id);
+        $('#receipt_id').val(receipt_id);
+        $('#receipt_type').val(type);
+        $('#addAttachmentModal').modal('show');
+    }
+
+    function uploadFiscalReceipt(attachment_id, receipt_id,type){
+        $('#attachment_id').val(attachment_id);
+        $('#receipt_id').val(receipt_id);
+        $('#receipt_type').val(type);
+        $('#form_type').val('fiscalreceiptupload.editfiscalreceipt');
+        $('#addAttachmentModal').modal('show');
+    }
+
+    $('#btn_reset').click(function (e){
+        $('#from_date').val("").change();
+        $('#to_date').val("").change();
+        $('#customer_id').val("").change();
+        $('#receipt_no').val("");
+        $('#wht_cert_no').val("");
+        $('#type').val("").change();
+
+        listTableDatas();
+    });
+
+    $('#btn_search').click(function (e){
+        var from_date = $('#from_date').val();
+        var to_date = $('#to_date').val();
+        var customer_id = $('#customer_id').val();
+        var receipt_no = $('#receipt_no').val();
+        var wht_cert_no = $('#wht_cert_no').val();
+        var type = $('#type').val();
+
+        listTableDatas(1,from_date,to_date,customer_id,receipt_no,wht_cert_no,type);
+    });
+
+    $('#btn_reset').click(function (e){
+        $('#from_date').val("").change();
+        $('#to_date').val("").change();
+        $('#customer_id').val("").change();
+        $('#receipt_no').val("");
+        $('#wht_cert_no').val("");
+        $('#type').val("").change();
+
+        listTableDatas();
+    });
+
+    $('#from_date').keydown(function (e){
+        if(e.keyCode == 13){
+            var from_date = $('#from_date').val();
+            var to_date = $('#to_date').val();
+            var customer_id = $('#customer_id').val();
+            var receipt_no = $('#receipt_no').val();
+            var wht_cert_no = $('#wht_cert_no').val();
+            var type = $('#type').val();
+
+            listTableDatas(1,from_date,to_date,customer_id,receipt_no,wht_cert_no,type);
+        }
+    });
+
+    $('#to_date').keydown(function (e){
+        if(e.keyCode == 13){
+            var from_date = $('#from_date').val();
+            var to_date = $('#to_date').val();
+            var customer_id = $('#customer_id').val();
+            var receipt_no = $('#receipt_no').val();
+            var wht_cert_no = $('#wht_cert_no').val();
+            var type = $('#type').val();
+
+            listTableDatas(1,from_date,to_date,customer_id,receipt_no,wht_cert_no,type);
+        }
+    });
+
+    $('#receipt_no').keydown(function (e){
+        if(e.keyCode == 13){
+            var from_date = $('#from_date').val();
+            var to_date = $('#to_date').val();
+            var customer_id = $('#customer_id').val();
+            var receipt_no = $('#receipt_no').val();
+            var wht_cert_no = $('#wht_cert_no').val();
+            var type = $('#type').val();
+
+            listTableDatas(1,from_date,to_date,customer_id,receipt_no,wht_cert_no,type);
+        }
+    });
+
+    $('#wht_cert_no').keydown(function (e){
+        if(e.keyCode == 13){
+            var from_date = $('#from_date').val();
+            var to_date = $('#to_date').val();
+            var customer_id = $('#customer_id').val();
+            var receipt_no = $('#receipt_no').val();
+            var wht_cert_no = $('#wht_cert_no').val();
+            var type = $('#type').val();
+
+            listTableDatas(1,from_date,to_date,customer_id,receipt_no,wht_cert_no,type);
+        }
+    });
+
+    $('#frm_add_attachments').parsley();
+    $('#frm_add_attachments').on('submit', function(event){
+        event.preventDefault();
+        $('#overlay').show();
+        var receipt_id = ($('#receipt_id').val()) ? $('#receipt_id').val() : '';
+        var form_type = '';
+
+        if($('#form_type').val() == 'fiscalreceiptupload.editfiscalreceipt'){
+            form_type = '{{ route("fiscalreceiptupload.updatefiscalreceipt", ":id") }}';
+            form_type = form_type.replace(':id', receipt_id);
+        }else{
+            form_type = '{{ route("fiscalreceiptupload.addfiscalreceipt") }}';
+        }
+
+        // Use FormData to include file
+        var formData = new FormData(this);
+
+        // Append the CSRF token manually
+        formData.append('_token', '{{ csrf_token() }}');
+
+        $.ajax({
+            url : form_type,
+            cache: false,
+            data: formData,
+            type: 'POST',
+            dataType: 'json',
+            contentType: false, // Important for file upload
+            processData: false, // Important for file upload
+            success : function(response) {
+                $('#addAttachmentModal').modal('hide');
+                console.log(response);
+                $('#frm_add_attachments').parsley().reset();
+                $('#frm_add_attachments')[0].reset();
+                Swal.fire({
+                    position: "bottom-end",
+                    icon: response.messageType === 'success' ? "success" : "error",
+                    title: response.message,
+                    showConfirmButton: false,
+                    timer: response.messageType === 'success' ? 4000 : 2500
+                });
+                listTableDatas();
+                $('#overlay').hide();
+            },
+            error: function(xhr, status, error) {
+                console.log("Error getting Fiscal Receipt! \n", xhr, status, error);
+                $('#overlay').hide();
+            }
+        });
+    });
+
+
 
     listTableDatas();
 
-    function listTableDatas(page=1, date_from=null, date_to=null, receipt_no=null, pmethod=null,customer_id=null, bank_account_id=null, is_posted=null, is_allocated=null, post_date_from=null, post_date_to=null) {
+    function listTableDatas(page=1,from_date=null, to_date=null, customer_id=null, receipt_no=null, wht_cert_no=null, type=null) {
         //alert();
         //console.log("THIS");
         $('#overlay').show();
         $.ajax({
                 url : "{{ route('fiscalreceiptupload.fetchfiscalreceipts') }}",
                 cache: false,
-                data: { _token: '{{ csrf_token() }}','page':page, 'date_from':date_from, 'date_to':date_to, 'receipt_no':receipt_no,
-        'method':pmethod, 'customer_id':customer_id, 'bank_account_id':bank_account_id,'is_posted':is_posted, 'is_allocated':is_allocated,'post_date_from':post_date_from,'post_date_to':post_date_to,'order':'ASC'},
+                data: { _token: '{{ csrf_token() }}','page':page,'from_date':from_date,'to_date':to_date,'customer_id':customer_id,'receipt_no':receipt_no,
+		'wht_cert_no':wht_cert_no,'type':type,'order':'ASC'},
                 type: 'GET',
                 success : function(response) {
                     //console.log('Success: '+data);

@@ -193,16 +193,25 @@ Route::group(['prefix' => '/'], function () {
             Route::get('/corrections', [CusCorrectionsController::class, 'index'])->name('index.cuscorrections');
             Route::get('/debt-management', [CusDebtManagementController::class, 'index'])->name('index.cusdebtmanagement');
             Route::get('/vas', [CusVasController::class, 'index'])->name('index.cusvas');
-            Route::get('/wht-cetificates', [CusWhtCetificatesController::class, 'index'])->name('index.cuswhtcetificates');
-            //Route::get('/fiscal-receipt-upload', [CusWhtCetificatesController::class, 'index'])->name('index.fiscalreceiptupload');
+            //Route::get('/wht-cetificates', [CusWhtCetificatesController::class, 'index'])->name('index.cuswhtcetificates');
+            //Route::get('/fiscal-receipt-upload', [FiscalReceiptUploadController::class, 'index'])->name('index.fiscalreceiptupload');
+
+            Route::group(['prefix' => 'wht-cetificates', 'middleware' => 'role:admin'], function () {
+                Route::get('/', [CusWhtCetificatesController::class, 'index'])->name('index.cuswhtcetificates');
+                Route::get('/fetch-wht-cetificates', [CusWhtCetificatesController::class, 'fetchWhtCetificates'])->name('cuswhtcetificates.fetchwhtcetificates');
+                Route::get('/{pro_id}/edit-wht-cetificate', [CusWhtCetificatesController::class, 'editWhtCetificate'])->name('cuswhtcetificates.editwhtcetificate');
+                Route::post('/add-new-wht-cetificate', [CusWhtCetificatesController::class, 'addWhtCetificate'])->name('cuswhtcetificates.addwhtcetificate');
+                Route::post('/{pro_id}/update-wht-cetificate', [CusWhtCetificatesController::class, 'updateWhtCetificate'])->name('cuswhtcetificates.updatewhtcetificate');
+                Route::post('/{pro_id}/delete-wht-cetificate', [CusWhtCetificatesController::class, 'deleteWhtCetificate'])->name('cuswhtcetificates.deletewhtcetificate');
+            });
 
             Route::group(['prefix' => 'fiscal-receipt-upload', 'middleware' => 'role:admin'], function () {
                 Route::get('/', [FiscalReceiptUploadController::class, 'index'])->name('index.fiscalreceiptupload');
                 Route::get('/fetch-fiscal-receipts', [FiscalReceiptUploadController::class, 'fetchFiscalReceipts'])->name('fiscalreceiptupload.fetchfiscalreceipts');
                 Route::get('/{pro_id}/edit-fiscal-receipt', [FiscalReceiptUploadController::class, 'editFiscalReceipt'])->name('fiscalreceiptupload.editfiscalreceipt');
-                Route::post('/add-new-fiscal-receipt', [FiscalReceiptUploadController::class, 'addFiscalReceipt'])->name('fiscalreceiptupload.addiscalreceipt');
-                Route::post('/{pro_id}/update-fiscal-receipt', [FiscalReceiptUploadController::class, 'updateFiscalReceipt'])->name('fiscalreceiptupload.updateiscalreceipt');
-                Route::post('/{pro_id}/delete-fiscal-receipt', [FiscalReceiptUploadController::class, 'deleteFiscalReceipt'])->name('fiscalreceiptupload.deleteiscalreceipt');
+                Route::post('/add-new-fiscal-receipt', [FiscalReceiptUploadController::class, 'addFiscalReceipt'])->name('fiscalreceiptupload.addfiscalreceipt');
+                Route::post('/{pro_id}/update-fiscal-receipt', [FiscalReceiptUploadController::class, 'updateFiscalReceipt'])->name('fiscalreceiptupload.updatefiscalreceipt');
+                Route::post('/{pro_id}/delete-fiscal-receipt', [FiscalReceiptUploadController::class, 'deleteFiscalReceipt'])->name('fiscalreceiptupload.deletefiscalreceipt');
             });
 
             Route::group(['prefix' => 'customer-receipts', 'middleware' => 'role:admin'], function () {
