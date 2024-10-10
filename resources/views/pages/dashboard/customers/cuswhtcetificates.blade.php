@@ -291,11 +291,11 @@
         $('#addAttachmentModal').modal('show');
     }
 
-    function uploadFiscalReceipt(attachment_id, receipt_id,type){
+    function uploadWhtReceipt(attachment_id, receipt_id,type){
         $('#attachment_id').val(attachment_id);
         $('#receipt_id').val(receipt_id);
         $('#receipt_type').val(type);
-        $('#form_type').val('fiscalreceiptupload.editfiscalreceipt');
+        $('#form_type').val('cuswhtcetificates.editwhtcetificate');
         $('#addAttachmentModal').modal('show');
     }
 

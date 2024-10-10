@@ -200,11 +200,13 @@ class CusWhtCetificatesController extends Controller
             $query->where('type', '=', '' . $request->type . '');
         }
 
+        $querySum->WHERE('method','=','WHT');
         $querySum->WHERE('status', 1);
         $totalPayment = $querySum->sum('payment');
 
+        $query->WHERE('method','=','WHT');
         $query->WHERE('status', 1);
-        $query->orderBy('date', 'DESC'); // Default ordering receipt_no DESC
+        $query->orderBy('receipt_no', 'DESC'); // Default ordering receipt_no DESC
 
         $fetchTableDetails = $query->get();
         //$fetchTableDetails = Currencies::all();
@@ -215,7 +217,7 @@ class CusWhtCetificatesController extends Controller
         $credit_total = 0;
 
         $fetchTableDetails = $query->paginate(100);
-        $responses = view('pages.dashboard.customers.tables.fiscal_receipt_table', compact('fetchTableDetails','totalPayment','currencySymbol'))->render();
+        $responses = view('pages.dashboard.customers.tables.wht_certificate_table', compact('fetchTableDetails','totalPayment','currencySymbol'))->render();
 
         return response()->json(['html' => $responses,'is_posted' => $request->is_posted]);
     }

@@ -192,9 +192,19 @@ Route::group(['prefix' => '/'], function () {
             Route::get('/allocate-customer-receipt', [CusAllocateCustomerReceiptController::class, 'index'])->name('index.cusallocatecustomerreceipt');
             Route::get('/corrections', [CusCorrectionsController::class, 'index'])->name('index.cuscorrections');
             Route::get('/debt-management', [CusDebtManagementController::class, 'index'])->name('index.cusdebtmanagement');
-            Route::get('/vas', [CusVasController::class, 'index'])->name('index.cusvas');
+            //Route::get('/vas', [CusVasController::class, 'index'])->name('index.cusvas');
             //Route::get('/wht-cetificates', [CusWhtCetificatesController::class, 'index'])->name('index.cuswhtcetificates');
             //Route::get('/fiscal-receipt-upload', [FiscalReceiptUploadController::class, 'index'])->name('index.fiscalreceiptupload');
+
+            Route::group(['prefix' => 'vas', 'middleware' => 'role:admin'], function () {
+                Route::get('/', [CusVasController::class, 'index'])->name('index.cusvas');
+                Route::get('/fetch-vas', [CusVasController::class, 'fetchVas'])->name('cusvas.fetchvas');
+                Route::get('/{pro_id}/edit-vas', [CusVasController::class, 'editVas'])->name('cusvas.editvas');
+                Route::post('/get-product-category', [CusVasController::class, 'getProductCategory'])->name('cusvas.getproductcategory');
+                Route::post('/add-new-vas', [CusVasController::class, 'addVas'])->name('cusvas.addvas');
+                Route::post('/{pro_id}/update-vas', [CusVasController::class, 'updateVas'])->name('cusvas.updatevas');
+                Route::post('/{pro_id}/delete-vas', [CusVasController::class, 'deleteVas'])->name('cusvas.deletevas');
+            });
 
             Route::group(['prefix' => 'wht-cetificates', 'middleware' => 'role:admin'], function () {
                 Route::get('/', [CusWhtCetificatesController::class, 'index'])->name('index.cuswhtcetificates');

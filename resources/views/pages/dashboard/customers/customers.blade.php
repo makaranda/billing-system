@@ -656,13 +656,13 @@
               <div class="col-md-4">
                   <div class="form-group">
                       <label for="from_date">From Date</label>
-                      <input type="date" name="from_date" id="from_date" class="form-control">
+                      <input type="date" name="from_date" id="from_date" class="form-control" value="">
                   </div>
               </div>
               <div class="col-md-4">
                   <div class="form-group">
                       <label for="to_date">To Date</label>
-                      <input type="date" name="to_date" id="to_date" class="form-control">
+                      <input type="date" name="to_date" id="to_date" class="form-control" value="">
                   </div>
               </div>
               <div class="col-md-4 align-self-end pb-4">
