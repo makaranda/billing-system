@@ -442,6 +442,10 @@
         });
     });
 
+    $("#product").change(function(){
+		$("#description").val($( "#product option:selected" ).text());
+	}); 
+
     $('#frm_add_archives').parsley();
     $('#frm_add_archives').on('submit', function(event){
         event.preventDefault();
@@ -471,10 +475,10 @@
             contentType: false, // Important for file upload
             processData: false, // Important for file upload
             success : function(response) {
-                $('#addAttachmentModal').modal('hide');
+                $('#addArchiveModal').modal('hide');
                 console.log(response);
-                $('#frm_add_attachments').parsley().reset();
-                $('#frm_add_attachments')[0].reset();
+                $('#frm_add_archives').parsley().reset();
+                $('#frm_add_archives')[0].reset();
                 Swal.fire({
                     position: "bottom-end",
                     icon: response.messageType === 'success' ? "success" : "error",

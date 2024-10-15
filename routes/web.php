@@ -186,15 +186,45 @@ Route::group(['prefix' => '/'], function () {
 
         Route::group(['prefix' => 'customers', 'middleware' => 'role:admin'], function () {
             Route::get('/', [CustomersController::class, 'index'])->name('index.customers');
-            Route::get('/attachements', [CusAttachementsController::class, 'index'])->name('index.cusattachements');
-            Route::get('/debtors', [CusDebtorsController::class, 'index'])->name('index.cusdebtors');
-            Route::get('/creditnotes', [CusCreditNotesController::class, 'index'])->name('index.cuscreditnotes');
+
             Route::get('/allocate-customer-receipt', [CusAllocateCustomerReceiptController::class, 'index'])->name('index.cusallocatecustomerreceipt');
             Route::get('/corrections', [CusCorrectionsController::class, 'index'])->name('index.cuscorrections');
             Route::get('/debt-management', [CusDebtManagementController::class, 'index'])->name('index.cusdebtmanagement');
+
+            //Route::get('/creditnotes', [CusCreditNotesController::class, 'index'])->name('index.cuscreditnotes');
             //Route::get('/vas', [CusVasController::class, 'index'])->name('index.cusvas');
             //Route::get('/wht-cetificates', [CusWhtCetificatesController::class, 'index'])->name('index.cuswhtcetificates');
             //Route::get('/fiscal-receipt-upload', [FiscalReceiptUploadController::class, 'index'])->name('index.fiscalreceiptupload');
+            //Route::get('/attachements', [CusAttachementsController::class, 'index'])->name('index.cusattachements');
+            //Route::get('/debtors', [CusDebtorsController::class, 'index'])->name('index.cusdebtors');
+
+            Route::group(['prefix' => 'attachements', 'middleware' => 'role:admin'], function () {
+                Route::get('/', [CusAttachementsController::class, 'index'])->name('index.cusattachements');
+                Route::get('/fetch-attachements', [CusAttachementsController::class, 'fetchVas'])->name('cusattachements.fetchcusattachement');
+                Route::get('/{pro_id}/edit-attachement', [CusAttachementsController::class, 'editVas'])->name('cusattachements.editcusattachement');
+                Route::post('/add-new-attachement', [CusAttachementsController::class, 'addVas'])->name('cusattachements.addcusattachement');
+                Route::post('/{pro_id}/update-attachement', [CusAttachementsController::class, 'updateVas'])->name('cusattachements.updatecusattachement');
+                Route::post('/{pro_id}/delete-attachement', [CusAttachementsController::class, 'deleteVas'])->name('cusattachements.deletecusattachement');
+            });
+
+            Route::group(['prefix' => 'debtors', 'middleware' => 'role:admin'], function () {
+                Route::get('/', [CusDebtorsController::class, 'index'])->name('index.cusdebtors');
+                Route::get('/fetch-cusdebtorw', [CusDebtorsController::class, 'fetchCusDebtors'])->name('cusdebtors.fetchcusdebtor');
+                Route::get('/{pro_id}/edit-cusdebtor', [CusDebtorsController::class, 'editCusDebtor'])->name('cusdebtors.editcusdebtor');
+                Route::post('/add-new-cusdebtor', [CusDebtorsController::class, 'addCusDebtor'])->name('cusdebtors.addcusdebtor');
+                Route::post('/{pro_id}/update-cusdebtor', [CusDebtorsController::class, 'updateCusDebtor'])->name('cusdebtors.updatecusdebtor');
+                Route::post('/{pro_id}/delete-cusdebtor', [CusDebtorsController::class, 'deleteCusDebtor'])->name('cusdebtors.deletecusdebtor');
+            });
+
+            Route::group(['prefix' => 'creditnotes', 'middleware' => 'role:admin'], function () {
+                Route::get('/', [CusCreditNotesController::class, 'index'])->name('index.cuscreditnotes');
+                Route::get('/ccn-id/{ccn_id}', [CusCreditNotesController::class, 'addFormCusCreditNotes'])->name('cuscreditnotes.addformcuscreditnotes');
+                Route::get('/fetch-creditnotes', [CusCreditNotesController::class, 'fetchCusCreditnotes'])->name('cuscreditnotes.fetchcuscreditnote');
+                Route::get('/{pro_id}/edit-creditnote', [CusCreditNotesController::class, 'editCusCreditnote'])->name('cuscreditnotes.edicuscreditnote');
+                Route::post('/add-new-creditnote', [CusCreditNotesController::class, 'addCusCreditnot'])->name('cuscreditnotes.addcuscreditnote');
+                Route::post('/{pro_id}/update-creditnote', [CusCreditNotesController::class, 'updateCusCreditnote'])->name('cuscreditnotes.updatecuscreditnote');
+                Route::post('/{pro_id}/delete-creditnote', [CusCreditNotesController::class, 'deleteCusCreditnote'])->name('cuscreditnotes.deletecuscreditnote');
+            });
 
             Route::group(['prefix' => 'vas', 'middleware' => 'role:admin'], function () {
                 Route::get('/', [CusVasController::class, 'index'])->name('index.cusvas');

@@ -96,7 +96,7 @@ class CusVasController extends Controller
         if($countCheckThisRoutes == 0){
             return redirect()->route('admin.dashboard')->with('error', 'You do not have permission to access this route.');
         }else{
-            return view('pages.dashboard.customers.cusvas', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','getAllRoutePermisssions','routepermissions','getAllCustomers','getProductCategories','systemUsersDetails'));
+            return view('pages.dashboard.customers.cusvas', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','getAllRoutePermisssions','routepermissions','getAllCustomers','getProductCategories','systemUsersDetails','permissionsTypes'));
         }
     }
 
@@ -105,19 +105,36 @@ class CusVasController extends Controller
         $message = '';
             // Validate the incoming request data
             $validator = Validator::make($request->all(), [
-                'group_name' => 'required',
+                'start_date' => 'required',
+                'customer_name' => 'required',
+                'category' => 'required',
+                'product' => 'required',
+                'qty' => 'required',
+                'description' => 'required',
+                'contract_date' => 'required',
+                'authorized_by' => 'required',
+                'attach' => 'required',
+                'invoices' => 'required',
             ]);
 
         if ($validator->fails()) {
             $messageType = 'error';
             //$message = $validator->errors();
-            $message = 'All Fields are Required..!!';
+            //$message = 'All Fields are Required..!!';
+            $message = $validator->errors()->all();
+            $message = implode(', ', $message);
         }else{
+            //INSERT INTO `customer_vas`(`customer_id`, `product_id`, `qty`, `product_description`, `start_date`, `end_date`, `approved_by`, `attach`, `invoice_id`)
             $proData = [
-                'code' => '',
-                'name' => $request->group_name,
-                'default_customer_id' => 0,
-                'created_by' => Auth::user()->id,
+                'customer_id' => $request->required,
+                'product_id' => $request->product,
+                'qty' => $request->qty,
+                'product_description' => $request->description,
+                'start_date' => $request->start_date,
+                'end_date' => $request->start_date,
+                'attach' => $request->attach,
+                'invoice_id' => $request->start_date,
+                'approved_by' => Auth::user()->id,
             ];
 
             // Assuming DepartmentHead is the model class for the table
