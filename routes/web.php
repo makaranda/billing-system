@@ -189,7 +189,7 @@ Route::group(['prefix' => '/'], function () {
 
             Route::get('/allocate-customer-receipt', [CusAllocateCustomerReceiptController::class, 'index'])->name('index.cusallocatecustomerreceipt');
             Route::get('/corrections', [CusCorrectionsController::class, 'index'])->name('index.cuscorrections');
-            Route::get('/debt-management', [CusDebtManagementController::class, 'index'])->name('index.cusdebtmanagement');
+            Route::get('/debtors', [CusDebtorsController::class, 'index'])->name('index.cusdebtors');
 
             //Route::get('/creditnotes', [CusCreditNotesController::class, 'index'])->name('index.cuscreditnotes');
             //Route::get('/vas', [CusVasController::class, 'index'])->name('index.cusvas');
@@ -197,6 +197,7 @@ Route::group(['prefix' => '/'], function () {
             //Route::get('/fiscal-receipt-upload', [FiscalReceiptUploadController::class, 'index'])->name('index.fiscalreceiptupload');
             //Route::get('/attachements', [CusAttachementsController::class, 'index'])->name('index.cusattachements');
             //Route::get('/debtors', [CusDebtorsController::class, 'index'])->name('index.cusdebtors');
+            //Route::get('/debt-management', [CusDebtManagementController::class, 'index'])->name('index.cusdebtmanagement');
 
             Route::group(['prefix' => 'attachements', 'middleware' => 'role:admin'], function () {
                 Route::get('/', [CusAttachementsController::class, 'index'])->name('index.cusattachements');
@@ -207,13 +208,13 @@ Route::group(['prefix' => '/'], function () {
                 Route::post('/{pro_id}/delete-attachement', [CusAttachementsController::class, 'deleteVas'])->name('cusattachements.deletecusattachement');
             });
 
-            Route::group(['prefix' => 'debtors', 'middleware' => 'role:admin'], function () {
-                Route::get('/', [CusDebtorsController::class, 'index'])->name('index.cusdebtors');
-                Route::get('/fetch-cusdebtorw', [CusDebtorsController::class, 'fetchCusDebtors'])->name('cusdebtors.fetchcusdebtor');
-                Route::get('/{pro_id}/edit-cusdebtor', [CusDebtorsController::class, 'editCusDebtor'])->name('cusdebtors.editcusdebtor');
-                Route::post('/add-new-cusdebtor', [CusDebtorsController::class, 'addCusDebtor'])->name('cusdebtors.addcusdebtor');
-                Route::post('/{pro_id}/update-cusdebtor', [CusDebtorsController::class, 'updateCusDebtor'])->name('cusdebtors.updatecusdebtor');
-                Route::post('/{pro_id}/delete-cusdebtor', [CusDebtorsController::class, 'deleteCusDebtor'])->name('cusdebtors.deletecusdebtor');
+            Route::group(['prefix' => 'debt-management', 'middleware' => 'role:admin'], function () {
+                Route::get('/', [CusDebtManagementController::class, 'index'])->name('index.cusdebtmanagement');
+                Route::get('/fetch-debt-managements', [CusDebtManagementController::class, 'fetchDebtManagement'])->name('cusdebtmanagement.fetchdebtmanagements');
+                Route::get('/{pro_id}/edit-debt-management', [CusDebtManagementController::class, 'editDebtManagement'])->name('cusdebtmanagement.editdebtmanagement');
+                Route::post('/add-new-debt-management', [CusDebtManagementController::class, 'addCusDebtManagement'])->name('cusdebtmanagement.adddebtmanagement');
+                Route::post('/{pro_id}/update-debt-management', [CusDebtManagementController::class, 'updateDebtManagement'])->name('cusdebtmanagement.updatedebtmanagement');
+                Route::post('/{pro_id}/delete-debt-management', [CusDebtManagementController::class, 'deleteDebtManagement'])->name('cusdebtmanagement.deletedebtmanagement');
             });
 
             Route::group(['prefix' => 'creditnotes', 'middleware' => 'role:admin'], function () {

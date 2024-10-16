@@ -4,12 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Observers\SystemLogObserver;
 
 class CustomerWhtAttachments extends Model
 {
     use HasFactory;
     protected $table = 'customer_wht_attachments';
 
+    protected static function boot()
+    {
+        parent::boot();
+        self::observe(SystemLogObserver::class);
+    }
     // Allow mass assignment for these fields
     protected $fillable = [
         'type',
