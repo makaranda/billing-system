@@ -139,6 +139,7 @@ class CusDebtManagementController extends Controller
         }
 
         $query->where('status', 1);
+        $query->groupBy('assigned_date', 'user_id');
         $query->orderBy('assigned_date', 'DESC'); // Default ordering
 
         $fetchTableDetails = $query->get();
@@ -149,39 +150,22 @@ class CusDebtManagementController extends Controller
         $debit_total = 0;
         $credit_total = 0;
 
-        $fetchTableDetails = $query->paginate(100);
+        //$fetchTableDetails = $query->paginate(100);
 
         $getAcAccounts = AcAccounts::where('control_type','LIKE', '%debtors_control%')->first();
         $system_users = SystemUsers::where('status', 1)->get();
         $debtors_control_account = $getAcAccounts ? $getAcAccounts->id : 0;
 
-        $customer_balances = [];
-
-        foreach ($fetchTableDetails as $fetchDetail) {
-            $customer_balance = DB::table('customer_transactions as a')
-                ->select(DB::raw('SUM(customer_balance) AS customer_balance'))
-                ->whereIn('id', function ($query) use ($fetchDetail, $debtors_control_account) {
-                    // Explicitly pass $debtors_control_account into the closure
-                    $query->select(DB::raw('MAX(customer_transactions.id) AS id'))
-                        ->from('customer_transactions')
-                        ->join('debt_assignments', 'debt_assignments.customer_id', '=', 'customer_transactions.customer_id')
-                        ->where('customer_transactions.transaction_date', '<=', 'debt_assignments.assigned_upto')
-                        ->where('customer_transactions.nominal_account_id', '=', $debtors_control_account)  // Use passed variable
-                        ->where('debt_assignments.user_id', '=', $fetchDetail->user_id)
-                        ->where('debt_assignments.assigned_upto', '=', $fetchDetail->assigned_upto)
-                        ->groupBy('customer_transactions.customer_id');
-                })
-                ->first();
-
-            // Store the balance in the array with the assignment ID as the key
-            $customer_balances[$fetchDetail->id] = $customer_balance->customer_balance ?? 0;
-        }
-
-        //var_dump($customer_balances);
+        //var_dump($customer_balance);
         //$parentRoute = 'index.productcategories';
+        $sqlQuery = $query->toSql();
+        $bindings = $query->getBindings();
 
-        $responses = view('pages.dashboard.customers.tables.debt_assignments_table', compact('fetchTableDetails','customer_balances'))->render();
+        // Print the SQL and bindings for debugging
+        //dd($sqlQuery, $bindings);
+        //exit();
+        //$responses = view('pages.dashboard.customers.tables.debt_assignments_table', compact('fetchTableDetails'))->render();
 
-        return response()->json(['html' => $responses]);
+        return response()->json(['html' => $sqlQuery]);
     }
 }

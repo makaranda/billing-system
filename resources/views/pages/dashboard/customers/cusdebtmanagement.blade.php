@@ -88,7 +88,7 @@
                                                         <div class="form-group">
                                                             <label for="cn_date">From Date</label>
                                                             <div class="input-group datepicker_field" id="datepicker1">
-                                                                <input type="text" class="form-control" id="search_from_date" name="search_from_date" value="{{ session('report_from_date', WORKING_DATE) }}"/>
+                                                                <input type="text" class="form-control" id="search_from_date" name="search_from_date" value="{{  constant('WORKING_DATE') }}"/>
                                                                 <span class="input-group-addon">
                                                                 <span class="glyphicon glyphicon-calendar"></span>
                                                                 </span>
@@ -119,6 +119,16 @@
                                                                 @endforeach
 
                                                             </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-1 hide">
+                                                        <div class="form-group">
+                                                            <input type="text" min="0" max="100" id="search_performance_min" class="form-control" placeholder="Minimum precentage">
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-1 hide">
+                                                        <div class="form-group">
+                                                            <input type="num" min="0" max="100" id="search_performance_max" class="form-control" placeholder="Maximum precentage">
                                                         </div>
                                                     </div>
                                                     <div class="col-md-2 align-self-end">
@@ -204,15 +214,15 @@
     $('#s_search').click(function(){
         var from_date = $("#search_from_date").val();
         var to_date = $("#search_to_date").val();
-        var user_id = $("#search_user_id").val();
-        var min_precentage = $("#search_performance_min").val();
-        var max_precentage = $("#search_performance_max").val();
-
+        var user_id = ($("#search_user_id").val())?$("#search_user_id").val():'';
+        var min_precentage = ($("#search_performance_min").val())?$("#search_performance_min").val():'';
+        var max_precentage = ($("#search_performance_max").val())?$("#search_performance_max").val():'';
+        console.log(from_date+' - '+to_date+' - '+user_id);
         listTableDatas(from_date, to_date, user_id, min_precentage, max_precentage);
     });
 
 
-    listTableDatas();
+    //listTableDatas();
 
     function listTableDatas(page=1, from_date=null, to_date=null, user_id=null, min_precentage=null, max_precentage=null ) {
         //alert();

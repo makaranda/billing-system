@@ -136,6 +136,50 @@
                         $currentRoute = request()->route()->getName();
                         $parentRoute = 'index.'.explode('.', $currentRoute)[0].'';
 
+                        //$debtors_control_account = $getAcAccounts ? $getAcAccounts->id : 0;
+                        $user_id = $fetchDetail->user_id;
+                        $assigned_upto = $fetchDetail->assigned_upto;
+
+                        $query_cus_tran = \App\Models\CustomerTransactions::query();
+                        $query_debt_assign = \App\Models\DebtAssignments::query();
+
+                        $maxIdSubquery = \App\Models\CustomerTransactions::selectRaw('MAX(customer_transactions.id)')
+                            ->join('debt_assignments', 'debt_assignments.customer_id', '=', 'customer_transactions.customer_id')
+                            ->where('customer_transactions.transaction_date', '<=', DB::raw('debt_assignments.assigned_upto'))  // Transaction date <= assigned_upto
+                            ->where('customer_transactions.nominal_account_id', $debtors_control_account)  // Match nominal account
+                            ->where('debt_assignments.user_id', $user_id)  // Match user_id
+                            ->where('debt_assignments.assigned_upto', $assigned_upto)  // Match assigned_upto
+                            ->groupBy('customer_transactions.customer_id');
+
+                        $query_cus_tran
+                            ->selectRaw('SUM(customer_transactions.customer_balance) AS customer_balance')
+                            ->whereIn('customer_transactions.id', $maxIdSubquery)
+                            ->join('debt_assignments', 'debt_assignments.customer_id', '=', 'customer_transactions.customer_id')
+                            ->where('customer_transactions.transaction_date', '<=', $assigned_upto)  // Ensure transaction date <= assigned_upto
+                            ->where('customer_transactions.nominal_account_id', $debtors_control_account)  // Match nominal account again for the main query
+                            ->where('debt_assignments.user_id', $user_id);  // Match user_id again for the main query
+
+                        $assigned = $query_cus_tran->first();
+
+                        // Step 1: Subquery to get MAX(id) for each customer
+                        $maxIdSubquery2 = \App\Models\CustomerTransactions::selectRaw('MAX(customer_transactions.id)')
+                            ->join('debt_assignments', 'debt_assignments.customer_id', '=', 'customer_transactions.customer_id')
+                            ->where('customer_transactions.transaction_date', '<=', DB::raw('debt_assignments.assigned_upto'))  // Transaction date <= assigned_upto
+                            ->where('customer_transactions.nominal_account_id', '=', $debtors_control_account)  // Match nominal account
+                            ->where('debt_assignments.user_id', '=', $user_id)  // Match user_id
+                            ->where('debt_assignments.assigned_upto', '=', $assigned_upto)  // Match assigned_upto
+                            ->groupBy('customer_transactions.customer_id');
+
+                        // Step 2: Main query to get SUM(customer_balance)
+                        $customer_balance = \App\Models\CustomerTransactions::selectRaw('SUM(customer_transactions.customer_balance) AS customer_balance')
+                            ->whereIn('customer_transactions.id', $maxIdSubquery2)
+                            ->join('debt_assignments', 'debt_assignments.customer_id', '=', 'customer_transactions.customer_id')
+                            ->where('customer_transactions.transaction_date', '<=', $assigned_upto)  // Ensure transaction date <= assigned_upto
+                            ->where('customer_transactions.nominal_account_id', '=', $debtors_control_account)  // Match nominal account again
+                            ->where('debt_assignments.user_id', '=', $user_id)  // Match user_id again
+                            ->first();
+
+
                         // $is_total_debits = ($getCustomerTransactions->total_debits)?number_format($getCustomerTransactions->total_debits,2):'0.00';
                         // $is_total_credits = ($getCustomerTransactions->total_credits)?number_format($getCustomerTransactions->total_credits,2):'0.00';
                         // $is_balance = ($getCustomerTransactions->balance)?number_format($getCustomerTransactions->balance,2):'0.00';
@@ -220,16 +264,17 @@
                             }
                             $unallocated_amount = 0;
 
-                            $assigned = $customer_balances;
+                            $assigned = ($assigned->customer_balance)?$assigned->customer_balance:0;
+                            $collected = ($customer_balance->customer_balance)?$customer_balance->customer_balance:0;
                     @endphp
 
                             <tr>
                                 <td>{{ $key + 1 }}</td>
                                 <td style="vertical-align: middle;">{{ $fetchDetail->cdn_no }}</td>
                                 <td style="vertical-align: middle;">{{ $fetchDetail->date }}</td>
-                                <td style="vertical-align: middle;">{{ '' }}</td>
-                                <td style="vertical-align: middle;">{{ $customer_code." ".$customer_name }}</td>
-                                <td style="vertical-align: middle;">{{ number_format($unallocated_amount,2) }}</td>
+                                <td style="vertical-align: middle;"></td>
+                                <td style="vertical-align: middle;">{{ number_format($assigned,2) }}</td>
+                                <td style="vertical-align: middle;">{{ number_format($collected,2) }}</td>
                                 <td style="vertical-align: middle;">{{ number_format($fetchDetail->amount,2) }}</td>
                                 <td style="vertical-align: right;"></td>
 
