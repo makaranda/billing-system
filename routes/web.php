@@ -211,6 +211,7 @@ Route::group(['prefix' => '/'], function () {
             Route::group(['prefix' => 'debt-management', 'middleware' => 'role:admin'], function () {
                 Route::get('/', [CusDebtManagementController::class, 'index'])->name('index.cusdebtmanagement');
                 Route::get('/fetch-debt-managements', [CusDebtManagementController::class, 'fetchDebtManagement'])->name('cusdebtmanagement.fetchdebtmanagements');
+                Route::get('/get-filtered-debt-list', [CusDebtManagementController::class, 'fetchFilteredDebt'])->name('cusdebtmanagement.fetchdebtfiltered');
                 Route::get('/{pro_id}/edit-debt-management', [CusDebtManagementController::class, 'editDebtManagement'])->name('cusdebtmanagement.editdebtmanagement');
                 Route::post('/add-new-debt-management', [CusDebtManagementController::class, 'addCusDebtManagement'])->name('cusdebtmanagement.adddebtmanagement');
                 Route::post('/{pro_id}/update-debt-management', [CusDebtManagementController::class, 'updateDebtManagement'])->name('cusdebtmanagement.updatedebtmanagement');

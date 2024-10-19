@@ -324,3 +324,7 @@ p {
 .hide {
     display: none !important;
 }
+#assign_debt_modal {
+    z-index: 9999;
+    top: 10%;
+}

@@ -33,7 +33,7 @@ class CusDebtManagementController extends Controller
     public function index($route = null){
         $route = $route ?? 'index.customers';
         $route = $route ?? 'home';
-        $data = session('data');
+        $request = session('data');
 
         $mainMenus = SystemMenus::whereNull('parent_id')
                                 ->orderBy('order')
@@ -71,7 +71,7 @@ class CusDebtManagementController extends Controller
         $getAllCollectionBureaus = CollectionBureaus::where('status',1)->get();
         $getAllPriceTypes = PriceTypes::where('status',1)->get();
         $getAllBranches = Branches::where('status',1)->get();
-        $productCategoriesDetails = ProductCategories::where('status', 1)->get();
+        $getAllProductCategories = ProductCategories::where('status', 1)->get();
         $getAllCustomerGroup = CustomerGroup::where('status', 1)->get();
         $getAllcurrencies = Currencies::where('status', 1)->get();
         $getAllterritories = Territories::where('status', 1)->get();
@@ -111,8 +111,132 @@ class CusDebtManagementController extends Controller
         if($countCheckThisRoutes == 0){
             return redirect()->route('admin.dashboard')->with('error', 'You do not have permission to access this route.');
         }else{
-            return view('pages.dashboard.customers.cusdebtmanagement', compact('mainMenus','subsMenus', 'data','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','getAllRoutePermisssions','routepermissions','getAllCollectionBureaus','getAllterritories','getAllProducts','getAllCustomers','getAllSystemUsers','debt_collector_name'));
+            return view('pages.dashboard.customers.cusdebtmanagement', compact('mainMenus','subsMenus','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','getAllRoutePermisssions','routepermissions','getAllCollectionBureaus','getAllterritories','getAllProducts','getAllCustomers','getAllSystemUsers','debt_collector_name','getAllProductCategories'));
         }
+    }
+
+    public function fetchFilteredDebt(Request $request){
+        $getAcAccounts = AcAccounts::where('control_type', 'LIKE', '%debtors_control%')->first();
+        $getCustomerTransactions = CustomerTransactions::where('status', '=', 1)->get();
+
+        if(isset($getAcAccounts->id)){
+            $debtors_control_account = $getAcAccounts->id;
+            // $fetchTableDetails = DB::table('customer_transactions as a')
+            // ->join(DB::raw('(SELECT MAX(customer_transactions.id) AS id
+            //                 FROM customer_transactions
+            //                 INNER JOIN debt_assignments
+            //                 ON debt_assignments.customer_id = customer_transactions.customer_id
+            //                 WHERE customer_transactions.nominal_account_id = ?
+            //                 AND ((customer_transactions.transaction_type IN (?, ?)
+            //                 AND customer_transactions.effective_date <= ?)
+            //                 OR customer_transactions.effective_date <= ?)
+            //                 GROUP BY customer_transactions.customer_id) as b'), 'a.id', '=', 'b.id')
+            // ->join('customers as c', 'c.id', '=', 'a.customer_id')
+            // ->select(
+            //     'a.*',
+            //     'c.code',
+            //     'c.company',
+            //     'c.active'
+            // )
+            // ->setBindings([$debtors_control_account, 'proforma', 'invoice', $collection_date, $collection_date])
+            // ->get(); code
+
+            $fetchTableDetails = DB::table('customer_transactions as a')
+                ->join(DB::raw('(SELECT MAX(customer_transactions.id) AS id
+                                FROM customer_transactions
+                                INNER JOIN debt_assignments
+                                ON debt_assignments.customer_id = customer_transactions.customer_id
+                                WHERE customer_transactions.nominal_account_id = ' . intval($debtors_control_account) . '
+                                AND ((customer_transactions.transaction_type IN (\'proforma\', \'invoice\')
+                                AND customer_transactions.effective_date <= \'' . $request->collection_date . '\')
+                                OR customer_transactions.effective_date <= \'' . $request->collection_date . '\')
+                                GROUP BY customer_transactions.customer_id
+                                ) as b'), 'a.id', '=', 'b.id')
+                // Join the customers table
+                ->join('customers as c', 'c.id', '=', 'a.customer_id')
+
+                // Add the select statement to retrieve necessary fields
+                ->select(
+                    'a.*',            // All columns from customer_transactions
+                    'c.code',         // Customer code from customers table
+                    'c.company',      // Customer company from customers table
+                    'c.active'        // Customer active status from customers table
+                );
+
+            // Add conditional customer_id filter
+            if (isset($request->customer_id) && $request->customer_id > 0) {
+                $fetchTableDetails->where('a.customer_id', $request->customer_id);
+            }
+
+            // Add conditional subquery filters for customer data
+            if (
+                (isset($request->cutomer_territory) && $request->cutomer_territory > 0) ||
+                (isset($request->customer_group_id) && $request->customer_group_id > 0) ||
+                (isset($request->collection_bureau_id) && $request->collection_bureau_id > 0) ||
+                (isset($request->customer_active))
+            ) {
+                $fetchTableDetails->whereIn('a.customer_id', function ($query) use ($request) {
+                    $query->select('id')
+                        ->from('customers')
+                        ->whereRaw('1 = 1'); // Placeholder for adding dynamic conditions
+
+                    if (isset($request->cutomer_territory) && $request->cutomer_territory > 0) {
+                        $query->where('territory_id', $request->cutomer_territory);
+                    }
+
+                    if (isset($request->customer_group_id) && $request->customer_group_id > 0) {
+                        $query->where('group_id', $request->customer_group_id);
+                    }
+
+                    if (isset($request->collection_bureau_id) && $request->collection_bureau_id > 0) {
+                        $query->where('collection_bureau_id', $request->collection_bureau_id);
+                    }
+
+                    if (isset($request->customer_active)) {
+                        $query->where('active', $request->customer_active);
+                    }
+                });
+            }
+
+            // Add report_date condition
+            if (isset($request->report_date) && !empty($request->report_date)) {
+                $fetchTableDetails->where('a.transaction_date', '<=', $request->report_date);
+            }
+
+            // Group by customer_id
+            $fetchTableDetails->groupBy('a.customer_id');
+
+            // Additional conditions: min_value and debt_assignment exclusions
+            if (isset($request->min_value) && $request->min_value >= 0) {
+                $fetchTableDetails->having('a.customer_balance', '>', ''.$request->min_value.'');
+            }
+
+            $fetchTableDetails->whereNotIn('a.customer_id', function ($query) use ($request) {
+                $query->select('customer_id')
+                    ->from('debt_assignments')
+                    ->where('assigned_date', $request->working_date);
+            });
+
+            // Handle ordering
+            if (isset($request->order) && !empty($request->order)) {
+                $fetchTableDetails->orderByRaw($request->order);
+            }
+
+            // Handle limiting
+            if (isset($request->limit) && !empty($request->limit)) {
+                $fetchTableDetails->limit($request->limit);
+            }
+
+            // Execute the query
+            //$results = $fetchTableDetails->get();
+            $results = $fetchTableDetails->paginate(100);
+
+            //exit();
+            $responses = view('pages.dashboard.customers.tables.debt_filtered_table', compact('results'))->render();
+        }else{
+            $responses = '<h6>Debtors control account not setup in the system, Please try again !</h6>';
+        }
+        return response()->json(['html' => $responses]);
     }
 
     public function fetchDebtManagement(Request $request){
@@ -150,7 +274,7 @@ class CusDebtManagementController extends Controller
         $debit_total = 0;
         $credit_total = 0;
 
-        //$fetchTableDetails = $query->paginate(100);
+        $fetchTableDetails = $query->paginate(100);
 
         $getAcAccounts = AcAccounts::where('control_type','LIKE', '%debtors_control%')->first();
         $system_users = SystemUsers::where('status', 1)->get();
@@ -164,8 +288,8 @@ class CusDebtManagementController extends Controller
         // Print the SQL and bindings for debugging
         //dd($sqlQuery, $bindings);
         //exit();
-        //$responses = view('pages.dashboard.customers.tables.debt_assignments_table', compact('fetchTableDetails'))->render();
+        $responses = view('pages.dashboard.customers.tables.debt_assignments_table', compact('fetchTableDetails'))->render();
 
-        return response()->json(['html' => $sqlQuery]);
+        return response()->json(['html' => $responses]);
     }
 }
