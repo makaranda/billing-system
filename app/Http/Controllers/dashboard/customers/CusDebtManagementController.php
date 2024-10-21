@@ -27,6 +27,7 @@ use App\Models\CustomerTransactions;
 use App\Models\AcAccounts;
 use App\Models\Products;
 use App\Models\DebtAssignments;
+use App\Models\Invoices;
 
 class CusDebtManagementController extends Controller
 {
@@ -113,6 +114,92 @@ class CusDebtManagementController extends Controller
         }else{
             return view('pages.dashboard.customers.cusdebtmanagement', compact('mainMenus','subsMenus','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','getAllRoutePermisssions','routepermissions','getAllCollectionBureaus','getAllterritories','getAllProducts','getAllCustomers','getAllSystemUsers','debt_collector_name','getAllProductCategories'));
         }
+    }
+
+    public function assignDebtCollector(Request $request){
+        $message = '';
+        $messageType = '';
+
+        // Check if customer_id or customer_ids are set
+        if (isset($request->customer_id) || isset($request->customer_ids)) {
+            // If customer_id is set, assign it as an array for easier iteration
+            if ($request->customer_id > 0) {
+                $customer_ids = [$request->customer_id];
+            } else {
+                $customer_ids = is_array($request->customer_ids)
+                        ? $request->customer_ids
+                        : explode(',', $request->customer_ids);
+            }
+
+            $i = 0; // Total number of customers
+            $j = 0; // Number of successfully assigned debts
+
+            // Loop through all customer_ids
+            foreach ($customer_ids as $customerId) {
+                $dcid = $request->dcid;
+                $report_date = $request->report_date;
+                $collection_date = $request->collection_date;
+                $created_by = Auth::user()->id;
+                $working_date = now()->format('Y-m-d'); // Assuming WORKING_DATE is current date
+
+                $i++;
+
+                // Check if the customer is already assigned for the given working date
+                $existingAssignment = DebtAssignments::where('assigned_date', $working_date)
+                    ->where('customer_id', $customerId)
+                    ->where('status', 1)
+                    ->first();
+
+                // If no existing assignment, proceed with insertion
+                if (!$existingAssignment) {
+                    // Create new debt assignment record
+                    $debtAssignment = DebtAssignments::create([
+                        'user_id' => $dcid,
+                        'customer_id' => $customerId,
+                        'assigned_date' => $working_date,
+                        'assigned_upto' => $report_date,
+                        'collection_date' => $collection_date,
+                        'assigned_by' => $created_by
+                    ]);
+
+                    if ($debtAssignment) {
+                        // Update invoices related to the customer
+                        Invoices::where('customer_id', $customerId)
+                            ->where('is_paid', 0)
+                            ->where('date', '<', $report_date)
+                            ->update(['debt_collector_id' => $dcid]);
+
+                        // Success message
+                        $message = "Debts up to $report_date have been successfully assigned to the selected debt collector.";
+                        $messageType = 'success';
+                        $j++;
+                    } else {
+                        $message = "Failed to assign selected debts to the collector. Please try again!";
+                        $messageType = 'error';
+                    }
+                } else {
+                    $message = "Selected customer is already assigned to a debt collector for this meeting.";
+                    $messageType = 'error';
+                }
+            }
+
+            // If multiple customers were processed, return summary
+            if ($i > 1) {
+                $message = "$j out of $i debts assigned successfully.";
+            }
+        } else {
+            $messageType = 'error';
+            $message = 'Customer ID or customer IDs are required. Please try again!';
+        }
+
+        // Prepare response data
+        $responseData = [
+            'message' => $message,
+            'messageType' => $messageType
+        ];
+
+        // Return JSON response
+        return response()->json($responseData);
     }
 
     public function fetchFilteredDebt(Request $request){
@@ -230,13 +317,18 @@ class CusDebtManagementController extends Controller
             // Execute the query
             //$results = $fetchTableDetails->get();
             $results = $fetchTableDetails->paginate(100);
-
+            $sql_query = $fetchTableDetails->toSql();
             //exit();
             $responses = view('pages.dashboard.customers.tables.debt_filtered_table', compact('results'))->render();
         }else{
             $responses = '<h6>Debtors control account not setup in the system, Please try again !</h6>';
         }
         return response()->json(['html' => $responses]);
+        //return response()->json(['html' => $sql_query]);
+    }
+
+    public function viewDebtManagement(Request $request){
+        return view('pages.dashboard.customers.cusviewdebtmanagement');
     }
 
     public function fetchDebtManagement(Request $request){

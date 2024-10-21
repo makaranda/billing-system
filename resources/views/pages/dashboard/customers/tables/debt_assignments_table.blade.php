@@ -10,9 +10,8 @@
                     <td width="10%" align="left"><strong>Debt Assigned</strong></td>
                     <td width="10%" align="left"><strong>Debt Collected</strong></td>
                     <td width="10%" align="left"><strong>To Be Collected</strong></td>
-                    <td width="10%" align="left"><strong>Performance</strong></td>
-                    <td width="5%"></td>
-                    <td width="10%" align="left"><strong>Action</strong></td>
+                    <td width="5%" align="left"><strong>Performance</strong></td>
+                    <td width="20%" align="left"><strong>Action</strong></td>
                 </tr>
             </thead>
             <tbody>
@@ -27,19 +26,19 @@
 
                     // Fetch all active system users
                     $system_users = \App\Models\SystemUsers::where('status', 1)->get();
+                    $getAllRoutePermisssions = \App\Models\RoutesPermissions::where('user_id', Auth::user()->id)->get();
 
-                    // Properly assign debtors control account, fallback to 0 if not found
-                    $debtors_control_account = ($getAcAccounts->id) ? $getAcAccounts->id : 0;
+                    $currentRoute = request()->route()->getName();
+                    $parentRoute = 'index.'.explode('.', $currentRoute)[0].'';
 
-                    // Initialize an array to store system users
-                    $system_users_array = [];
+                    $canRead = $getAllRoutePermisssions->contains(function ($permission) use ($currentRoute, $parentRoute) {
+                        return $permission->permission_type == 'read' && ($permission->route == $currentRoute || $permission->route == $parentRoute);
+                    });
 
-                    // Populate system_users_array if there are system users
-                    if ($system_users->isNotEmpty()) {
-                        foreach ($system_users as $user) {
-                            $system_users_array[$user->id] = $user;
-                        }
-                    }
+                    $canPost = $getAllRoutePermisssions->contains(function ($permission) use ($currentRoute, $parentRoute) {
+                        return $permission->permission_type == 'post' && ($permission->route == $currentRoute || $permission->route == $parentRoute);
+                    });
+
 
                     $html = '';
                     $default_assigned_date = '';
@@ -60,6 +59,40 @@
                     // Initialize variables for each row
                     $assigned = 0;
                     $collected = 0;
+
+
+
+                    $postButton = '';
+                    if ($canPost) {
+                            $postButton .= '
+                            <button type="button" class="btn btn-xs btn-success" onclick="email_debts('.$fetchDetail->user_id.');" title="Post Receipt"><span class="glyphicon glyphicon-envelope"></span> Email</button>';
+                    }
+
+                    $view_route = route('cusdebtmanagement.viewdebtmanagements', [
+                        'user_id' => $fetchDetail->user_id,
+                        'assigned_upto' => $fetchDetail->assigned_upto
+                    ]);
+
+                    $readButton = '';
+                    if ($canRead) {
+                        $readButton .= '
+                            <a href="' . $view_route . '" class="btn btn-xs btn-info" title="Post Receipt">
+                                <span class="glyphicon glyphicon-chevron-right"></span> View Debts
+                            </a>';
+                    }
+
+                    // Properly assign debtors control account, fallback to 0 if not found
+                    $debtors_control_account = ($getAcAccounts->id) ? $getAcAccounts->id : 0;
+
+                    // Initialize an array to store system users
+                    $system_users_array = [];
+
+                    // Populate system_users_array if there are system users
+                    if ($system_users->isNotEmpty()) {
+                        foreach ($system_users as $user) {
+                            $system_users_array[$user->id] = $user;
+                        }
+                    }
 
                     // Check if we are still in the same assigned_date group
                     if ($current_assigned_date !== null && $current_assigned_date !== $fetchDetail->assigned_date) {
@@ -162,26 +195,24 @@
                     $group_total_collected += $collected;
                     $group_total_to_be_collected += $to_be_collected;
                     $group_total_performance += ($assigned > 0) ? $performance : 0;
-
+                    $systemUsers = \App\Models\SystemUsers::where('status', 1)->where('id','=',$fetchDetail->user_id)->first();
                     // Generate the HTML for this row
                     $html .= '
                     <tr>
                         <td>' . ($key + 1) . '</td>
-                        <td>' . $fetchDetail->user_id . '</td>
+                        <td>' . $systemUsers->full_name. '</td>
                         <td>' . $fetchDetail->assigned_date . '</td>
                         <td>' . $fetchDetail->assigned_upto . '</td>
                         <td>' . number_format($assigned, 2) . '</td>
                         <td>' . number_format($collected, 2) . '</td>
                         <td>' . number_format($to_be_collected, 2) . '</td>
                         <td>' . number_format($performance, 2) . '%</td>
-                        <td></td>
+                        <td>'.$postButton.' '.$readButton.' </td>
                     </tr>';
 
                     $keyCount += $key + 1;
                 @endphp
             @endforeach
-
-
 
             {!! $html !!}
             <!-- Output the remaining group totals after the last group -->

@@ -1,6 +1,36 @@
 @extends('layouts.app')
 
 @section('content')
+
+@if(request()->has('debt_collector_id'))
+    @php
+        $debt_collector_id = request()->input('debt_collector_id');
+        $assigned_upto_date = request()->input('assigned_upto_date');
+
+        if($debt_collector_id > 0) {
+            session(['DCID' => $debt_collector_id]);
+            session(['REPORT_DATE' => $assigned_upto_date]);
+        } else {
+            $error_msg = "Invalid debt collector id, Please try again!";
+        }
+    @endphp
+@endif
+
+@if (session()->has('DCID'))
+    @php
+        $systemUsers = \App\Models\SystemUsers::where('status', 1)->where('id','=',session('DCID'))->first();
+        $debt_collector_name = "***";
+        if($systemUsers){
+            $debt_collector_name = $systemUsers->full_name;
+        }
+    @endphp
+@endif
+
+@if(request()->has('close-window'))
+    @php
+        session()->forget('DCID');
+    @endphp
+@endif
 <div class="container">
     <div class="page-inner">
       <div class="page-header">
@@ -421,12 +451,22 @@
 @endsection
 
 @push('css')
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.dataTables.min.css">
+
     <style>
 
     </style>
 @endpush
 
 @push('scripts')
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+
     <script>
     $(function () {
         $("#search_from_date").datepicker({
@@ -493,19 +533,81 @@
         $('#customerProfileModal').modal('show');
     }
 
+    $('#frm_assign_selected').parsley();
+    $('#frm_assign_selected').on('submit', function(event) {
+        event.preventDefault();
+        var selectedCustomerId = $('#selected_customer_id').val();
+        var selectedCustomerIds = $('#selected_customer_ids').val();
+        if(selectedCustomerId !== "" || selectedCustomerIds !== ""){
+            $('#overlay').show();
+            var report_date = $('#report_date').val();
+		    var selected_customer_id = $('#selected_customer_id').val();
+		    var selected_customer_ids = $('#selected_customer_ids').val();
+		    var collection_date = $('#collection_date').val();
+		    var user_id = $('#user_id').val();
+            $.ajax({
+                url : "{{ route('cusdebtmanagement.assigndebtcollector') }}",
+                cache: false,
+                data: { '_token': '{{ csrf_token() }}', 'dcid': user_id, 'customer_id': selected_customer_id, 'customer_ids': selected_customer_ids, 'report_date': report_date, 'collection_date': collection_date },
+                type: 'POST',
+                dataType: 'json',
+                success : function(response) {
+                    $('#assign_debt_modal').modal('hide');
+                    console.log(response);
+                    //var arr = data.split("|");
+                    $('#frm_assign_selected').parsley().reset();
+                    $('#frm_assign_selected')[0].reset();
+                    Swal.fire({
+                        position: "bottom-end",
+                        icon: response.messageType === 'success' ? "success" : "error",
+                        title: response.message,
+                        showConfirmButton: false,
+                        timer: response.messageType === 'success' ? 4000 : 2500
+                    });
+                    get_filtered_debt_list(page=1, customer_id=0, min_value=0,report_date);
+                    $('#overlay').hide();
+                },
+                error: function(xhr, status, error) {
+                    console.log("Error getting Categories ! \n", xhr, status, error);
+                    $('#overlay').hide();
+                }
+            });
+
+        }else{
+            Swal.fire({
+                position: "bottom-end",
+                icon: "error",
+                title: "Select one or More Items before submit this form..!!",
+                showConfirmButton: false,
+                timer: 6000
+            });
+        }
+    });
+
     function email_debts(user_id){
         var msg = '<p>Are you sure, You want to email this debt collector ?';
-        var btns = '<button type="button" class="btn btn-default" data-dismiss="modal">No</button>';
-        btns += '<button type="button" class="btn btn-primary" data-dismiss="modal" onClick="email_debts_confirmed('+ user_id +')">Yes</button>';
+        var btns = '<button type="button" class="btn btn-default" data-bs-dismiss="modal">No</button>';
+        btns += '<button type="button" class="btn btn-primary" data-bs-dismiss="modal" onClick="email_debts_confirmed('+ user_id +')">Yes</button>';
 
         $('#ConfirmModal .modal-body').html(msg);
         $('#ConfirmModal .modal-footer').html(btns);
-        $('#ConfirmModal').modal();
+        $('#ConfirmModal').modal('show');
     }
 
+    // function view_details(user_id, assigned_upto) {
+    //     console.log(user_id, assigned_upto);
+
+    //     // Construct the URL dynamically with the user_id in JavaScript
+    //     var redirectUrl = "{{ route('cusdebtmanagement.viewdebtmanagements', ':user_id') }}";
+    //     redirectUrl = redirectUrl.replace(':user_id', user_id);
+
+    //     // Use the redirect method with the constructed URL
+    //     $.redirect(redirectUrl, {action: "viewdebtmanagements"}, "POST", "_self");
+    // }
 
     function get_filtered_debt_list(page=1, customer_id=0, min_value=0,report_date, territory=0, customer_group_id=0, collection_bureau_id=0, customer_active='', collection_date=''){
         $('#overlay').show();
+        console.log(page,customer_id,min_value,report_date,territory,customer_group_id,collection_bureau_id,customer_active,collection_date);
         if(report_date!='' && report_date!=null && report_date.length>0){
             $.ajax({
                 url : "{{ route('cusdebtmanagement.fetchdebtfiltered') }}",
@@ -529,11 +631,11 @@
 					});
 
 					$('#btn_bulk_assign').click(function(){
-						$("#assign_debt_modal").modal();
+						$("#assign_debt_modal").modal('show');
 						var customer_ids = $("input:checkbox:checked").map(function(){
 					      return $(this).val();
 					    }).get();
-						$("#selected_customer_id").val(0);
+						$("#selected_customer_id").val('');
 						$("#selected_customer_ids").val(customer_ids);
 					});
 					$(".bulk_customer_ids").click(function(){

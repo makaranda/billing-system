@@ -5,7 +5,7 @@
                 <tr>
                     <td width="5%"><strong>#</strong></td>
                     <td width="10%"><strong><button type="button" class="btn btn-success" id="btn_bulk_assign">Bulk Assign</button></strong></td>
-                    <td width="20%"><strong>Customer Name</strong></td>
+                    <td width="35%"><strong>Customer Name</strong></td>
                     <td width="10%" align="left"><strong>Balance</strong></td>
                     <td width="10%" align="right"><strong>Action</strong></td>
                 </tr>
