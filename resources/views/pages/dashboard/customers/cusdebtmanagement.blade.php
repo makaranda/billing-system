@@ -2,17 +2,24 @@
 
 @section('content')
 
-@if(request()->has('debt_collector_id'))
+@if(isset($debt_assignment_id,$assign_upto_date))
     @php
-        $debt_collector_id = request()->input('debt_collector_id');
-        $assigned_upto_date = request()->input('assigned_upto_date');
+        $debt_collector_id = $debt_assignment_id;
+        $assigned_upto_date = $assign_upto_date;
 
         if($debt_collector_id > 0) {
             session(['DCID' => $debt_collector_id]);
             session(['REPORT_DATE' => $assigned_upto_date]);
+            echo 'OK';
         } else {
+            echo 'Not OK';
             $error_msg = "Invalid debt collector id, Please try again!";
         }
+    @endphp
+@else
+    @php
+        session()->forget('DCID');
+        session()->forget('REPORT_DATE');
     @endphp
 @endif
 
@@ -31,6 +38,8 @@
         session()->forget('DCID');
     @endphp
 @endif
+{{ var_dump(session('DCID')) }}
+
 <div class="container">
     <div class="page-inner">
       <div class="page-header">
@@ -56,6 +65,7 @@
             // $currentRouteName = Route::currentRouteName();
             // echo $remindersRoute;
         @endphp
+
         <div class="row">
             <div class="col-12 col-md-12">
                 @if (Session::has('error'))
@@ -78,9 +88,8 @@
                         <div class="d-md-12">
                             <div class="row">
                                 <div class="col-12">
-                                     <h1 class="text-uppercase">Debt Management</h1>
-
-                                     @if (count($routesPermissions) == 1)
+                                        <h1 class="text-uppercase">Debt Management</h1>
+                                    @if (count($routesPermissions) == 1)
                                             @if ($routesPermissions[0]->route == request()->route()->getName() && Auth::user()->privilege === $routesPermissions[0]->userType)
                                                 @if($routesPermissions[0]->show == 1)
                                                     <div class="input-group date" id="datepicker">
@@ -93,23 +102,30 @@
                                                     </div>
                                                 @endif
                                             @endif
-                                      @endif
+                                    @endif
                                 </div>
                             </div>
 
-                            @if (!session()->has('DCID'))
+                            {{-- @if (!session()->has('DCID')) --}}
+                            @if (!isset($debt_assignment_id))
 
                             <div class="row">
                                 <div class="col-md-12">
                                     <div class="card">
                                         <div class="card-header">
-                                            <span class="text-uppercase">Debt Management - Debt Collectors List</span>
-                                            @if(isset($routepermissions['create']) && $routepermissions['create'] == 1)
-                                                <button type="button" class="btn btn-xs btn-warning pull-right ml-1 addBankAccountButton" data-bs-toggle="modal" data-bs-target="#search_debt_modal" role="button">
-                                                    <span class="glyphicon glyphicon-plus"></span>
-                                                    Assign Debts
-                                                </button>
+                                            @if(!isset($debt_assignment_id,$assign_upto_date))
+                                                <span class="text-uppercase">Debt Management - Debt Collectors List</span>
                                             @endif
+
+                                            @if(isset($routepermissions['create']) && $routepermissions['create'] == 1)
+                                               @if(!isset($debt_assignment_id,$assign_upto_date))
+                                                    <button type="button" class="btn btn-xs btn-warning pull-right ml-1 addBankAccountButton" data-bs-toggle="modal" data-bs-target="#search_debt_modal" role="button">
+                                                        <span class="glyphicon glyphicon-plus"></span>
+                                                        Assign Debts
+                                                    </button>
+                                                @endif
+                                            @endif
+
                                         </div>
                                         <div class="panel panel-default p-3">
                                             <div class="panel-body">
@@ -180,12 +196,25 @@
 
                             <div class="row">
                                 <div class="col-md-12">
-                                    <div class="panel panel-default">
-                                      <div class="panel-heading">
-                                          ASSIGNED DEBTS LIST	FOR <strong>{{ strtoupper($debt_collector_name) }}</strong>
-                                          <button type="button" class="btn btn-xs btn-danger pull-right" style="margin:0px 2px;" onclick="close_window();">Close</button>
-                                      </div>
-                                      <div class="panel-body" id="assigned_debt_list"></div>
+                                    <div class="card">
+                                        <div class="card-header">
+                                            @if(isset($debt_assignment_id,$assign_upto_date))
+                                                <span class="text-uppercase">ASSIGNED DEBTS LIST	FOR <strong>{{ strtoupper($debt_collector_name) }}</strong></span>
+                                            @endif
+
+                                            @if(isset($debt_assignment_id,$assign_upto_date))
+                                                <button type="button" class="btn btn-xs btn-danger pull-right" style="margin:0px 2px;" onclick="close_window();">Close</button>
+                                            @endif
+                                            <input type="hidden" name="dcid_value" id="dcid_value" value="{{ session('DCID', 0) }}"/>
+                                            <input type="hidden" name="assigned_upto_value" id="assigned_upto_value" value="{{ session('REPORT_DATE', '') }}"/>
+
+                                        </div>
+                                        <div class="panel panel-default p-3">
+                                            <div class="panel-body">
+                                                <div class="row"><div class="col-md-12"><span id="assigned_debt_list"></span></div></div>
+                                            </div>
+                                        </div>
+
                                     </div>
                                 </div>
                             </div>
@@ -223,7 +252,7 @@
                       <div class="col-md-12">
                           <div class="form-group">
                               <label class="control-label required">Remarks</label>
-                              <textarea class="form-control" id="remarks" name="remarks"></textarea>
+                              <textarea class="form-control" id="remarks" name="remarks" required></textarea>
                           </div>
                       </div>
                   </div>
@@ -448,6 +477,9 @@
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
 
+
+
+
 @endsection
 
 @push('css')
@@ -533,6 +565,53 @@
         $('#customerProfileModal').modal('show');
     }
 
+    $('#frm_remarks').parsley();
+    $('#frm_remarks').on('submit', function(event) {
+        event.preventDefault();
+        var assignment_id = $('#assignment_id').val();
+        var remarks = $('#remarks').val();
+        if(assignment_id !== "" && remarks !== ""){
+            $('#overlay').show();
+
+            $.ajax({
+                url : "{{ route('cusdebtmanagement.debtsassignmentremarks') }}",
+                cache: false,
+                data: { '_token': '{{ csrf_token() }}', 'assignment_id': assignment_id, 'remarks': remarks},
+                type: 'POST',
+                dataType: 'json',
+                success : function(response) {
+                    console.log('save remarks : ',response);
+                    //var arr = data.split("|");
+                    $('#frm_remarks').parsley().reset();
+                    $('#frm_remarks')[0].reset();
+                    Swal.fire({
+                        position: "bottom-end",
+                        icon: response.messageType === 'success' ? "success" : "error",
+                        title: response.message,
+                        showConfirmButton: false,
+                        timer: response.messageType === 'success' ? 4000 : 2500
+                    });
+                    show_remarks_list(assignment_id);
+                    $('#overlay').hide();
+                },
+                error: function(xhr, status, error) {
+                    console.log("Error getting Categories ! \n", xhr, status, error);
+                    $('#overlay').hide();
+                }
+            });
+
+        }else{
+            Swal.fire({
+                position: "bottom-end",
+                icon: "error",
+                title: "Before submit this form, you must fill all fields..!!",
+                showConfirmButton: false,
+                timer: 6000
+            });
+        }
+    });
+
+
     $('#frm_assign_selected').parsley();
     $('#frm_assign_selected').on('submit', function(event) {
         event.preventDefault();
@@ -594,15 +673,55 @@
         $('#ConfirmModal').modal('show');
     }
 
+    function email_debts_confirmed(user_id){
+        $('#overlay').show();
+        $.ajax({
+            url : "{{ route('cusdebtmanagement.emaildebtconfirme') }}",
+            cache: false,
+            data: { 'user_id':user_id },
+            type: 'GET',
+            dataType: 'json',
+            success : function(response) {
+                $("#overlay").hide();
+                Swal.fire({
+                    position: "bottom-end",
+                    icon: response.messageType === 'success' ? "success" : "error",
+                    title: response.message,
+                    showConfirmButton: false,
+                    timer: response.messageType === 'success' ? 4000 : 2500
+                });
+            },
+            error: function(data) {
+                $('#overlay').show();
+                $('#errorModal').modal('hide');
+                Swal.fire({
+                    position: "bottom-end",
+                    icon: "error",
+                    title: "There have something Wrong..!!",
+                    showConfirmButton: false,
+                    timer: 6000
+                });
+            }
+        });
+    }
+
+    function close_window(){
+        $('#confirmRecordForm').attr('action', "{{ route('index.cusdebtmanagement') }}");
+        $('#confirmRecordForm').attr('method', 'GET');
+        $('.confirmModalTopic').text('Warning');
+        $('.confirmModalDesctiption').text('Do you want to close this window ?');
+        $('#confirmModal').modal('show');
+    }
+
     // function view_details(user_id, assigned_upto) {
     //     console.log(user_id, assigned_upto);
 
     //     // Construct the URL dynamically with the user_id in JavaScript
-    //     var redirectUrl = "{{ route('cusdebtmanagement.viewdebtmanagements', ':user_id') }}";
+
     //     redirectUrl = redirectUrl.replace(':user_id', user_id);
 
     //     // Use the redirect method with the constructed URL
-    //     $.redirect(redirectUrl, {action: "viewdebtmanagements"}, "POST", "_self");
+
     // }
 
     function get_filtered_debt_list(page=1, customer_id=0, min_value=0,report_date, territory=0, customer_group_id=0, collection_bureau_id=0, customer_active='', collection_date=''){
@@ -701,6 +820,90 @@
         });
     }
 
+    function show_remarks_list(assignment_id){
+        $.ajax({
+            url : "{{ route('cusdebtmanagement.fetchgetremarks') }}",
+            cache: false,
+            data: { 'assignment_id':assignment_id, 'order':'DESC' },
+            type: 'GET',
+            dataTypeL:'json',
+            success : function(response) {
+                if(response.result == 1){
+                    $('#remarks_list').html(response.html);
+                }else{
+                    Swal.fire({
+                        position: "bottom-end",
+                        icon: "error",
+                        title: response.message,
+                        showConfirmButton: false,
+                        timer: 6000
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Error getting data!", xhr, status, error);
+                $('#overlay').hide();
+                Swal.fire({
+                    position: "bottom-end",
+                    icon: "error",
+                    title: error,
+                    showConfirmButton: false,
+                    timer: 6000
+                });
+            }
+        });
+    }
+
+    function add_remarks(assignment_id){
+        show_remarks_list(assignment_id);
+        $('#assignment_id').val(assignment_id);
+        $('#remarks_modal').modal('show');
+    }
+
+    show_assigned_debts_list();
+    function show_assigned_debts_list(page=1, customer_id='') {
+        //alert();
+        //console.log("THIS",from_date);
+        var dcid_value = $('#dcid_value').val();
+        var assigned_upto_value = $('#assigned_upto_value').val();
+        $('#overlay').show();
+        //var cn_id = {{ session('CUS_CN_ID', 0) }};
+        $.ajax({
+                url : "{{ route('cusdebtmanagement.fetchassigneddebtslist') }}",
+                cache: false,
+		        async: true,
+                data: { _token: '{{ csrf_token() }}','page':page,'dcid':dcid_value,'assigned_upto':assigned_upto_value,'customer_id': customer_id,'order':'DESC'},
+                type: 'GET',
+                success : function(response) {
+                    //console.log('Success: '+data);
+                    $('#overlay').hide();
+                    $('#assigned_debt_list').html(response.html);
+                    bindPaginationLinks3();
+
+                    if(response.messageType == 'error'){
+                        Swal.fire({
+                            position: "bottom-end",
+                            icon: "error",
+                            title: response.message,
+                            showConfirmButton: false,
+                            timer: 6000
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error getting data!", xhr, status, error);
+                    $('#overlay').hide();
+                    Swal.fire({
+                        position: "bottom-end",
+                        icon: "error",
+                        title: error,
+                        showConfirmButton: false,
+                        timer: 6000
+                    });
+                }
+        });
+    }
+
             // Function to handle pagination link clicks
     function bindPaginationLinks() {
         $(document).on('click', '.pagination a', function (e) {
@@ -718,9 +921,18 @@
             get_filtered_debt_list(page);
         });
     }
+    function bindPaginationLinks3() {
+        $(document).on('click', '.pagination a', function (e) {
+            e.preventDefault();
+            var page = $(this).attr('href').split('page=')[1]; // Get the page number
+            //listTableDatas(page,null, null, 0, null, 0, 0, 1,null,null,null);
+            show_assigned_debts_list(page);
+        });
+    }
     // Call the function initially
     bindPaginationLinks();
     bindPaginationLinks2();
+    bindPaginationLinks3();
     </script>
 @endpush
 

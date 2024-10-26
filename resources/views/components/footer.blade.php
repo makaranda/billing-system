@@ -209,6 +209,31 @@
 <!-- End Custom template -->
 </div>
 
+<!-- Confirm Modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+         <form action="#" method="POST" id="confirmRecordForm">
+            <input type="hidden" name="confirm_record_form" id="confirm_record_form">
+            <input type="hidden" name="confirm_record_id" id="confirm_record_id">
+            <input type="hidden" name="confirm_record_type" id="confirm_record_type">
+
+            <div class="modal-header">
+                <h5 class="modal-title confirmModalTopic" id="confirmModalLabel">Confirm Record</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body confirmModalDesctiption">
+            Are you sure to Confirm this Record now...!!!
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary btn-sm" data-bs-dismiss="modal">No</button>
+                <button type="submit" class="btn btn-danger text-white btn-sm confirmModalBtn">Yes</button>
+            </div>
+          </form>
+      </div>
+    </div>
+</div>
+
 <!-- Modal -->
 <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
     <div class="modal-dialog">

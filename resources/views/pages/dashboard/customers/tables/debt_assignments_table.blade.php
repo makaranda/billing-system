@@ -68,11 +68,8 @@
                             <button type="button" class="btn btn-xs btn-success" onclick="email_debts('.$fetchDetail->user_id.');" title="Post Receipt"><span class="glyphicon glyphicon-envelope"></span> Email</button>';
                     }
 
-                    $view_route = route('cusdebtmanagement.viewdebtmanagements', [
-                        'user_id' => $fetchDetail->user_id,
-                        'assigned_upto' => $fetchDetail->assigned_upto
-                    ]);
-
+                    $view_route =  route('cusdebtmanagement.viewdebtmanagements', ['debt_id' => $fetchDetail->user_id,'assign_date' => $fetchDetail->assigned_upto]);
+                    //$view_route = '';
                     $readButton = '';
                     if ($canRead) {
                         $readButton .= '
@@ -198,17 +195,17 @@
                     $systemUsers = \App\Models\SystemUsers::where('status', 1)->where('id','=',$fetchDetail->user_id)->first();
                     // Generate the HTML for this row
                     $html .= '
-                    <tr>
-                        <td>' . ($key + 1) . '</td>
-                        <td>' . $systemUsers->full_name. '</td>
-                        <td>' . $fetchDetail->assigned_date . '</td>
-                        <td>' . $fetchDetail->assigned_upto . '</td>
-                        <td>' . number_format($assigned, 2) . '</td>
-                        <td>' . number_format($collected, 2) . '</td>
-                        <td>' . number_format($to_be_collected, 2) . '</td>
-                        <td>' . number_format($performance, 2) . '%</td>
-                        <td>'.$postButton.' '.$readButton.' </td>
-                    </tr>';
+                            <tr>
+                                <td>' . ($key + 1) . '</td>
+                                <td>' . (isset($systemUsers) ? $systemUsers->full_name : '***') . '</td>
+                                <td>' . $fetchDetail->assigned_date . '</td>
+                                <td>' . $fetchDetail->assigned_upto . '</td>
+                                <td>' . number_format($assigned, 2) . '</td>
+                                <td>' . number_format($collected, 2) . '</td>
+                                <td>' . number_format($to_be_collected, 2) . '</td>
+                                <td>' . number_format($performance, 2) . '%</td>
+                                <td>' . $postButton . ' ' . $readButton . '</td>
+                            </tr>';
 
                     $keyCount += $key + 1;
                 @endphp

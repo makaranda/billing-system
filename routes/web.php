@@ -118,6 +118,8 @@ use App\Http\Controllers\dashboard\settings\CollectionBureausController;
 use App\Http\Controllers\dashboard\settings\TerritoriesController;
 use App\Http\Controllers\dashboard\settings\SetEmployeeOtFactorController;
 
+use App\Http\Controllers\dashboard\EmailsController;
+
 use App\Http\Controllers\dashboard\ReportsController;
 
 use App\Http\Controllers\dashboard\MenusController;
@@ -211,11 +213,15 @@ Route::group(['prefix' => '/'], function () {
             Route::group(['prefix' => 'debt-management', 'middleware' => 'role:admin'], function () {
                 Route::get('/', [CusDebtManagementController::class, 'index'])->name('index.cusdebtmanagement');
                 Route::get('/fetch-debt-managements', [CusDebtManagementController::class, 'fetchDebtManagement'])->name('cusdebtmanagement.fetchdebtmanagements');
-                Route::get('/view-debt/{debt_id}/{debt_assign_date}', [CusDebtManagementController::class, 'viewDebtManagement'])->name('cusdebtmanagement.viewdebtmanagements');
+                Route::get('/fetch-assigned-debts-list', [CusDebtManagementController::class, 'fetchAssignedDebtsList'])->name('cusdebtmanagement.fetchassigneddebtslist');
+                Route::get('/fetch-get-remarks', [CusDebtManagementController::class, 'fetchGetRemarks'])->name('cusdebtmanagement.fetchgetremarks');
+                Route::get('/view-debt/{debt_id}/{assign_date}', [CusDebtManagementController::class, 'viewDebtManagement'])->name('cusdebtmanagement.viewdebtmanagements');
                 Route::get('/get-filtered-debt-list', [CusDebtManagementController::class, 'fetchFilteredDebt'])->name('cusdebtmanagement.fetchdebtfiltered');
                 Route::get('/{pro_id}/edit-debt-management', [CusDebtManagementController::class, 'editDebtManagement'])->name('cusdebtmanagement.editdebtmanagement');
                 Route::post('/add-new-debt-management', [CusDebtManagementController::class, 'addCusDebtManagement'])->name('cusdebtmanagement.adddebtmanagement');
+                Route::get('/email-debts-confirmed', [EmailsController::class, 'emailSave'])->name('cusdebtmanagement.emaildebtconfirme');
                 Route::post('/assign-debt-collector', [CusDebtManagementController::class, 'assignDebtCollector'])->name('cusdebtmanagement.assigndebtcollector');
+                Route::post('/debts-assignment-remarks', [CusDebtManagementController::class, 'DebtAssignmentsRemarks'])->name('cusdebtmanagement.debtsassignmentremarks');
                 Route::post('/{pro_id}/update-debt-management', [CusDebtManagementController::class, 'updateDebtManagement'])->name('cusdebtmanagement.updatedebtmanagement');
                 Route::post('/{pro_id}/delete-debt-management', [CusDebtManagementController::class, 'deleteDebtManagement'])->name('cusdebtmanagement.deletedebtmanagement');
             });

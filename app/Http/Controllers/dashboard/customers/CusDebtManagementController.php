@@ -28,6 +28,7 @@ use App\Models\AcAccounts;
 use App\Models\Products;
 use App\Models\DebtAssignments;
 use App\Models\Invoices;
+use App\Models\DebtAssignmentRemarks;
 
 class CusDebtManagementController extends Controller
 {
@@ -116,9 +117,37 @@ class CusDebtManagementController extends Controller
         }
     }
 
+    public function DebtAssignmentsRemarks(Request $request){
+        $message = '';
+        $messageType = '';
+
+        $debtAssignmentRemarks = DebtAssignmentRemarks::create([
+            'assignment_id' => $request->assignment_id,
+            'date' => WORKING_DATE,
+            'remarks' => $request->remarks,
+            'created_by' => Auth::user()->id,
+        ]);
+
+        if ($debtAssignmentRemarks) {
+            $message = "Remarks successfully saved.";
+            $messageType = 'success';
+        } else {
+            $message = "Failed to save remarks. Please try again !";
+            $messageType = 'error';
+        }
+
+        $responseData = [
+            'message' => $message,
+            'messageType' => $messageType
+        ];
+
+        return response()->json($responseData);
+    }
+
     public function assignDebtCollector(Request $request){
         $message = '';
         $messageType = '';
+
 
         // Check if customer_id or customer_ids are set
         if (isset($request->customer_id) || isset($request->customer_ids)) {
@@ -327,8 +356,220 @@ class CusDebtManagementController extends Controller
         //return response()->json(['html' => $sql_query]);
     }
 
-    public function viewDebtManagement(Request $request){
-        return view('pages.dashboard.customers.cusviewdebtmanagement');
+    public function viewDebtManagement(Request $request,$view_debt,$assign_date){
+        $route = $route ?? 'index.customers';
+        $route = $route ?? 'home';
+        $request = session('data');
+
+        $mainMenus = SystemMenus::whereNull('parent_id')
+                                ->orderBy('order')
+                                ->get();
+        $subsMenus = SystemMenus::where('route',$route)
+                                ->orderBy('order')
+                                ->get();
+
+        foreach ($subsMenus as $submenu) {
+            $submenu->subMenus = $submenu->orderBy('order')->get();
+        }
+        foreach ($mainMenus as $menu) {
+            $menu->subMenus = $menu->children()->orderBy('order')->get();
+        }
+
+        $getRoutename = request()->route()->getName();
+        $routesPermissions = RoutesPermissions::where('route',$getRoutename)->orderBy('id')->get();
+        $getAllRoutePermisssions = RoutesPermissions::all();
+        foreach ($routesPermissions as $routesPermission) {
+            $routesPermission = $routesPermission->orderBy('id')->get();
+        }
+
+        $permissionsTypes = PermissionsTypes::all();
+
+
+
+        $routepermissions = [];
+        foreach ($permissionsTypes as $permissionsType) {
+            $routepermissions[$permissionsType->name] = 0;
+        }
+
+        $getAllRoutePermisssionsUser = RoutesPermissions::where('user_id', Auth::user()->id)
+                                                        ->where('route', $getRoutename)
+                                                        ->get();
+        $getAllCollectionBureaus = CollectionBureaus::where('status',1)->get();
+        $getAllPriceTypes = PriceTypes::where('status',1)->get();
+        $getAllBranches = Branches::where('status',1)->get();
+        $getAllProductCategories = ProductCategories::where('status', 1)->get();
+        $getAllCustomerGroup = CustomerGroup::where('status', 1)->get();
+        $getAllcurrencies = Currencies::where('status', 1)->get();
+        $getAllterritories = Territories::where('status', 1)->get();
+        $getAllProducts = Products::where('status', 1)->get();
+        $getAllCustomers = Customers::where('status', 1)->get();
+        $getAllSystemUsers = SystemUsers::where('status', 1)->get();
+
+        $currentRoute = request()->route()->getName();
+        $parentRoute = 'index.' . explode('.', $currentRoute)[0];
+        foreach ($permissionsTypes as $permissionsType) {
+            $type = $permissionsType->permission_type;
+
+            // Check if the user has this permission for the current route or parent route
+            $hasPermission = $getAllRoutePermisssionsUser->contains(function ($permission) use ($type, $currentRoute, $parentRoute) {
+                return $permission->permission_type == $type && ($permission->route == $currentRoute || $permission->route == $parentRoute);
+            });
+
+            // Update the routepermissions array
+            $routepermissions[$type] = $hasPermission ? 1 : 0;
+        }
+        $debt_collector_name = "***";
+        if(session()->has('DCID')){
+            $userData = SystemUsers::where('status', 1)->where('id', session('DCID'))->first();
+            if($userData){
+                $debt_collector_name = $userData->full_name;
+            }
+        }
+
+        $remindersRoute = request()->route()->getName();
+        $parentid = 3;
+        $mainRouteName = 'index.customers';
+        //dd($mainMenus);
+        $countCheckThisRoutes = RoutesPermissions::where('route', $getRoutename)
+        ->where('user_id', Auth::user()->id)
+        ->where('main_route', $mainRouteName)
+        ->count();
+
+
+        $debt_assignment_id = $view_debt;
+        $assign_upto_date = $assign_date;
+
+        if($countCheckThisRoutes == 0){
+            return redirect()->route('admin.dashboard')->with('error', 'You do not have permission to access this route.');
+        }else{
+            return view('pages.dashboard.customers.cusdebtmanagement', compact('mainMenus','subsMenus','mainRouteName', 'remindersRoute', 'parentid','routesPermissions','getAllRoutePermisssions','routepermissions','getAllCollectionBureaus','getAllterritories','getAllProducts','getAllCustomers','getAllSystemUsers','debt_collector_name','getAllProductCategories','debt_assignment_id','assign_upto_date'));
+        }
+    }
+
+    public function fetchGetRemarks(Request $request)
+    {
+        // Validate the incoming request data
+        $validatedData = $request->validate([
+            'assignment_id' => 'required',
+            'order' => 'nullable'
+        ]);
+
+        // Retrieve the validated assignment_id and optional order
+        $assignment_id = $validatedData['assignment_id'];
+        $order = $validatedData['order'] ?? 'asc'; // default to ascending order
+
+        // Fetch the remarks data DebtAssignmentRemarks
+
+        $remarks = DebtAssignmentRemarks::where('assignment_id', $assignment_id)
+                    ->orderBy('date', $order)
+                    ->get(); // Select specific fields
+
+        // Check if data exists
+        if ($remarks->isEmpty()) {
+            return response()->json([
+                'result' => false,
+                'message' => 'No remarks found!',
+                'html' => '<p>No remarks found!</p>'
+            ]);
+        }
+
+        // Generate the HTML table
+        $html = '<table class="table" width="100%">';
+        $html .= '<tr>';
+        $html .= '<td align="left"><strong>#</strong></td>';
+        $html .= '<td align="left"><strong>Date</strong></td>';
+        $html .= '<td align="left"><strong>Remarks</strong></td>';
+        $html .= '</tr>';
+
+        foreach ($remarks as $index => $remark) {
+            $html .= '<tr>';
+            $html .= '<td align="left">' . ($index + 1) . '</td>';
+            $html .= '<td align="left">' . $remark->date . '</td>';
+            $html .= '<td align="left">' . $remark->remarks . '</td>';
+            $html .= '</tr>';
+        }
+
+        $html .= '</table>';
+
+        // Return the JSON response with both HTML and JSON data
+        return response()->json([
+            'result' => true,
+            'message' => 'success',
+            'html' => $html
+        ]);
+
+
+    }
+
+    public function fetchAssignedDebtsList(Request $request){
+        $messageType = '';
+        $message = '';
+        $responses = '';
+
+        $debit_total = 0;
+        $credit_total = 0;
+
+        $get_dcid = $request->dcid;
+        $get_assigned_upto = $request->assigned_upto;
+
+        $getAcAccounts = AcAccounts::where('control_type','LIKE', '%debtors_control%')->first();
+        $system_users = SystemUsers::where('status', 1)->get();
+        $debtors_control_account = $getAcAccounts ? $getAcAccounts->id : 0;
+
+        if(!$debtors_control_account){
+            $messageType = 'error';
+            $message = 'Debtors control account is not setup in the accounts !';
+        }
+
+
+
+        $query = DB::table('customer_transactions as a')
+                    ->join(DB::raw('(SELECT MAX(customer_transactions.id) AS id,
+                                            debt_assignments.id AS assignment_id,
+                                            debt_assignments.assigned_date,
+                                            debt_assignments.assigned_upto,
+                                            debt_assignments.collection_date,
+                                            debt_assignments.user_id
+                                    FROM customer_transactions
+                                    INNER JOIN debt_assignments
+                                    ON debt_assignments.customer_id = customer_transactions.customer_id
+                                    AND customer_transactions.transaction_date <= debt_assignments.assigned_upto
+                                    AND customer_transactions.nominal_account_id = ' . intval($debtors_control_account) . '
+                                    ' . ($request->has('dcid') && $request->dcid != '' ? 'AND debt_assignments.user_id = ' . intval($request->dcid) : '') . '
+                                    WHERE debt_assignments.assigned_upto = \'' . $request->assigned_upto . '\'
+                                    GROUP BY customer_transactions.customer_id
+                                    ) as b'), 'a.id', '=', 'b.id')
+                    ->join('customers as c', 'c.id', '=', 'a.customer_id') // Join with the customers table
+                    ->select('a.customer_balance', 'a.customer_id', 'b.assigned_date', 'b.assigned_upto',
+                            'b.collection_date', 'b.assignment_id', 'c.code', 'c.company', 'c.active');
+
+        // Apply additional conditions if needed active
+        if ($request->has('dcid') && $request->dcid != '') {
+            $query->where('b.user_id', '=', $request->dcid);
+        }
+
+        if ($request->has('assigned_upto') && $request->assigned_upto != '') {
+            $query->where('b.assigned_upto', '=', $request->assigned_upto);
+        }
+
+        if ($request->has('customer_id') && $request->customer_id != '') {
+            $query->where('a.customer_id', '=', $request->customer_id);
+        }
+
+        // Paginate the results
+        $fetchTableDetails = $query->paginate(100);
+
+        //var_dump($customer_balance);
+        //$parentRoute = 'index.productcategories';
+        $sqlQuery = $query->toSql();
+        $bindings = $query->getBindings();
+
+        // Print the SQL and bindings for debugging
+        //dd($sqlQuery, $bindings);
+        //exit();
+        $responses = view('pages.dashboard.customers.tables.debt_assigned_debt_list_table', compact('fetchTableDetails','get_assigned_upto','get_dcid'))->render();
+
+        return response()->json(['html' => $responses,'message' => $message,'messageType' => $messageType]);
     }
 
     public function fetchDebtManagement(Request $request){
