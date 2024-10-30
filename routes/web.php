@@ -203,11 +203,12 @@ Route::group(['prefix' => '/'], function () {
 
             Route::group(['prefix' => 'attachements', 'middleware' => 'role:admin'], function () {
                 Route::get('/', [CusAttachementsController::class, 'index'])->name('index.cusattachements');
-                Route::get('/fetch-attachements', [CusAttachementsController::class, 'fetchVas'])->name('cusattachements.fetchcusattachement');
-                Route::get('/{pro_id}/edit-attachement', [CusAttachementsController::class, 'editVas'])->name('cusattachements.editcusattachement');
-                Route::post('/add-new-attachement', [CusAttachementsController::class, 'addVas'])->name('cusattachements.addcusattachement');
-                Route::post('/{pro_id}/update-attachement', [CusAttachementsController::class, 'updateVas'])->name('cusattachements.updatecusattachement');
-                Route::post('/{pro_id}/delete-attachement', [CusAttachementsController::class, 'deleteVas'])->name('cusattachements.deletecusattachement');
+                Route::get('/fetch-attachements', [CusAttachementsController::class, 'fetchAttachements'])->name('cusattachements.fetchcusattachement');
+                Route::post('/get-customers-names', [CusAttachementsController::class, 'getCustomersNames'])->name('cusattachements.getcustomersnames');
+                Route::get('/{pro_id}/edit-attachement', [CusAttachementsController::class, 'editAttachement'])->name('cusattachements.editcusattachement');
+                Route::post('/add-new-attachement', [CusAttachementsController::class, 'addAttachement'])->name('cusattachements.addcusattachement');
+                Route::post('/{pro_id}/update-attachement', [CusAttachementsController::class, 'updateAttachement'])->name('cusattachements.updatecusattachement');
+                Route::post('/{pro_id}/delete-attachement', [CusAttachementsController::class, 'deleteAttachement'])->name('cusattachements.deletecusattachement');
             });
 
             Route::group(['prefix' => 'debt-management', 'middleware' => 'role:admin'], function () {

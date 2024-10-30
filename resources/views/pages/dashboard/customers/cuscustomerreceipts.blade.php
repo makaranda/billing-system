@@ -668,7 +668,7 @@
             });
     });
 
-$('#frm_add_payments').parsley();
+    $('#frm_add_payments').parsley();
     $('#frm_add_payments').on('submit', function(event){
         event.preventDefault();
         $('#overlay').show();

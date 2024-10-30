@@ -328,3 +328,19 @@ p {
     z-index: 9999;
     top: 10%;
 }
+
+table.table {
+    thead{
+        tr{
+            th{
+                font-size: 11px !important;
+            }
+        }
+    }
+}
+
+ul#ui-id-1{
+    position: relative;
+    z-index: 9999;
+    width: 400px !important;
+}

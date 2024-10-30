@@ -23,4 +23,6 @@
 <link rel="stylesheet" href="{{ url('public/assets/css/mystyle.css') }}?v={{ date('is') }}"/>
 <link rel="stylesheet" href="{{ url('public/assets/css/mystyle.responsive.css') }}?v={{ date('is') }}"/>
 
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
 <audio id="error_sound" src="{{ url('public/assets/audio/to-the-point.mp3') }}" audio-val="paused" preload="auto"></audio>
